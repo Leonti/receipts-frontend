@@ -52,9 +52,7 @@ update action model =
       ({ model | password = password }, Cmd.none)
 
     Login ->
-        case (basicAuthHeader model.username model.password) of
-            Result.Ok header -> (model, authenticate header)
-            Result.Err error -> (model, Cmd.none)
+        (model, (authenticate model.username model.password))
 
     LoginSucceed token ->
         ({model | token = token}, Cmd.none)
@@ -62,9 +60,15 @@ update action model =
     LoginFail error ->
         (model, Cmd.none)
 
-authenticate : String -> Cmd Msg
-authenticate basicAuthHeader =
-    Task.perform LoginFail LoginSucceed (authenticationGet basicAuthHeader)
+authenticate : String -> String -> Cmd Msg
+authenticate username password =
+    let basicAuthHeaderResult =
+        basicAuthHeader username password
+    in
+        case basicAuthHeaderResult of
+            Result.Ok header -> Task.perform LoginFail LoginSucceed (authenticationGet header)
+            Result.Err error -> Cmd.none
+
 
 basicAuthHeader : String -> String -> Result String String
 basicAuthHeader username password = Result.map (\s -> "Basic " ++ s) (Base64.encode (username ++ ":" ++ password))
