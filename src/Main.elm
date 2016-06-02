@@ -95,6 +95,7 @@ view model =
     , button [ onClick Login] [ text "Login" ]
     , div []
         [ span [] [text model.token]
+        , span [] [text "styled"]
         ]
     ]
 
