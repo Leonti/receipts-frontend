@@ -8265,10 +8265,7 @@ var _truqu$elm_base64$Base64$encode = function (s) {
 					_truqu$elm_base64$Base64$toCodeList(s)))));
 };
 
-var _user$project$Main$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
-};
-var _user$project$Main$authenticationGet = function (basicAuthHeader) {
+var _user$project$LoginForm$authenticationGet = function (basicAuthHeader) {
 	var request = {
 		verb: 'GET',
 		headers: _elm_lang$core$Native_List.fromArray(
@@ -8287,7 +8284,7 @@ var _user$project$Main$authenticationGet = function (basicAuthHeader) {
 			_elm_lang$core$Json_Decode$string),
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
-var _user$project$Main$basicAuthHeader = F2(
+var _user$project$LoginForm$basicAuthHeader = F2(
 	function (username, password) {
 		return A2(
 			_elm_lang$core$Result$map,
@@ -8300,38 +8297,41 @@ var _user$project$Main$basicAuthHeader = F2(
 					username,
 					A2(_elm_lang$core$Basics_ops['++'], ':', password))));
 	});
-var _user$project$Main$Model = F4(
+var _user$project$LoginForm$emptyModel = {username: '', password: '', token: '', basicHeader: ''};
+var _user$project$LoginForm$init = function (savedModel) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		A2(_elm_lang$core$Maybe$withDefault, _user$project$LoginForm$emptyModel, savedModel),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _user$project$LoginForm$Model = F4(
 	function (a, b, c, d) {
 		return {username: a, password: b, token: c, basicHeader: d};
 	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: A4(_user$project$Main$Model, '', '', '', ''),
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _user$project$Main$LoginFail = function (a) {
+var _user$project$LoginForm$LoginFail = function (a) {
 	return {ctor: 'LoginFail', _0: a};
 };
-var _user$project$Main$LoginSucceed = function (a) {
+var _user$project$LoginForm$LoginSucceed = function (a) {
 	return {ctor: 'LoginSucceed', _0: a};
 };
-var _user$project$Main$authenticate = F2(
+var _user$project$LoginForm$authenticate = F2(
 	function (username, password) {
-		var basicAuthHeaderResult = A2(_user$project$Main$basicAuthHeader, username, password);
+		var basicAuthHeaderResult = A2(_user$project$LoginForm$basicAuthHeader, username, password);
 		var _p0 = basicAuthHeaderResult;
 		if (_p0.ctor === 'Ok') {
 			return A3(
 				_elm_lang$core$Task$perform,
-				_user$project$Main$LoginFail,
-				_user$project$Main$LoginSucceed,
-				_user$project$Main$authenticationGet(_p0._0));
+				_user$project$LoginForm$LoginFail,
+				_user$project$LoginForm$LoginSucceed,
+				_user$project$LoginForm$authenticationGet(_p0._0));
 		} else {
 			return _elm_lang$core$Platform_Cmd$none;
 		}
 	});
-var _user$project$Main$update = F2(
-	function (action, model) {
-		var _p1 = action;
+var _user$project$LoginForm$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
 		switch (_p1.ctor) {
 			case 'Name':
 				return {
@@ -8353,7 +8353,7 @@ var _user$project$Main$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A2(_user$project$Main$authenticate, model.username, model.password)
+					_1: A2(_user$project$LoginForm$authenticate, model.username, model.password)
 				};
 			case 'LoginSucceed':
 				return {
@@ -8367,14 +8367,14 @@ var _user$project$Main$update = F2(
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$Main$Login = {ctor: 'Login'};
-var _user$project$Main$Password = function (a) {
+var _user$project$LoginForm$Login = {ctor: 'Login'};
+var _user$project$LoginForm$Password = function (a) {
 	return {ctor: 'Password', _0: a};
 };
-var _user$project$Main$Name = function (a) {
+var _user$project$LoginForm$Name = function (a) {
 	return {ctor: 'Name', _0: a};
 };
-var _user$project$Main$view = function (model) {
+var _user$project$LoginForm$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8387,7 +8387,8 @@ var _user$project$Main$view = function (model) {
 					[
 						_elm_lang$html$Html_Attributes$type$('text'),
 						_elm_lang$html$Html_Attributes$placeholder('Name'),
-						_elm_lang$html$Html_Events$onInput(_user$project$Main$Name)
+						_elm_lang$html$Html_Attributes$value(model.username),
+						_elm_lang$html$Html_Events$onInput(_user$project$LoginForm$Name)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[])),
@@ -8397,7 +8398,7 @@ var _user$project$Main$view = function (model) {
 					[
 						_elm_lang$html$Html_Attributes$type$('password'),
 						_elm_lang$html$Html_Attributes$placeholder('Password'),
-						_elm_lang$html$Html_Events$onInput(_user$project$Main$Password)
+						_elm_lang$html$Html_Events$onInput(_user$project$LoginForm$Password)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[])),
@@ -8405,7 +8406,7 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$html$Html$button,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Events$onClick(_user$project$Main$Login)
+						_elm_lang$html$Html_Events$onClick(_user$project$LoginForm$Login)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
@@ -8424,21 +8425,126 @@ var _user$project$Main$view = function (model) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html$text(model.token)
-							])),
-						A2(
-						_elm_lang$html$Html$span,
-						_elm_lang$core$Native_List.fromArray(
-							[]),
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$html$Html$text('styled')
 							]))
 					]))
 			]));
 };
+
+var _user$project$Main$emptyModel = {loginForm: _user$project$LoginForm$emptyModel};
+var _user$project$Main$init = function (savedModel) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyModel, savedModel),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
+var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
+	'setStorage',
+	function (v) {
+		return {
+			loginForm: {username: v.loginForm.username, password: v.loginForm.password, token: v.loginForm.token, basicHeader: v.loginForm.basicHeader}
+		};
+	});
+var _user$project$Main$withSetStorage = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = _p1._0;
+	return {
+		ctor: '_Tuple2',
+		_0: _p2,
+		_1: _elm_lang$core$Platform_Cmd$batch(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_user$project$Main$setStorage(_p2),
+					_p1._1
+				]))
+	};
+};
+var _user$project$Main$Model = function (a) {
+	return {loginForm: a};
+};
+var _user$project$Main$Login = function (a) {
+	return {ctor: 'Login', _0: a};
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p3 = msg;
+		var _p4 = A2(_user$project$LoginForm$update, _p3._0, model.loginForm);
+		var loginModel = _p4._0;
+		var loginCmd = _p4._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{loginForm: loginModel}),
+			_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$Login, loginCmd)
+		};
+	});
+var _user$project$Main$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html_App$map,
+				_user$project$Main$Login,
+				_user$project$LoginForm$view(model.loginForm))
+			]));
+};
 var _user$project$Main$main = {
-	main: _elm_lang$html$Html_App$program(
-		{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{
+			init: _user$project$Main$init,
+			view: _user$project$Main$view,
+			update: F2(
+				function (msg, model) {
+					return _user$project$Main$withSetStorage(
+						A2(_user$project$Main$update, msg, model));
+				}),
+			subscriptions: function (_p5) {
+				return _elm_lang$core$Platform_Sub$none;
+			}
+		}),
+	flags: _elm_lang$core$Json_Decode$oneOf(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+				A2(
+				_elm_lang$core$Json_Decode$map,
+				_elm_lang$core$Maybe$Just,
+				A2(
+					_elm_lang$core$Json_Decode$andThen,
+					A2(
+						_elm_lang$core$Json_Decode_ops[':='],
+						'loginForm',
+						A2(
+							_elm_lang$core$Json_Decode$andThen,
+							A2(_elm_lang$core$Json_Decode_ops[':='], 'basicHeader', _elm_lang$core$Json_Decode$string),
+							function (basicHeader) {
+								return A2(
+									_elm_lang$core$Json_Decode$andThen,
+									A2(_elm_lang$core$Json_Decode_ops[':='], 'password', _elm_lang$core$Json_Decode$string),
+									function (password) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											A2(_elm_lang$core$Json_Decode_ops[':='], 'token', _elm_lang$core$Json_Decode$string),
+											function (token) {
+												return A2(
+													_elm_lang$core$Json_Decode$andThen,
+													A2(_elm_lang$core$Json_Decode_ops[':='], 'username', _elm_lang$core$Json_Decode$string),
+													function (username) {
+														return _elm_lang$core$Json_Decode$succeed(
+															{basicHeader: basicHeader, password: password, token: token, username: username});
+													});
+											});
+									});
+							})),
+					function (loginForm) {
+						return _elm_lang$core$Json_Decode$succeed(
+							{loginForm: loginForm});
+					}))
+			]))
 };
 
 var Elm = {};

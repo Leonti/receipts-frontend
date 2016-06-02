@@ -8,7 +8,14 @@
     <body>
         <script src="gen/main.js"></script>
         <script>
-            Elm.Main.fullscreen();
+            var storedState = localStorage.getItem('elm-main-state');
+            console.log('stored state', storedState);
+            var startingState = storedState ? JSON.parse(storedState) : null;
+            var main = Elm.Main.fullscreen(startingState);
+            main.ports.setStorage.subscribe(function(state) {
+                console.log('setting state', state);
+                localStorage.setItem('elm-main-state', JSON.stringify(state));
+            });
         </script>
     </body>
 </html>
