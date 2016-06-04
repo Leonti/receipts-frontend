@@ -1,4 +1,4 @@
-module LoginForm exposing (Model, Msg, init, update, view, emptyModel)
+module LoginForm exposing (Model, Msg, init, update, view, token)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,7 +11,7 @@ import Base64
 type alias Model =
   { username : String
   , password : String
-  , token: String
+  , token: Maybe String
   , basicHeader: String
   }
 
@@ -19,13 +19,16 @@ emptyModel : Model
 emptyModel =
     { username = ""
     , password = ""
-    , token = ""
+    , token = Nothing
     , basicHeader = ""
     }
 
-init : Maybe Model -> ( Model, Cmd Msg )
-init savedModel =
-  Maybe.withDefault emptyModel savedModel ! []
+token : Model -> Maybe String
+token model = model.token
+
+init : ( Model, Cmd Msg )
+init =
+    emptyModel ! []
 
 type Msg
     = Name String
@@ -47,7 +50,7 @@ update msg model =
         (model, (authenticate model.username model.password))
 
     LoginSucceed token ->
-        ({model | token = token}, Cmd.none)
+        ({model | token = Just token}, Cmd.none)
 
     LoginFail error ->
         (model, Cmd.none)
@@ -84,7 +87,4 @@ view model =
     [ input [ type' "text", placeholder "Name", value model.username, onInput Name ] []
     , input [ type' "password", placeholder "Password", onInput Password ] []
     , button [ onClick Login] [ text "Login" ]
-    , div []
-        [ span [] [text model.token]
-        ]
     ]

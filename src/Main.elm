@@ -14,28 +14,51 @@ main =
     , subscriptions = \_ -> Sub.none
     }
 
-port setStorage : Model -> Cmd msg
+port setStorage : PersistedModel -> Cmd msg
 
 withSetStorage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 withSetStorage (model, cmds) =
-  ( model, Cmd.batch [ setStorage model, cmds ] )
+  ( model, Cmd.batch
+    [ setStorage (persistedModel model), cmds ] )
 
 -- MODEL
 
+type alias PersistedModel =
+    { token : Maybe String
+    }
 
 type alias Model =
-  { loginForm : LoginForm.Model
+  { loginForm : LoginForm.Model,
+    authenticationToken : Maybe String
   }
 
 emptyModel : Model
 emptyModel =
-    { loginForm = LoginForm.emptyModel
+    let (loginModel, loginCmd) =
+        LoginForm.init
+    in
+    { loginForm = loginModel
+    , authenticationToken = Nothing
+    }
+
+persistedModel : Model -> PersistedModel
+persistedModel model =
+    { token = (LoginForm.token model.loginForm)
     }
 
 -- should use LoginForm.init
-init : Maybe Model -> ( Model, Cmd Msg )
-init savedModel =
-  Maybe.withDefault emptyModel savedModel ! []
+init : Maybe PersistedModel -> ( Model, Cmd Msg )
+init maybePersistedModel =
+    let maybeModel =
+        Maybe.map fromPersistedModel maybePersistedModel
+    in
+  (Maybe.withDefault emptyModel maybeModel ! [])
+
+fromPersistedModel : PersistedModel -> Model
+fromPersistedModel persistedModel =
+    { emptyModel
+        | authenticationToken = persistedModel.token
+    }
 
 -- UPDATE
 
@@ -49,7 +72,13 @@ update msg model =
     Login message ->
       let ( loginModel, loginCmd ) =
         LoginForm.update message model.loginForm
-      in ({ model | loginForm = loginModel }, Cmd.map Login loginCmd)
+      in
+        ({ model
+            | loginForm = loginModel
+            , authenticationToken = LoginForm.token loginModel
+         }
+         , Cmd.map Login loginCmd
+        )
 
 -- VIEW
 
@@ -57,4 +86,7 @@ view : Model -> Html Msg
 view model =
   div []
     [ App.map Login (LoginForm.view model.loginForm)
+    , div []
+        [ span [] [text (Maybe.withDefault "no token" model.authenticationToken)]
+        ]
     ]
