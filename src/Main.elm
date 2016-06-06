@@ -7,12 +7,13 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Api
 import Http
+import Debug
 
 main =
   App.programWithFlags
     { init = init
     , view = view
-    , update = (\msg model -> withSetStorage (update msg model))
+    , update = (\msg model -> withSetStorage (Debug.log "model" (update msg model)) )
     , subscriptions = \_ -> Sub.none
     }
 
@@ -75,7 +76,7 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case (Debug.log "msg" msg) of
     Login message ->
       let ( loginModel, loginCmd ) =
         LoginForm.update message model.loginForm

@@ -8319,7 +8319,7 @@ var _user$project$Api$userInfoDecoder = A3(
 	_elm_lang$core$Json_Decode$object2,
 	_user$project$Api$UserInfo,
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'username', _elm_lang$core$Json_Decode$string));
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'userName', _elm_lang$core$Json_Decode$string));
 var _user$project$Api$fetchUserInfoGet = function (token) {
 	var request = {
 		verb: 'GET',
@@ -8547,7 +8547,7 @@ var _user$project$Main$Login = function (a) {
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p5 = msg;
+		var _p5 = A2(_elm_lang$core$Debug$log, 'msg', msg);
 		switch (_p5.ctor) {
 			case 'Login':
 				var _p6 = A2(_user$project$LoginForm$update, _p5._0, model.loginForm);
@@ -8668,7 +8668,10 @@ var _user$project$Main$main = {
 			update: F2(
 				function (msg, model) {
 					return _user$project$Main$withSetStorage(
-						A2(_user$project$Main$update, msg, model));
+						A2(
+							_elm_lang$core$Debug$log,
+							'model',
+							A2(_user$project$Main$update, msg, model)));
 				}),
 			subscriptions: function (_p7) {
 				return _elm_lang$core$Platform_Sub$none;

@@ -60,7 +60,7 @@ userInfoDecoder : Json.Decoder UserInfo
 userInfoDecoder =
     Json.object2 UserInfo
         ("id" := Json.string)
-        ("username" := Json.string)
+        ("userName" := Json.string)
 
 -- user receipts
 
