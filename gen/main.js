@@ -8265,7 +8265,7 @@ var _truqu$elm_base64$Base64$encode = function (s) {
 					_truqu$elm_base64$Base64$toCodeList(s)))));
 };
 
-var _user$project$LoginForm$authenticationGet = function (basicAuthHeader) {
+var _user$project$Api$authenticationGet = function (basicAuthHeader) {
 	var request = {
 		verb: 'GET',
 		headers: _elm_lang$core$Native_List.fromArray(
@@ -8284,7 +8284,7 @@ var _user$project$LoginForm$authenticationGet = function (basicAuthHeader) {
 			_elm_lang$core$Json_Decode$string),
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
-var _user$project$LoginForm$basicAuthHeader = F2(
+var _user$project$Api$basicAuthHeader = F2(
 	function (username, password) {
 		return A2(
 			_elm_lang$core$Result$map,
@@ -8297,15 +8297,100 @@ var _user$project$LoginForm$basicAuthHeader = F2(
 					username,
 					A2(_elm_lang$core$Basics_ops['++'], ':', password))));
 	});
+var _user$project$Api$authenticate = F4(
+	function (username, password, loginFail, loginSucceed) {
+		var basicAuthHeaderResult = A2(_user$project$Api$basicAuthHeader, username, password);
+		var _p0 = basicAuthHeaderResult;
+		if (_p0.ctor === 'Ok') {
+			return A3(
+				_elm_lang$core$Task$perform,
+				loginFail,
+				loginSucceed,
+				_user$project$Api$authenticationGet(_p0._0));
+		} else {
+			return _elm_lang$core$Platform_Cmd$none;
+		}
+	});
+var _user$project$Api$UserInfo = F2(
+	function (a, b) {
+		return {id: a, username: b};
+	});
+var _user$project$Api$userInfoDecoder = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_user$project$Api$UserInfo,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'username', _elm_lang$core$Json_Decode$string));
+var _user$project$Api$fetchUserInfoGet = function (token) {
+	var request = {
+		verb: 'GET',
+		headers: _elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'Authorization',
+				_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', token)
+			}
+			]),
+		url: 'https://api.receipts.leonti.me/user/info',
+		body: _evancz$elm_http$Http$empty
+	};
+	return A2(
+		_evancz$elm_http$Http$fromJson,
+		_user$project$Api$userInfoDecoder,
+		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+};
+var _user$project$Api$fetchUserInfo = F3(
+	function (token, fetchFail, fetchSucceed) {
+		return A3(
+			_elm_lang$core$Task$perform,
+			fetchFail,
+			fetchSucceed,
+			_user$project$Api$fetchUserInfoGet(token));
+	});
+var _user$project$Api$Receipt = function (a) {
+	return {id: a};
+};
+var _user$project$Api$receiptDecoder = A2(
+	_elm_lang$core$Json_Decode$object1,
+	_user$project$Api$Receipt,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string));
+var _user$project$Api$fetchReceipts = F2(
+	function (token, userId) {
+		var request = {
+			verb: 'GET',
+			headers: _elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'Authorization',
+					_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', token)
+				}
+				]),
+			url: A2(
+				_elm_lang$core$Basics_ops['++'],
+				'https://api.receipts.leonti.me/user/',
+				A2(_elm_lang$core$Basics_ops['++'], userId, '/receipt')),
+			body: _evancz$elm_http$Http$empty
+		};
+		return A2(
+			_evancz$elm_http$Http$fromJson,
+			_elm_lang$core$Json_Decode$list(_user$project$Api$receiptDecoder),
+			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+	});
+
 var _user$project$LoginForm$token = function (model) {
 	return model.token;
 };
 var _user$project$LoginForm$emptyModel = {username: '', password: '', token: _elm_lang$core$Maybe$Nothing, basicHeader: ''};
-var _user$project$LoginForm$init = A2(
-	_elm_lang$core$Platform_Cmd_ops['!'],
-	_user$project$LoginForm$emptyModel,
-	_elm_lang$core$Native_List.fromArray(
-		[]));
+var _user$project$LoginForm$init = function (maybeToken) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		_elm_lang$core$Native_Utils.update(
+			_user$project$LoginForm$emptyModel,
+			{token: maybeToken}),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
+};
 var _user$project$LoginForm$Model = F4(
 	function (a, b, c, d) {
 		return {username: a, password: b, token: c, basicHeader: d};
@@ -8316,30 +8401,16 @@ var _user$project$LoginForm$LoginFail = function (a) {
 var _user$project$LoginForm$LoginSucceed = function (a) {
 	return {ctor: 'LoginSucceed', _0: a};
 };
-var _user$project$LoginForm$authenticate = F2(
-	function (username, password) {
-		var basicAuthHeaderResult = A2(_user$project$LoginForm$basicAuthHeader, username, password);
-		var _p0 = basicAuthHeaderResult;
-		if (_p0.ctor === 'Ok') {
-			return A3(
-				_elm_lang$core$Task$perform,
-				_user$project$LoginForm$LoginFail,
-				_user$project$LoginForm$LoginSucceed,
-				_user$project$LoginForm$authenticationGet(_p0._0));
-		} else {
-			return _elm_lang$core$Platform_Cmd$none;
-		}
-	});
 var _user$project$LoginForm$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
 			case 'Name':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{username: _p1._0}),
+						{username: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Password':
@@ -8347,14 +8418,14 @@ var _user$project$LoginForm$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{password: _p1._0}),
+						{password: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Login':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A2(_user$project$LoginForm$authenticate, model.username, model.password)
+					_1: A4(_user$project$Api$authenticate, model.username, model.password, _user$project$LoginForm$LoginFail, _user$project$LoginForm$LoginSucceed)
 				};
 			case 'LoginSucceed':
 				return {
@@ -8362,7 +8433,7 @@ var _user$project$LoginForm$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							token: _elm_lang$core$Maybe$Just(_p1._0)
+							token: _elm_lang$core$Maybe$Just(_p0._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -8418,29 +8489,22 @@ var _user$project$LoginForm$view = function (model) {
 			]));
 };
 
+var _user$project$Main$fromPersistedModel = function (persistedModel) {
+	var _p0 = _user$project$LoginForm$init(persistedModel.token);
+	var loginModel = _p0._0;
+	var loginCmd = _p0._1;
+	return {loginForm: loginModel, userInfo: _elm_lang$core$Maybe$Nothing};
+};
+var _user$project$Main$emptyModel = function () {
+	var _p1 = _user$project$LoginForm$init(_elm_lang$core$Maybe$Nothing);
+	var loginModel = _p1._0;
+	var loginCmd = _p1._1;
+	return {loginForm: loginModel, userInfo: _elm_lang$core$Maybe$Nothing};
+}();
 var _user$project$Main$persistedModel = function (model) {
 	return {
 		token: _user$project$LoginForm$token(model.loginForm)
 	};
-};
-var _user$project$Main$emptyModel = function () {
-	var _p0 = _user$project$LoginForm$init;
-	var loginModel = _p0._0;
-	var loginCmd = _p0._1;
-	return {loginForm: loginModel, authenticationToken: _elm_lang$core$Maybe$Nothing};
-}();
-var _user$project$Main$fromPersistedModel = function (persistedModel) {
-	return _elm_lang$core$Native_Utils.update(
-		_user$project$Main$emptyModel,
-		{authenticationToken: persistedModel.token});
-};
-var _user$project$Main$init = function (maybePersistedModel) {
-	var maybeModel = A2(_elm_lang$core$Maybe$map, _user$project$Main$fromPersistedModel, maybePersistedModel);
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyModel, maybeModel),
-		_elm_lang$core$Native_List.fromArray(
-			[]));
 };
 var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
 	'setStorage',
@@ -8449,18 +8513,18 @@ var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
 			token: (v.token.ctor === 'Nothing') ? null : v.token._0
 		};
 	});
-var _user$project$Main$withSetStorage = function (_p1) {
-	var _p2 = _p1;
-	var _p3 = _p2._0;
+var _user$project$Main$withSetStorage = function (_p2) {
+	var _p3 = _p2;
+	var _p4 = _p3._0;
 	return {
 		ctor: '_Tuple2',
-		_0: _p3,
+		_0: _p4,
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			_elm_lang$core$Native_List.fromArray(
 				[
 					_user$project$Main$setStorage(
-					_user$project$Main$persistedModel(_p3)),
-					_p2._1
+					_user$project$Main$persistedModel(_p4)),
+					_p3._1
 				]))
 	};
 };
@@ -8469,28 +8533,67 @@ var _user$project$Main$PersistedModel = function (a) {
 };
 var _user$project$Main$Model = F2(
 	function (a, b) {
-		return {loginForm: a, authenticationToken: b};
+		return {loginForm: a, userInfo: b};
 	});
+var _user$project$Main$FetchUserInfoFail = function (a) {
+	return {ctor: 'FetchUserInfoFail', _0: a};
+};
+var _user$project$Main$FetchUserInfoSucceed = function (a) {
+	return {ctor: 'FetchUserInfoSucceed', _0: a};
+};
+var _user$project$Main$FetchUserInfo = {ctor: 'FetchUserInfo'};
 var _user$project$Main$Login = function (a) {
 	return {ctor: 'Login', _0: a};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		var _p5 = A2(_user$project$LoginForm$update, _p4._0, model.loginForm);
-		var loginModel = _p5._0;
-		var loginCmd = _p5._1;
-		return {
-			ctor: '_Tuple2',
-			_0: _elm_lang$core$Native_Utils.update(
-				model,
-				{
-					loginForm: loginModel,
-					authenticationToken: _user$project$LoginForm$token(loginModel)
-				}),
-			_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$Login, loginCmd)
-		};
+		var _p5 = msg;
+		switch (_p5.ctor) {
+			case 'Login':
+				var _p6 = A2(_user$project$LoginForm$update, _p5._0, model.loginForm);
+				var loginModel = _p6._0;
+				var loginCmd = _p6._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{loginForm: loginModel}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$Login, loginCmd)
+				};
+			case 'FetchUserInfo':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A3(
+						_user$project$Api$fetchUserInfo,
+						A2(
+							_elm_lang$core$Maybe$withDefault,
+							'',
+							_user$project$LoginForm$token(model.loginForm)),
+						_user$project$Main$FetchUserInfoFail,
+						_user$project$Main$FetchUserInfoSucceed)
+				};
+			case 'FetchUserInfoSucceed':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							userInfo: _elm_lang$core$Maybe$Just(_p5._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
 	});
+var _user$project$Main$init = function (maybePersistedModel) {
+	var maybeModel = A2(_elm_lang$core$Maybe$map, _user$project$Main$fromPersistedModel, maybePersistedModel);
+	return A2(
+		_user$project$Main$update,
+		_user$project$Main$FetchUserInfo,
+		A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyModel, maybeModel));
+};
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8515,7 +8618,44 @@ var _user$project$Main$view = function (model) {
 						_elm_lang$core$Native_List.fromArray(
 							[
 								_elm_lang$html$Html$text(
-								A2(_elm_lang$core$Maybe$withDefault, 'no token', model.authenticationToken))
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									'no token',
+									_user$project$LoginForm$token(model.loginForm)))
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$button,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Events$onClick(_user$project$Main$FetchUserInfo)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Fetch User Info')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$span,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text(
+								A2(
+									_elm_lang$core$Maybe$withDefault,
+									'no id',
+									A2(
+										_elm_lang$core$Maybe$map,
+										function (ui) {
+											return ui.id;
+										},
+										model.userInfo)))
 							]))
 					]))
 			]));
@@ -8530,7 +8670,7 @@ var _user$project$Main$main = {
 					return _user$project$Main$withSetStorage(
 						A2(_user$project$Main$update, msg, model));
 				}),
-			subscriptions: function (_p6) {
+			subscriptions: function (_p7) {
 				return _elm_lang$core$Platform_Sub$none;
 			}
 		}),

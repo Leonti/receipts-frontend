@@ -5,6 +5,8 @@ import Html exposing (..)
 import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Api
+import Http
 
 main =
   App.programWithFlags
@@ -29,35 +31,37 @@ type alias PersistedModel =
 
 type alias Model =
   { loginForm : LoginForm.Model,
-    authenticationToken : Maybe String
+    userInfo : Maybe Api.UserInfo
   }
-
-emptyModel : Model
-emptyModel =
-    let (loginModel, loginCmd) =
-        LoginForm.init
-    in
-    { loginForm = loginModel
-    , authenticationToken = Nothing
-    }
 
 persistedModel : Model -> PersistedModel
 persistedModel model =
     { token = (LoginForm.token model.loginForm)
     }
 
--- should use LoginForm.init
 init : Maybe PersistedModel -> ( Model, Cmd Msg )
 init maybePersistedModel =
     let maybeModel =
         Maybe.map fromPersistedModel maybePersistedModel
     in
-  (Maybe.withDefault emptyModel maybeModel ! [])
+  update FetchUserInfo (Maybe.withDefault emptyModel maybeModel)
+
+emptyModel : Model
+emptyModel =
+    let (loginModel, loginCmd) =
+        LoginForm.init Nothing
+    in
+    { loginForm = loginModel
+    , userInfo = Nothing
+    }
 
 fromPersistedModel : PersistedModel -> Model
 fromPersistedModel persistedModel =
-    { emptyModel
-        | authenticationToken = persistedModel.token
+    let (loginModel, loginCmd) =
+        LoginForm.init persistedModel.token
+    in
+    { loginForm = loginModel
+    , userInfo = Nothing
     }
 
 -- UPDATE
@@ -65,6 +69,9 @@ fromPersistedModel persistedModel =
 
 type Msg
     = Login LoginForm.Msg
+    | FetchUserInfo
+    | FetchUserInfoSucceed Api.UserInfo
+    | FetchUserInfoFail Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -75,10 +82,17 @@ update msg model =
       in
         ({ model
             | loginForm = loginModel
-            , authenticationToken = LoginForm.token loginModel
          }
          , Cmd.map Login loginCmd
         )
+    FetchUserInfo ->
+        (model, (Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed))
+
+    FetchUserInfoSucceed userInfo ->
+        ({model | userInfo = Just userInfo}, Cmd.none)
+
+    FetchUserInfoFail error ->
+        (model, Cmd.none)
 
 -- VIEW
 
@@ -87,6 +101,10 @@ view model =
   div []
     [ App.map Login (LoginForm.view model.loginForm)
     , div []
-        [ span [] [text (Maybe.withDefault "no token" model.authenticationToken)]
+        [ span [] [text (Maybe.withDefault "no token" (LoginForm.token model.loginForm))]
+        ]
+    , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
+    , div []
+        [ span [] [text (Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo))]
         ]
     ]

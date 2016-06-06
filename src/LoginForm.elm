@@ -1,12 +1,10 @@
 module LoginForm exposing (Model, Msg, init, update, view, token)
 
+import Api
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
-import Json.Decode as Json
-import Task
-import Base64
 
 type alias Model =
   { username : String
@@ -26,9 +24,11 @@ emptyModel =
 token : Model -> Maybe String
 token model = model.token
 
-init : ( Model, Cmd Msg )
-init =
-    emptyModel ! []
+init : Maybe String -> ( Model, Cmd Msg )
+init maybeToken =
+    { emptyModel
+    | token = maybeToken
+    } ! []
 
 type Msg
     = Name String
@@ -47,37 +47,13 @@ update msg model =
       ({ model | password = password }, Cmd.none)
 
     Login ->
-        (model, (authenticate model.username model.password))
+        (model, (Api.authenticate model.username model.password LoginFail LoginSucceed))
 
     LoginSucceed token ->
         ({model | token = Just token}, Cmd.none)
 
     LoginFail error ->
         (model, Cmd.none)
-
-authenticate : String -> String -> Cmd Msg
-authenticate username password =
-    let basicAuthHeaderResult =
-        basicAuthHeader username password
-    in
-        case basicAuthHeaderResult of
-            Result.Ok header -> Task.perform LoginFail LoginSucceed (authenticationGet header)
-            Result.Err error -> Cmd.none
-
-
-basicAuthHeader : String -> String -> Result String String
-basicAuthHeader username password = Result.map (\s -> "Basic " ++ s) (Base64.encode (username ++ ":" ++ password))
-
-authenticationGet : String -> Task.Task Http.Error String
-authenticationGet basicAuthHeader =
-    let request =
-        { verb = "GET"
-        , headers = [("Authorization", basicAuthHeader)]
-        , url = "https://api.receipts.leonti.me/token/create"
-        , body = Http.empty
-        }
-    in
-        Http.fromJson (Json.at["access_token"] Json.string) (Http.send Http.defaultSettings request)
 
 -- VIEW
 
