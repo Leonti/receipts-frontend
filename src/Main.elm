@@ -7,6 +7,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Api
 import Http
+import Task
 import Debug
 
 main =
@@ -45,7 +46,7 @@ init maybePersistedModel =
     let maybeModel =
         Maybe.map fromPersistedModel maybePersistedModel
     in
-  update FetchUserInfo (Maybe.withDefault emptyModel maybeModel)
+  update Init (Maybe.withDefault emptyModel maybeModel)
 
 emptyModel : Model
 emptyModel =
@@ -70,9 +71,14 @@ fromPersistedModel persistedModel =
 
 type Msg
     = Login LoginForm.Msg
+    | Init
+    | InitUserInfoSucceed Api.UserInfo
     | FetchUserInfo
     | FetchUserInfoSucceed Api.UserInfo
     | FetchUserInfoFail Http.Error
+    | FetchReceipts
+    | FetchReceiptsSucceed (List Api.Receipt)
+    | FetchReceiptsFail Http.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -86,13 +92,34 @@ update msg model =
          }
          , Cmd.map Login loginCmd
         )
+
+    Init ->
+        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
+
+    InitUserInfoSucceed userInfo ->
+        update FetchReceipts (Debug.log "init fetch user into succeed" {model | userInfo = Just userInfo})
+
     FetchUserInfo ->
-        (model, (Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed))
+        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed)
 
     FetchUserInfoSucceed userInfo ->
-        ({model | userInfo = Just userInfo}, Cmd.none)
+        update FetchReceipts (Debug.log "fetch user into succeed" {model | userInfo = Just userInfo})
 
     FetchUserInfoFail error ->
+        (model, Cmd.none)
+
+    FetchReceipts ->
+        let
+            token = Maybe.withDefault "no-token" (LoginForm.token model.loginForm)
+            userId = Maybe.withDefault "no-id" (Maybe.map (\ui -> ui.id) model.userInfo)
+            fetchReceiptsTask = Api.fetchReceipts token userId
+        in
+        (Debug.log "fetchReceipts start" model, Api.fetchReceipts token userId FetchReceiptsFail FetchReceiptsSucceed)
+
+    FetchReceiptsSucceed receipts ->
+        (model, Cmd.none)
+
+    FetchReceiptsFail error ->
         (model, Cmd.none)
 
 -- VIEW

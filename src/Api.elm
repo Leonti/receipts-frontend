@@ -1,4 +1,4 @@
-module Api exposing (authenticate, fetchUserInfo, UserInfo)
+module Api exposing (authenticate, fetchUserInfo, fetchReceipts, authenticationGet, fetchUserInfoGet, fetchReceiptsGet, UserInfo, Receipt)
 
 import Http
 import Json.Decode exposing ((:=))
@@ -6,6 +6,10 @@ import Json.Decode as Json
 
 import Task
 import Base64
+
+baseUrl : String
+baseUrl = "http://localhost:9000"
+-- baseUrl = https://api.receipts.leonti.me
 
 type alias UserInfo =
     { id : String
@@ -33,7 +37,7 @@ authenticationGet basicAuthHeader =
     let request =
         { verb = "GET"
         , headers = [("Authorization", basicAuthHeader)]
-        , url = "https://api.receipts.leonti.me/token/create"
+        , url = baseUrl ++ "/token/create"
         , body = Http.empty
         }
     in
@@ -50,7 +54,7 @@ fetchUserInfoGet token =
     let request =
         { verb = "GET"
         , headers = [("Authorization", "Bearer " ++ token)]
-        , url = "https://api.receipts.leonti.me/user/info"
+        , url = baseUrl ++ "/user/info"
         , body = Http.empty
         }
     in
@@ -64,12 +68,16 @@ userInfoDecoder =
 
 -- user receipts
 
-fetchReceipts : String -> String -> Task.Task Http.Error (List Receipt)
-fetchReceipts token userId =
+fetchReceipts : String -> String -> (Http.Error -> msg) -> ((List Receipt) -> msg) -> Cmd msg
+fetchReceipts token userId fetchFail fetchSucceed =
+    Task.perform fetchFail fetchSucceed (fetchReceiptsGet token userId)
+
+fetchReceiptsGet : String -> String -> Task.Task Http.Error (List Receipt)
+fetchReceiptsGet token userId =
     let request =
         { verb = "GET"
         , headers = [("Authorization", "Bearer " ++ token)]
-        , url = "https://api.receipts.leonti.me/user/" ++ userId ++ "/receipt"
+        , url = baseUrl ++ "/user/" ++ userId ++ "/receipt"
         , body = Http.empty
         }
     in
