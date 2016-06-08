@@ -8265,6 +8265,14 @@ var _truqu$elm_base64$Base64$encode = function (s) {
 					_truqu$elm_base64$Base64$toCodeList(s)))));
 };
 
+var _user$project$Api$nullOr = function (decoder) {
+	return _elm_lang$core$Json_Decode$oneOf(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+				A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, decoder)
+			]));
+};
 var _user$project$Api$basicAuthHeader = F2(
 	function (username, password) {
 		return A2(
@@ -8348,13 +8356,21 @@ var _user$project$Api$fetchUserInfo = F3(
 			fetchSucceed,
 			_user$project$Api$fetchUserInfoGet(token));
 	});
-var _user$project$Api$Receipt = function (a) {
-	return {id: a};
-};
-var _user$project$Api$receiptDecoder = A2(
-	_elm_lang$core$Json_Decode$object1,
+var _user$project$Api$Receipt = F5(
+	function (a, b, c, d, e) {
+		return {id: a, userId: b, timestamp: c, total: d, description: e};
+	});
+var _user$project$Api$receiptDecoder = A6(
+	_elm_lang$core$Json_Decode$object5,
 	_user$project$Api$Receipt,
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string));
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'userId', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'timestamp', _elm_lang$core$Json_Decode$int),
+	A2(
+		_elm_lang$core$Json_Decode_ops[':='],
+		'total',
+		_user$project$Api$nullOr(_elm_lang$core$Json_Decode$float)),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'description', _elm_lang$core$Json_Decode$string));
 var _user$project$Api$fetchReceiptsGet = F2(
 	function (token, userId) {
 		var request = {

@@ -17,7 +17,12 @@ type alias UserInfo =
     }
 
 type alias Receipt =
-    { id : String }
+    { id : String
+    , userId : String
+    , timestamp : Int
+    , total : Maybe Float
+    , description : String
+    }
 
 -- Authentication
 authenticate : String -> String -> (Http.Error -> msg) -> (String -> msg) -> Cmd msg
@@ -85,5 +90,16 @@ fetchReceiptsGet token userId =
 
 receiptDecoder : Json.Decoder Receipt
 receiptDecoder =
-    Json.object1 Receipt
+    Json.object5 Receipt
         ("id" := Json.string)
+        ("userId" := Json.string)
+        ("timestamp" := Json.int)
+        ("total" := nullOr Json.float)
+        ("description" := Json.string)
+
+nullOr : Json.Decoder a -> Json.Decoder (Maybe a)
+nullOr decoder =
+    Json.oneOf
+    [ Json.null Nothing
+    , Json.map Just decoder
+    ]
