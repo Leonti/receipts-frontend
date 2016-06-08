@@ -6,8 +6,7 @@ import Html.App as App
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Api
-import Http
-import Task
+import Models exposing (UserInfo, Receipt)
 import Debug
 
 main =
@@ -33,7 +32,7 @@ type alias PersistedModel =
 
 type alias Model =
   { loginForm : LoginForm.Model,
-    userInfo : Maybe Api.UserInfo
+    userInfo : Maybe UserInfo
   }
 
 persistedModel : Model -> PersistedModel
@@ -72,13 +71,13 @@ fromPersistedModel persistedModel =
 type Msg
     = Login LoginForm.Msg
     | Init
-    | InitUserInfoSucceed Api.UserInfo
+    | InitUserInfoSucceed UserInfo
     | FetchUserInfo
-    | FetchUserInfoSucceed Api.UserInfo
-    | FetchUserInfoFail Http.Error
+    | FetchUserInfoSucceed UserInfo
+    | FetchUserInfoFail Api.Error
     | FetchReceipts
-    | FetchReceiptsSucceed (List Api.Receipt)
-    | FetchReceiptsFail Http.Error
+    | FetchReceiptsSucceed (List Receipt)
+    | FetchReceiptsFail Api.Error
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -112,7 +111,6 @@ update msg model =
         let
             token = Maybe.withDefault "no-token" (LoginForm.token model.loginForm)
             userId = Maybe.withDefault "no-id" (Maybe.map (\ui -> ui.id) model.userInfo)
-            fetchReceiptsTask = Api.fetchReceipts token userId
         in
         (Debug.log "fetchReceipts start" model, Api.fetchReceipts token userId FetchReceiptsFail FetchReceiptsSucceed)
 

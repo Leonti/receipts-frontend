@@ -1,8 +1,7 @@
-module Api exposing (authenticate, fetchUserInfo, fetchReceipts, authenticationGet, fetchUserInfoGet, fetchReceiptsGet, UserInfo, Receipt)
+module Api exposing (Error, authenticate, fetchUserInfo, fetchReceipts)
 
 import Http
-import Json.Decode exposing ((:=))
-import Json.Decode as Json
+import Models exposing (..)
 
 import Task
 import Base64
@@ -11,18 +10,7 @@ baseUrl : String
 baseUrl = "http://localhost:9000"
 -- baseUrl = https://api.receipts.leonti.me
 
-type alias UserInfo =
-    { id : String
-    , username : String
-    }
-
-type alias Receipt =
-    { id : String
-    , userId : String
-    , timestamp : Int
-    , total : Maybe Float
-    , description : String
-    }
+type Error = Error String
 
 -- Authentication
 authenticate : String -> String -> (Http.Error -> msg) -> (String -> msg) -> Cmd msg
@@ -46,13 +34,13 @@ authenticationGet basicAuthHeader =
         , body = Http.empty
         }
     in
-        Http.fromJson (Json.at["access_token"] Json.string) (Http.send Http.defaultSettings request)
+        Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
 
 -- user info
 
-fetchUserInfo : String -> (Http.Error -> msg) -> (UserInfo -> msg) -> Cmd msg
+fetchUserInfo : String -> (Error -> msg) -> (UserInfo -> msg) -> Cmd msg
 fetchUserInfo token fetchFail fetchSucceed =
-    Task.perform fetchFail fetchSucceed (fetchUserInfoGet token)
+    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchUserInfoGet token)
 
 fetchUserInfoGet : String -> Task.Task Http.Error UserInfo
 fetchUserInfoGet token =
@@ -63,19 +51,13 @@ fetchUserInfoGet token =
         , body = Http.empty
         }
     in
-        Http.fromJson (userInfoDecoder) (Http.send Http.defaultSettings request)
-
-userInfoDecoder : Json.Decoder UserInfo
-userInfoDecoder =
-    Json.object2 UserInfo
-        ("id" := Json.string)
-        ("userName" := Json.string)
+        Http.fromJson Models.userInfoDecoder <| Http.send Http.defaultSettings request
 
 -- user receipts
 
-fetchReceipts : String -> String -> (Http.Error -> msg) -> ((List Receipt) -> msg) -> Cmd msg
+fetchReceipts : String -> String -> (Error -> msg) -> ((List Receipt) -> msg) -> Cmd msg
 fetchReceipts token userId fetchFail fetchSucceed =
-    Task.perform fetchFail fetchSucceed (fetchReceiptsGet token userId)
+    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchReceiptsGet token userId)
 
 fetchReceiptsGet : String -> String -> Task.Task Http.Error (List Receipt)
 fetchReceiptsGet token userId =
@@ -86,20 +68,15 @@ fetchReceiptsGet token userId =
         , body = Http.empty
         }
     in
-        Http.fromJson (Json.list receiptDecoder) (Http.send Http.defaultSettings request)
+        Http.fromJson (Models.receiptsDecoder) (Http.send Http.defaultSettings request)
 
-receiptDecoder : Json.Decoder Receipt
-receiptDecoder =
-    Json.object5 Receipt
-        ("id" := Json.string)
-        ("userId" := Json.string)
-        ("timestamp" := Json.int)
-        ("total" := nullOr Json.float)
-        ("description" := Json.string)
+handleError : (Http.Error -> Error) -> (Error -> msg) -> Http.Error -> msg
+handleError toError toMsg httpError = toMsg <| toError httpError
 
-nullOr : Json.Decoder a -> Json.Decoder (Maybe a)
-nullOr decoder =
-    Json.oneOf
-    [ Json.null Nothing
-    , Json.map Just decoder
-    ]
+transformHttpError : Http.Error -> Error
+transformHttpError httpError =
+    case httpError of
+        Http.Timeout -> Error "Timeout"
+        Http.NetworkError -> Error "NetworkError"
+        Http.UnexpectedPayload desc -> Error <| "UnexpectedPayload " ++ desc
+        Http.BadResponse code desc -> Error <| "BadResponse " ++ (toString code) ++ " " ++ desc

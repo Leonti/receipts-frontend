@@ -8265,7 +8265,7 @@ var _truqu$elm_base64$Base64$encode = function (s) {
 					_truqu$elm_base64$Base64$toCodeList(s)))));
 };
 
-var _user$project$Api$nullOr = function (decoder) {
+var _user$project$Models$nullOr = function (decoder) {
 	return _elm_lang$core$Json_Decode$oneOf(
 		_elm_lang$core$Native_List.fromArray(
 			[
@@ -8273,6 +8273,68 @@ var _user$project$Api$nullOr = function (decoder) {
 				A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, decoder)
 			]));
 };
+var _user$project$Models$accessTokenDecoder = A2(
+	_elm_lang$core$Json_Decode$at,
+	_elm_lang$core$Native_List.fromArray(
+		['access_token']),
+	_elm_lang$core$Json_Decode$string);
+var _user$project$Models$UserInfo = F2(
+	function (a, b) {
+		return {id: a, username: b};
+	});
+var _user$project$Models$userInfoDecoder = A3(
+	_elm_lang$core$Json_Decode$object2,
+	_user$project$Models$UserInfo,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'userName', _elm_lang$core$Json_Decode$string));
+var _user$project$Models$Receipt = F6(
+	function (a, b, c, d, e, f) {
+		return {id: a, userId: b, files: c, timestamp: d, total: e, description: f};
+	});
+var _user$project$Models$ReceiptFile = F4(
+	function (a, b, c, d) {
+		return {id: a, ext: b, metaData: c, timestamp: d};
+	});
+var _user$project$Models$FileMetadata = F4(
+	function (a, b, c, d) {
+		return {fileType: a, length: b, width: c, height: d};
+	});
+var _user$project$Models$fileMetadataDecoder = A5(
+	_elm_lang$core$Json_Decode$object4,
+	_user$project$Models$FileMetadata,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'fileType', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'length', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'width', _elm_lang$core$Json_Decode$int),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'height', _elm_lang$core$Json_Decode$int));
+var _user$project$Models$receiptFileDecoder = A5(
+	_elm_lang$core$Json_Decode$object4,
+	_user$project$Models$ReceiptFile,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'ext', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'metaData', _user$project$Models$fileMetadataDecoder),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'timestamp', _elm_lang$core$Json_Decode$int));
+var _user$project$Models$receiptDecoder = A7(
+	_elm_lang$core$Json_Decode$object6,
+	_user$project$Models$Receipt,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'userId', _elm_lang$core$Json_Decode$string),
+	A2(
+		_elm_lang$core$Json_Decode_ops[':='],
+		'files',
+		_elm_lang$core$Json_Decode$list(_user$project$Models$receiptFileDecoder)),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'timestamp', _elm_lang$core$Json_Decode$int),
+	A2(
+		_elm_lang$core$Json_Decode_ops[':='],
+		'total',
+		_user$project$Models$nullOr(_elm_lang$core$Json_Decode$float)),
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'description', _elm_lang$core$Json_Decode$string));
+var _user$project$Models$receiptsDecoder = _elm_lang$core$Json_Decode$list(_user$project$Models$receiptDecoder);
+
+var _user$project$Api$handleError = F3(
+	function (toError, toMsg, httpError) {
+		return toMsg(
+			toError(httpError));
+	});
 var _user$project$Api$basicAuthHeader = F2(
 	function (username, password) {
 		return A2(
@@ -8299,11 +8361,7 @@ var _user$project$Api$authenticationGet = function (basicAuthHeader) {
 	};
 	return A2(
 		_evancz$elm_http$Http$fromJson,
-		A2(
-			_elm_lang$core$Json_Decode$at,
-			_elm_lang$core$Native_List.fromArray(
-				['access_token']),
-			_elm_lang$core$Json_Decode$string),
+		_user$project$Models$accessTokenDecoder,
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
 var _user$project$Api$authenticate = F4(
@@ -8320,15 +8378,6 @@ var _user$project$Api$authenticate = F4(
 			return _elm_lang$core$Platform_Cmd$none;
 		}
 	});
-var _user$project$Api$UserInfo = F2(
-	function (a, b) {
-		return {id: a, username: b};
-	});
-var _user$project$Api$userInfoDecoder = A3(
-	_elm_lang$core$Json_Decode$object2,
-	_user$project$Api$UserInfo,
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'userName', _elm_lang$core$Json_Decode$string));
 var _user$project$Api$fetchUserInfoGet = function (token) {
 	var request = {
 		verb: 'GET',
@@ -8345,32 +8394,9 @@ var _user$project$Api$fetchUserInfoGet = function (token) {
 	};
 	return A2(
 		_evancz$elm_http$Http$fromJson,
-		_user$project$Api$userInfoDecoder,
+		_user$project$Models$userInfoDecoder,
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
-var _user$project$Api$fetchUserInfo = F3(
-	function (token, fetchFail, fetchSucceed) {
-		return A3(
-			_elm_lang$core$Task$perform,
-			fetchFail,
-			fetchSucceed,
-			_user$project$Api$fetchUserInfoGet(token));
-	});
-var _user$project$Api$Receipt = F5(
-	function (a, b, c, d, e) {
-		return {id: a, userId: b, timestamp: c, total: d, description: e};
-	});
-var _user$project$Api$receiptDecoder = A6(
-	_elm_lang$core$Json_Decode$object5,
-	_user$project$Api$Receipt,
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'userId', _elm_lang$core$Json_Decode$string),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'timestamp', _elm_lang$core$Json_Decode$int),
-	A2(
-		_elm_lang$core$Json_Decode_ops[':='],
-		'total',
-		_user$project$Api$nullOr(_elm_lang$core$Json_Decode$float)),
-	A2(_elm_lang$core$Json_Decode_ops[':='], 'description', _elm_lang$core$Json_Decode$string));
 var _user$project$Api$fetchReceiptsGet = F2(
 	function (token, userId) {
 		var request = {
@@ -8394,14 +8420,46 @@ var _user$project$Api$fetchReceiptsGet = F2(
 		};
 		return A2(
 			_evancz$elm_http$Http$fromJson,
-			_elm_lang$core$Json_Decode$list(_user$project$Api$receiptDecoder),
+			_user$project$Models$receiptsDecoder,
 			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+	});
+var _user$project$Api$Error = function (a) {
+	return {ctor: 'Error', _0: a};
+};
+var _user$project$Api$transformHttpError = function (httpError) {
+	var _p1 = httpError;
+	switch (_p1.ctor) {
+		case 'Timeout':
+			return _user$project$Api$Error('Timeout');
+		case 'NetworkError':
+			return _user$project$Api$Error('NetworkError');
+		case 'UnexpectedPayload':
+			return _user$project$Api$Error(
+				A2(_elm_lang$core$Basics_ops['++'], 'UnexpectedPayload ', _p1._0));
+		default:
+			return _user$project$Api$Error(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'BadResponse ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(_p1._0),
+						A2(_elm_lang$core$Basics_ops['++'], ' ', _p1._1))));
+	}
+};
+var _user$project$Api$fetchUserInfo = F3(
+	function (token, fetchFail, fetchSucceed) {
+		return A3(
+			_elm_lang$core$Task$perform,
+			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
+			fetchSucceed,
+			_user$project$Api$fetchUserInfoGet(token));
 	});
 var _user$project$Api$fetchReceipts = F4(
 	function (token, userId, fetchFail, fetchSucceed) {
 		return A3(
 			_elm_lang$core$Task$perform,
-			fetchFail,
+			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
 			fetchSucceed,
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
 	});
@@ -8669,7 +8727,6 @@ var _user$project$Main$update = F2(
 						_elm_lang$core$Maybe$withDefault,
 						'no-token',
 						_user$project$LoginForm$token(model.loginForm));
-					var fetchReceiptsTask = A2(_user$project$Api$fetchReceipts, token, userId);
 					return {
 						ctor: '_Tuple2',
 						_0: A2(_elm_lang$core$Debug$log, 'fetchReceipts start', model),
