@@ -31,8 +31,9 @@ type alias PersistedModel =
     }
 
 type alias Model =
-  { loginForm : LoginForm.Model,
-    userInfo : Maybe UserInfo
+  { loginForm : LoginForm.Model
+  , userInfo : Maybe UserInfo
+  , receipts : List Receipt
   }
 
 persistedModel : Model -> PersistedModel
@@ -54,6 +55,7 @@ emptyModel =
     in
     { loginForm = loginModel
     , userInfo = Nothing
+    , receipts = []
     }
 
 fromPersistedModel : PersistedModel -> Model
@@ -63,6 +65,7 @@ fromPersistedModel persistedModel =
     in
     { loginForm = loginModel
     , userInfo = Nothing
+    , receipts = []
     }
 
 -- UPDATE
@@ -115,7 +118,7 @@ update msg model =
         (Debug.log "fetchReceipts start" model, Api.fetchReceipts token userId FetchReceiptsFail FetchReceiptsSucceed)
 
     FetchReceiptsSucceed receipts ->
-        (model, Cmd.none)
+        ({ model | receipts = receipts }, Cmd.none)
 
     FetchReceiptsFail error ->
         (model, Cmd.none)
@@ -124,13 +127,19 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ App.map Login (LoginForm.view model.loginForm)
-    , div []
-        [ span [] [text (Maybe.withDefault "no token" (LoginForm.token model.loginForm))]
+    div []
+        [ App.map Login (LoginForm.view model.loginForm)
+        , div []
+            [ span [] [text (Maybe.withDefault "no token" (LoginForm.token model.loginForm))]
+            ]
+        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
+        , div []
+            [ span [] [text (Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo))]
+            ]
+        , div [] (List.map receiptView model.receipts)
         ]
-    , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
-    , div []
-        [ span [] [text (Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo))]
-        ]
-    ]
+
+receiptView : Receipt -> Html Msg
+receiptView receipt =
+    div []
+        [ text receipt.id ]

@@ -8575,17 +8575,37 @@ var _user$project$LoginForm$view = function (model) {
 			]));
 };
 
+var _user$project$Main$receiptView = function (receipt) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html$text(receipt.id)
+			]));
+};
 var _user$project$Main$fromPersistedModel = function (persistedModel) {
 	var _p0 = _user$project$LoginForm$init(persistedModel.token);
 	var loginModel = _p0._0;
 	var loginCmd = _p0._1;
-	return {loginForm: loginModel, userInfo: _elm_lang$core$Maybe$Nothing};
+	return {
+		loginForm: loginModel,
+		userInfo: _elm_lang$core$Maybe$Nothing,
+		receipts: _elm_lang$core$Native_List.fromArray(
+			[])
+	};
 };
 var _user$project$Main$emptyModel = function () {
 	var _p1 = _user$project$LoginForm$init(_elm_lang$core$Maybe$Nothing);
 	var loginModel = _p1._0;
 	var loginCmd = _p1._1;
-	return {loginForm: loginModel, userInfo: _elm_lang$core$Maybe$Nothing};
+	return {
+		loginForm: loginModel,
+		userInfo: _elm_lang$core$Maybe$Nothing,
+		receipts: _elm_lang$core$Native_List.fromArray(
+			[])
+	};
 }();
 var _user$project$Main$persistedModel = function (model) {
 	return {
@@ -8617,9 +8637,9 @@ var _user$project$Main$withSetStorage = function (_p2) {
 var _user$project$Main$PersistedModel = function (a) {
 	return {token: a};
 };
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {loginForm: a, userInfo: b};
+var _user$project$Main$Model = F3(
+	function (a, b, c) {
+		return {loginForm: a, userInfo: b, receipts: c};
 	});
 var _user$project$Main$FetchReceiptsFail = function (a) {
 	return {ctor: 'FetchReceiptsFail', _0: a};
@@ -8733,7 +8753,13 @@ var _user$project$Main$update = F2(
 						_1: A4(_user$project$Api$fetchReceipts, token, userId, _user$project$Main$FetchReceiptsFail, _user$project$Main$FetchReceiptsSucceed)
 					};
 				case 'FetchReceiptsSucceed':
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{receipts: _p5._0}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
 				default:
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			}
@@ -8809,7 +8835,12 @@ var _user$project$Main$view = function (model) {
 										},
 										model.userInfo)))
 							]))
-					]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				A2(_elm_lang$core$List$map, _user$project$Main$receiptView, model.receipts))
 			]));
 };
 var _user$project$Main$main = {
