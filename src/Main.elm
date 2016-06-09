@@ -2,19 +2,20 @@ port module Main exposing (..)
 
 import LoginForm
 import Html exposing (..)
+import Html.Attributes
 import Html.App as App
-import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Api
 import Models exposing (UserInfo, Receipt)
 import Debug
 
+main : Program (Maybe PersistedModel)
 main =
   App.programWithFlags
     { init = init
     , view = view
     , update = (\msg model -> withSetStorage (Debug.log "model" (update msg model)) )
-    , subscriptions = \_ -> Sub.none
+    , subscriptions = subscriptions
     }
 
 port setStorage : PersistedModel -> Cmd msg
@@ -81,6 +82,8 @@ type Msg
     | FetchReceipts
     | FetchReceiptsSucceed (List Receipt)
     | FetchReceiptsFail Api.Error
+    | LoadImage LoadImageParams
+    | LoadImageSucceed LoadImageResult
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -118,9 +121,15 @@ update msg model =
         (Debug.log "fetchReceipts start" model, Api.fetchReceipts token userId FetchReceiptsFail FetchReceiptsSucceed)
 
     FetchReceiptsSucceed receipts ->
-        ({ model | receipts = receipts }, Cmd.none)
+        ({ model | receipts = List.take 10 receipts }, Cmd.none)
 
     FetchReceiptsFail error ->
+        (model, Cmd.none)
+
+    LoadImage loadImageParams ->
+        (model, loadImage loadImageParams)
+
+    LoadImageSucceed loadImageResult ->
         (model, Cmd.none)
 
 -- VIEW
@@ -130,16 +139,54 @@ view model =
     div []
         [ App.map Login (LoginForm.view model.loginForm)
         , div []
-            [ span [] [text (Maybe.withDefault "no token" (LoginForm.token model.loginForm))]
+            [ span [] [text <| toAuthToken model]
             ]
         , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
         , div []
-            [ span [] [text (Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo))]
+            [ span [] [text (toUserId model)]
             ]
-        , div [] (List.map receiptView model.receipts)
+        , div []
+            [text "Receipts:"]
+        , div [] (List.map (\receipt -> receiptView (toUserId model) (toAuthToken model) receipt)  model.receipts)
+        , img [Html.Attributes.id "image"] []
         ]
 
-receiptView : Receipt -> Html Msg
-receiptView receipt =
+toUserId : Model -> String
+toUserId model =
+    Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo)
+
+toAuthToken : Model -> String
+toAuthToken model =
+    Maybe.withDefault "no token" (LoginForm.token model.loginForm)
+
+receiptView : String -> String -> Receipt -> Html Msg
+receiptView userId authToken receipt =
     div []
-        [ text receipt.id ]
+        [ div []
+            [ text receipt.id ]
+        , div [] (List.map (\file -> div []
+            [text ""
+            , button [ onClick <| LoadImage <| LoadImageParams (Api.baseUrl ++ "/user/" ++ userId ++ "/receipt/" ++ receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) authToken file.id]
+                [ text "Load image" ]
+            ]
+            ) receipt.files)
+        ]
+
+port imageLoaded : (LoadImageResult -> msg) -> Sub msg
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  imageLoaded LoadImageSucceed
+
+type alias LoadImageParams =
+    { url : String
+    , authToken : String
+    , fileId : String
+    }
+
+type alias LoadImageResult =
+    { fileId : String
+    , imageData : String
+    }
+
+port loadImage : LoadImageParams -> Cmd msg

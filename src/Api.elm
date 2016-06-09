@@ -1,4 +1,4 @@
-module Api exposing (Error, authenticate, fetchUserInfo, fetchReceipts)
+module Api exposing (Error, authenticate, fetchUserInfo, fetchReceipts, baseUrl)
 
 import Http
 import Models exposing (..)
