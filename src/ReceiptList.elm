@@ -1,59 +1,81 @@
-module ReceiptList exposing (Model, Msg, init, update, view)
+module ReceiptList exposing (Model, Msg, emptyModel, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Http
-import Json.Decode as Json
-import Task
+import Ports
+
+import Api
+import Models exposing (UserInfo, Receipt)
 
 type alias Model =
-  { receipts : [String]
+  { userId : String
   , token : String
+  , receipts : List Receipt
   }
 
 
-init : String -> (Model, Cmd Msg)
-init token =
-    { receipts = []
+init : String -> String -> (Model, Cmd Msg)
+init userId token =
+    { userId = userId
     , token = token
+    , receipts = []
     } ! []
+
+emptyModel : Model
+emptyModel =
+    { userId = ""
+    , token = ""
+    , receipts = []
+    }
 
 type Msg
     = Fetch
-    | FetchSucceed [String]
-    | FetchFail Http.Error
+    | FetchSucceed (List Receipt)
+    | FetchFail Api.Error
+    | LoadImage Ports.LoadImageParams
+    | LoadImageSucceed Ports.LoadImageResult
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Fetch ->
-        (model, Cmd.none)
+        (model, Api.fetchReceipts model.token model.userId FetchFail FetchSucceed)
 
     FetchSucceed receipts ->
-        ({model | receipts = receipts}, Cmd.none)
+        ({ model | receipts = List.take 10 receipts }, Cmd.none)
 
     FetchFail error ->
         (model, Cmd.none)
 
-fetchReceipts : String -> Task.Task Http.Error [String]
-fetchReceipts token =
-    let request =
-        { verb = "GET"
-        , headers = [("Authorization", "Bearer " ++ token)]
-        , url = "https://api.receipts.leonti.me/user/info"
-        , body = Http.empty
-        }
-    in
-        Http.fromJson (Json.at["access_token"] Json.string) (Http.send Http.defaultSettings request)
+    LoadImage loadImageParams ->
+        (model, Ports.loadImage loadImageParams)
+
+    LoadImageSucceed loadImageResult ->
+        (model, Cmd.none)
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Ports.imageLoaded LoadImageSucceed
 
 view : Model -> Html Msg
 view model =
   div []
-    [ List.map receiptRow model.receipts
-    ]
+        [ div []
+            [text "Receipts:"]
+        , div [] (List.map (\receipt -> receiptView model.userId model.token receipt)  model.receipts)
+        , img [Html.Attributes.id "image"] []
+        ]
 
-receiptRow : String -> Html Msg
-receiptRow receipt =
+receiptView : String -> String -> Receipt -> Html Msg
+receiptView userId authToken receipt =
     div []
-        [ text receipt]
+        [ div []
+            [ text receipt.id ]
+        , div [] (List.map (\file -> div []
+            [text ""
+            , button [ onClick <| LoadImage <| Ports.LoadImageParams (Api.baseUrl ++ "/user/" ++ userId ++ "/receipt/" ++ receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) authToken file.id]
+                [ text "Load image" ]
+            ]
+            ) receipt.files)
+        ]

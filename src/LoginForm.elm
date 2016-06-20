@@ -1,4 +1,4 @@
-module LoginForm exposing (Model, Msg, init, update, view, token)
+module LoginForm exposing (Model, Msg, emptyModel, init, update, view, token)
 
 import Api
 import Html exposing (..)

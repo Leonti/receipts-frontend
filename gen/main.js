@@ -8575,73 +8575,7 @@ var _user$project$LoginForm$view = function (model) {
 			]));
 };
 
-var _user$project$Main$toAuthToken = function (model) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		'no token',
-		_user$project$LoginForm$token(model.loginForm));
-};
-var _user$project$Main$toUserId = function (model) {
-	return A2(
-		_elm_lang$core$Maybe$withDefault,
-		'no id',
-		A2(
-			_elm_lang$core$Maybe$map,
-			function (ui) {
-				return ui.id;
-			},
-			model.userInfo));
-};
-var _user$project$Main$fromPersistedModel = function (persistedModel) {
-	var _p0 = _user$project$LoginForm$init(persistedModel.token);
-	var loginModel = _p0._0;
-	var loginCmd = _p0._1;
-	return {
-		loginForm: loginModel,
-		userInfo: _elm_lang$core$Maybe$Nothing,
-		receipts: _elm_lang$core$Native_List.fromArray(
-			[])
-	};
-};
-var _user$project$Main$emptyModel = function () {
-	var _p1 = _user$project$LoginForm$init(_elm_lang$core$Maybe$Nothing);
-	var loginModel = _p1._0;
-	var loginCmd = _p1._1;
-	return {
-		loginForm: loginModel,
-		userInfo: _elm_lang$core$Maybe$Nothing,
-		receipts: _elm_lang$core$Native_List.fromArray(
-			[])
-	};
-}();
-var _user$project$Main$persistedModel = function (model) {
-	return {
-		token: _user$project$LoginForm$token(model.loginForm)
-	};
-};
-var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
-	'setStorage',
-	function (v) {
-		return {
-			token: (v.token.ctor === 'Nothing') ? null : v.token._0
-		};
-	});
-var _user$project$Main$withSetStorage = function (_p2) {
-	var _p3 = _p2;
-	var _p4 = _p3._0;
-	return {
-		ctor: '_Tuple2',
-		_0: _p4,
-		_1: _elm_lang$core$Platform_Cmd$batch(
-			_elm_lang$core$Native_List.fromArray(
-				[
-					_user$project$Main$setStorage(
-					_user$project$Main$persistedModel(_p4)),
-					_p3._1
-				]))
-	};
-};
-var _user$project$Main$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
+var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
 	'imageLoaded',
 	A2(
 		_elm_lang$core$Json_Decode$andThen,
@@ -8655,36 +8589,53 @@ var _user$project$Main$imageLoaded = _elm_lang$core$Native_Platform.incomingPort
 						{fileId: fileId, imageData: imageData});
 				});
 		}));
-var _user$project$Main$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
+var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
 	'loadImage',
 	function (v) {
 		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
 	});
-var _user$project$Main$PersistedModel = function (a) {
-	return {token: a};
-};
-var _user$project$Main$Model = F3(
-	function (a, b, c) {
-		return {loginForm: a, userInfo: b, receipts: c};
-	});
-var _user$project$Main$LoadImageParams = F3(
+var _user$project$Ports$LoadImageParams = F3(
 	function (a, b, c) {
 		return {url: a, authToken: b, fileId: c};
 	});
-var _user$project$Main$LoadImageResult = F2(
+var _user$project$Ports$LoadImageResult = F2(
 	function (a, b) {
 		return {fileId: a, imageData: b};
 	});
-var _user$project$Main$LoadImageSucceed = function (a) {
+
+var _user$project$ReceiptList$emptyModel = {
+	userId: '',
+	token: '',
+	receipts: _elm_lang$core$Native_List.fromArray(
+		[])
+};
+var _user$project$ReceiptList$init = F2(
+	function (userId, token) {
+		return A2(
+			_elm_lang$core$Platform_Cmd_ops['!'],
+			{
+				userId: userId,
+				token: token,
+				receipts: _elm_lang$core$Native_List.fromArray(
+					[])
+			},
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	});
+var _user$project$ReceiptList$Model = F3(
+	function (a, b, c) {
+		return {userId: a, token: b, receipts: c};
+	});
+var _user$project$ReceiptList$LoadImageSucceed = function (a) {
 	return {ctor: 'LoadImageSucceed', _0: a};
 };
-var _user$project$Main$subscriptions = function (model) {
-	return _user$project$Main$imageLoaded(_user$project$Main$LoadImageSucceed);
+var _user$project$ReceiptList$subscriptions = function (model) {
+	return _user$project$Ports$imageLoaded(_user$project$ReceiptList$LoadImageSucceed);
 };
-var _user$project$Main$LoadImage = function (a) {
+var _user$project$ReceiptList$LoadImage = function (a) {
 	return {ctor: 'LoadImage', _0: a};
 };
-var _user$project$Main$receiptView = F3(
+var _user$project$ReceiptList$receiptView = F3(
 	function (userId, authToken, receipt) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -8719,9 +8670,9 @@ var _user$project$Main$receiptView = F3(
 										_elm_lang$core$Native_List.fromArray(
 											[
 												_elm_lang$html$Html_Events$onClick(
-												_user$project$Main$LoadImage(
+												_user$project$ReceiptList$LoadImage(
 													A3(
-														_user$project$Main$LoadImageParams,
+														_user$project$Ports$LoadImageParams,
 														A2(
 															_elm_lang$core$Basics_ops['++'],
 															_user$project$Api$baseUrl,
@@ -8756,147 +8707,188 @@ var _user$project$Main$receiptView = F3(
 						receipt.files))
 				]));
 	});
-var _user$project$Main$FetchReceiptsFail = function (a) {
-	return {ctor: 'FetchReceiptsFail', _0: a};
+var _user$project$ReceiptList$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Receipts:')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				A2(
+					_elm_lang$core$List$map,
+					function (receipt) {
+						return A3(_user$project$ReceiptList$receiptView, model.userId, model.token, receipt);
+					},
+					model.receipts)),
+				A2(
+				_elm_lang$html$Html$img,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$id('image')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
 };
-var _user$project$Main$FetchReceiptsSucceed = function (a) {
-	return {ctor: 'FetchReceiptsSucceed', _0: a};
+var _user$project$ReceiptList$FetchFail = function (a) {
+	return {ctor: 'FetchFail', _0: a};
 };
-var _user$project$Main$FetchReceipts = {ctor: 'FetchReceipts'};
-var _user$project$Main$FetchUserInfoFail = function (a) {
-	return {ctor: 'FetchUserInfoFail', _0: a};
+var _user$project$ReceiptList$FetchSucceed = function (a) {
+	return {ctor: 'FetchSucceed', _0: a};
 };
-var _user$project$Main$FetchUserInfoSucceed = function (a) {
-	return {ctor: 'FetchUserInfoSucceed', _0: a};
+var _user$project$ReceiptList$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'Fetch':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A4(_user$project$Api$fetchReceipts, model.token, model.userId, _user$project$ReceiptList$FetchFail, _user$project$ReceiptList$FetchSucceed)
+				};
+			case 'FetchSucceed':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							receipts: A2(_elm_lang$core$List$take, 10, _p0._0)
+						}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'FetchFail':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'LoadImage':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Ports$loadImage(_p0._0)
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$ReceiptList$Fetch = {ctor: 'Fetch'};
+
+var _user$project$Main$toAuthToken = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		'no token',
+		_user$project$LoginForm$token(model.loginForm));
 };
-var _user$project$Main$FetchUserInfo = {ctor: 'FetchUserInfo'};
-var _user$project$Main$InitUserInfoSucceed = function (a) {
-	return {ctor: 'InitUserInfoSucceed', _0: a};
+var _user$project$Main$toUserId = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$withDefault,
+		'no id',
+		A2(
+			_elm_lang$core$Maybe$map,
+			function (ui) {
+				return ui.id;
+			},
+			model.userInfo));
 };
-var _user$project$Main$Init = {ctor: 'Init'};
-var _user$project$Main$Login = function (a) {
-	return {ctor: 'Login', _0: a};
+var _user$project$Main$persistedModel = function (model) {
+	return {
+		token: _user$project$LoginForm$token(model.loginForm)
+	};
+};
+var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
+	'setStorage',
+	function (v) {
+		return {
+			token: (v.token.ctor === 'Nothing') ? null : v.token._0
+		};
+	});
+var _user$project$Main$withSetStorage = function (_p0) {
+	var _p1 = _p0;
+	var _p2 = _p1._0;
+	return {
+		ctor: '_Tuple2',
+		_0: _p2,
+		_1: _elm_lang$core$Platform_Cmd$batch(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_user$project$Main$setStorage(
+					_user$project$Main$persistedModel(_p2)),
+					_p1._1
+				]))
+	};
+};
+var _user$project$Main$PersistedModel = function (a) {
+	return {token: a};
+};
+var _user$project$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {activePage: a, authToken: b, loginForm: c, receiptList: d, userInfo: e};
+	});
+var _user$project$Main$LoadingPage = {ctor: 'LoadingPage'};
+var _user$project$Main$emptyModel = {activePage: _user$project$Main$LoadingPage, authToken: _elm_lang$core$Maybe$Nothing, loginForm: _user$project$LoginForm$emptyModel, receiptList: _user$project$ReceiptList$emptyModel, userInfo: _elm_lang$core$Maybe$Nothing};
+var _user$project$Main$fromPersistedModel = function (persistedModel) {
+	return _elm_lang$core$Native_Utils.update(
+		_user$project$Main$emptyModel,
+		{authToken: persistedModel.token});
+};
+var _user$project$Main$init = function (maybePersistedModel) {
+	var maybeModel = A2(_elm_lang$core$Maybe$map, _user$project$Main$fromPersistedModel, maybePersistedModel);
+	return {
+		ctor: '_Tuple2',
+		_0: A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyModel, maybeModel),
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
+};
+var _user$project$Main$ReceiptListPage = {ctor: 'ReceiptListPage'};
+var _user$project$Main$LoginPage = {ctor: 'LoginPage'};
+var _user$project$Main$ReceiptListMsg = function (a) {
+	return {ctor: 'ReceiptListMsg', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return A2(
+		_elm_lang$core$Platform_Sub$map,
+		_user$project$Main$ReceiptListMsg,
+		_user$project$ReceiptList$subscriptions(model.receiptList));
+};
+var _user$project$Main$LoginMsg = function (a) {
+	return {ctor: 'LoginMsg', _0: a};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		update:
-		while (true) {
-			var _p5 = A2(_elm_lang$core$Debug$log, 'msg', msg);
-			switch (_p5.ctor) {
-				case 'Login':
-					var _p6 = A2(_user$project$LoginForm$update, _p5._0, model.loginForm);
-					var loginModel = _p6._0;
-					var loginCmd = _p6._1;
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{loginForm: loginModel}),
-						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$Login, loginCmd)
-					};
-				case 'Init':
-					return {
-						ctor: '_Tuple2',
-						_0: model,
-						_1: A3(
-							_user$project$Api$fetchUserInfo,
-							A2(
-								_elm_lang$core$Maybe$withDefault,
-								'',
-								_user$project$LoginForm$token(model.loginForm)),
-							_user$project$Main$FetchUserInfoFail,
-							_user$project$Main$InitUserInfoSucceed)
-					};
-				case 'InitUserInfoSucceed':
-					var _v2 = _user$project$Main$FetchReceipts,
-						_v3 = A2(
-						_elm_lang$core$Debug$log,
-						'init fetch user into succeed',
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								userInfo: _elm_lang$core$Maybe$Just(_p5._0)
-							}));
-					msg = _v2;
-					model = _v3;
-					continue update;
-				case 'FetchUserInfo':
-					return {
-						ctor: '_Tuple2',
-						_0: model,
-						_1: A3(
-							_user$project$Api$fetchUserInfo,
-							A2(
-								_elm_lang$core$Maybe$withDefault,
-								'',
-								_user$project$LoginForm$token(model.loginForm)),
-							_user$project$Main$FetchUserInfoFail,
-							_user$project$Main$FetchUserInfoSucceed)
-					};
-				case 'FetchUserInfoSucceed':
-					var _v4 = _user$project$Main$FetchReceipts,
-						_v5 = A2(
-						_elm_lang$core$Debug$log,
-						'fetch user into succeed',
-						_elm_lang$core$Native_Utils.update(
-							model,
-							{
-								userInfo: _elm_lang$core$Maybe$Just(_p5._0)
-							}));
-					msg = _v4;
-					model = _v5;
-					continue update;
-				case 'FetchUserInfoFail':
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				case 'FetchReceipts':
-					var userId = A2(
-						_elm_lang$core$Maybe$withDefault,
-						'no-id',
-						A2(
-							_elm_lang$core$Maybe$map,
-							function (ui) {
-								return ui.id;
-							},
-							model.userInfo));
-					var token = A2(
-						_elm_lang$core$Maybe$withDefault,
-						'no-token',
-						_user$project$LoginForm$token(model.loginForm));
-					return {
-						ctor: '_Tuple2',
-						_0: A2(_elm_lang$core$Debug$log, 'fetchReceipts start', model),
-						_1: A4(_user$project$Api$fetchReceipts, token, userId, _user$project$Main$FetchReceiptsFail, _user$project$Main$FetchReceiptsSucceed)
-					};
-				case 'FetchReceiptsSucceed':
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								receipts: A2(_elm_lang$core$List$take, 10, _p5._0)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				case 'FetchReceiptsFail':
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				case 'LoadImage':
-					return {
-						ctor: '_Tuple2',
-						_0: model,
-						_1: _user$project$Main$loadImage(_p5._0)
-					};
-				default:
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			}
+		var _p3 = A2(_elm_lang$core$Debug$log, 'msg', msg);
+		if (_p3.ctor === 'LoginMsg') {
+			var _p4 = A2(_user$project$LoginForm$update, _p3._0, model.loginForm);
+			var loginModel = _p4._0;
+			var loginCmd = _p4._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{loginForm: loginModel}),
+				_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LoginMsg, loginCmd)
+			};
+		} else {
+			var _p5 = A2(_user$project$ReceiptList$update, _p3._0, model.receiptList);
+			var receiptListModel = _p5._0;
+			var receiptListCmd = _p5._1;
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{receiptList: receiptListModel}),
+				_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
+			};
 		}
 	});
-var _user$project$Main$init = function (maybePersistedModel) {
-	var maybeModel = A2(_elm_lang$core$Maybe$map, _user$project$Main$fromPersistedModel, maybePersistedModel);
-	return A2(
-		_user$project$Main$update,
-		_user$project$Main$Init,
-		A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyModel, maybeModel));
-};
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8906,7 +8898,7 @@ var _user$project$Main$view = function (model) {
 			[
 				A2(
 				_elm_lang$html$Html_App$map,
-				_user$project$Main$Login,
+				_user$project$Main$LoginMsg,
 				_user$project$LoginForm$view(model.loginForm)),
 				A2(
 				_elm_lang$html$Html$div,
@@ -8923,16 +8915,6 @@ var _user$project$Main$view = function (model) {
 								_elm_lang$html$Html$text(
 								_user$project$Main$toAuthToken(model))
 							]))
-					])),
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Events$onClick(_user$project$Main$FetchUserInfo)
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Fetch User Info')
 					])),
 				A2(
 				_elm_lang$html$Html$div,
@@ -8956,30 +8938,20 @@ var _user$project$Main$view = function (model) {
 					[]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Receipts:')
+						A2(
+						_elm_lang$html$Html$span,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text(
+								_elm_lang$core$Basics$toString(model))
+							]))
 					])),
 				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				A2(
-					_elm_lang$core$List$map,
-					function (receipt) {
-						return A3(
-							_user$project$Main$receiptView,
-							_user$project$Main$toUserId(model),
-							_user$project$Main$toAuthToken(model),
-							receipt);
-					},
-					model.receipts)),
-				A2(
-				_elm_lang$html$Html$img,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$id('image')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[]))
+				_elm_lang$html$Html_App$map,
+				_user$project$Main$ReceiptListMsg,
+				_user$project$ReceiptList$view(model.receiptList))
 			]));
 };
 var _user$project$Main$main = {

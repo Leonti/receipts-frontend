@@ -1,11 +1,12 @@
 port module Main exposing (..)
 
 import LoginForm
+import ReceiptList
 import Html exposing (..)
-import Html.Attributes
 import Html.App as App
-import Html.Events exposing (..)
-import Api
+--import Html.Events exposing (..)
+--import Html.Attributes
+--import Api
 import Models exposing (UserInfo, Receipt)
 import Debug
 
@@ -27,15 +28,31 @@ withSetStorage (model, cmds) =
 
 -- MODEL
 
+type Page
+    = LoginPage
+    | ReceiptListPage
+    | LoadingPage
+
 type alias PersistedModel =
     { token : Maybe String
     }
 
 type alias Model =
-  { loginForm : LoginForm.Model
+  { activePage : Page
+  , authToken : Maybe String
+  , loginForm : LoginForm.Model
+  , receiptList : ReceiptList.Model
   , userInfo : Maybe UserInfo
-  , receipts : List Receipt
   }
+
+emptyModel : Model
+emptyModel =
+    { activePage = LoadingPage
+    , authToken = Nothing
+    , loginForm = LoginForm.emptyModel
+    , receiptList = ReceiptList.emptyModel
+    , userInfo = Nothing
+    }
 
 persistedModel : Model -> PersistedModel
 persistedModel model =
@@ -47,108 +64,82 @@ init maybePersistedModel =
     let maybeModel =
         Maybe.map fromPersistedModel maybePersistedModel
     in
-  update Init (Maybe.withDefault emptyModel maybeModel)
-
-emptyModel : Model
-emptyModel =
-    let (loginModel, loginCmd) =
-        LoginForm.init Nothing
-    in
-    { loginForm = loginModel
-    , userInfo = Nothing
-    , receipts = []
-    }
+  (Maybe.withDefault emptyModel maybeModel, Cmd.none)
 
 fromPersistedModel : PersistedModel -> Model
 fromPersistedModel persistedModel =
-    let (loginModel, loginCmd) =
-        LoginForm.init persistedModel.token
-    in
-    { loginForm = loginModel
-    , userInfo = Nothing
-    , receipts = []
+    { emptyModel
+        | authToken = persistedModel.token
     }
 
 -- UPDATE
 
 
 type Msg
-    = Login LoginForm.Msg
-    | Init
-    | InitUserInfoSucceed UserInfo
-    | FetchUserInfo
-    | FetchUserInfoSucceed UserInfo
-    | FetchUserInfoFail Api.Error
-    | FetchReceipts
-    | FetchReceiptsSucceed (List Receipt)
-    | FetchReceiptsFail Api.Error
-    | LoadImage LoadImageParams
-    | LoadImageSucceed LoadImageResult
+    = LoginMsg LoginForm.Msg
+    | ReceiptListMsg ReceiptList.Msg
+--    | Init
+--    | InitUserInfoSucceed UserInfo
+--    | FetchUserInfo
+--    | FetchUserInfoSucceed UserInfo
+--    | FetchUserInfoFail Api.Error
 
+-- https://github.com/afcastano/elm-nested-component-communication
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case (Debug.log "msg" msg) of
-    Login message ->
+    LoginMsg message ->
       let ( loginModel, loginCmd ) =
         LoginForm.update message model.loginForm
       in
         ({ model
             | loginForm = loginModel
          }
-         , Cmd.map Login loginCmd
+         , Cmd.map LoginMsg loginCmd
         )
 
-    Init ->
-        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
+    ReceiptListMsg message ->
+      let ( receiptListModel, receiptListCmd ) =
+        ReceiptList.update message model.receiptList
+      in
+        ({ model
+            | receiptList = receiptListModel
+         }
+         , Cmd.map ReceiptListMsg receiptListCmd
+        )
 
-    InitUserInfoSucceed userInfo ->
-        update FetchReceipts (Debug.log "init fetch user into succeed" {model | userInfo = Just userInfo})
+--    Init ->
+--        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
 
-    FetchUserInfo ->
-        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed)
+--    InitUserInfoSucceed userInfo ->
+--        update FetchReceipts (Debug.log "init fetch user into succeed" {model | userInfo = Just userInfo})
 
-    FetchUserInfoSucceed userInfo ->
-        update FetchReceipts (Debug.log "fetch user into succeed" {model | userInfo = Just userInfo})
+--    FetchUserInfo ->
+--        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed)
 
-    FetchUserInfoFail error ->
-        (model, Cmd.none)
+--    FetchUserInfoSucceed userInfo ->
+--        update FetchReceipts (Debug.log "fetch user into succeed" {model | userInfo = Just userInfo})
 
-    FetchReceipts ->
-        let
-            token = Maybe.withDefault "no-token" (LoginForm.token model.loginForm)
-            userId = Maybe.withDefault "no-id" (Maybe.map (\ui -> ui.id) model.userInfo)
-        in
-        (Debug.log "fetchReceipts start" model, Api.fetchReceipts token userId FetchReceiptsFail FetchReceiptsSucceed)
-
-    FetchReceiptsSucceed receipts ->
-        ({ model | receipts = List.take 10 receipts }, Cmd.none)
-
-    FetchReceiptsFail error ->
-        (model, Cmd.none)
-
-    LoadImage loadImageParams ->
-        (model, loadImage loadImageParams)
-
-    LoadImageSucceed loadImageResult ->
-        (model, Cmd.none)
+--    FetchUserInfoFail error ->
+--        (model, Cmd.none)
 
 -- VIEW
 
 view : Model -> Html Msg
 view model =
     div []
-        [ App.map Login (LoginForm.view model.loginForm)
+        [ App.map LoginMsg (LoginForm.view model.loginForm)
         , div []
             [ span [] [text <| toAuthToken model]
             ]
-        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
+--        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
         , div []
             [ span [] [text (toUserId model)]
             ]
         , div []
-            [text "Receipts:"]
-        , div [] (List.map (\receipt -> receiptView (toUserId model) (toAuthToken model) receipt)  model.receipts)
-        , img [Html.Attributes.id "image"] []
+            [ span [] [text (toString model)]
+            ]
+        , App.map ReceiptListMsg (ReceiptList.view model.receiptList)
         ]
 
 toUserId : Model -> String
@@ -159,34 +150,6 @@ toAuthToken : Model -> String
 toAuthToken model =
     Maybe.withDefault "no token" (LoginForm.token model.loginForm)
 
-receiptView : String -> String -> Receipt -> Html Msg
-receiptView userId authToken receipt =
-    div []
-        [ div []
-            [ text receipt.id ]
-        , div [] (List.map (\file -> div []
-            [text ""
-            , button [ onClick <| LoadImage <| LoadImageParams (Api.baseUrl ++ "/user/" ++ userId ++ "/receipt/" ++ receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) authToken file.id]
-                [ text "Load image" ]
-            ]
-            ) receipt.files)
-        ]
-
-port imageLoaded : (LoadImageResult -> msg) -> Sub msg
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  imageLoaded LoadImageSucceed
-
-type alias LoadImageParams =
-    { url : String
-    , authToken : String
-    , fileId : String
-    }
-
-type alias LoadImageResult =
-    { fileId : String
-    , imageData : String
-    }
-
-port loadImage : LoadImageParams -> Cmd msg
+  Sub.map ReceiptListMsg (ReceiptList.subscriptions model.receiptList)
