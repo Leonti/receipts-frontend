@@ -17,11 +17,14 @@ type alias Model =
 
 init : String -> String -> (Model, Cmd Msg)
 init userId token =
-    { userId = userId
-    , token = token
-    , receipts = []
-    } ! []
-
+    let model =
+        { userId = userId
+        , token = token
+        , receipts = []
+        }
+    in
+        update Fetch model
+        
 emptyModel : Model
 emptyModel =
     { userId = ""

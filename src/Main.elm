@@ -2,12 +2,13 @@ port module Main exposing (..)
 
 import LoginForm
 import ReceiptList
+import UserInfo
 import Html exposing (..)
 import Html.App as App
 --import Html.Events exposing (..)
 --import Html.Attributes
 --import Api
-import Models exposing (UserInfo, Receipt)
+--import Models exposing (Receipt)
 import Debug
 
 main : Program (Maybe PersistedModel)
@@ -42,16 +43,16 @@ type alias Model =
   , authToken : Maybe String
   , loginForm : LoginForm.Model
   , receiptList : ReceiptList.Model
-  , userInfo : Maybe UserInfo
+  , userInfo : UserInfo.Model
   }
 
 emptyModel : Model
 emptyModel =
-    { activePage = LoadingPage
+    { activePage = LoginPage
     , authToken = Nothing
     , loginForm = LoginForm.emptyModel
     , receiptList = ReceiptList.emptyModel
-    , userInfo = Nothing
+    , userInfo = UserInfo.emptyModel
     }
 
 persistedModel : Model -> PersistedModel
@@ -61,16 +62,36 @@ persistedModel model =
 
 init : Maybe PersistedModel -> ( Model, Cmd Msg )
 init maybePersistedModel =
-    let maybeModel =
-        Maybe.map fromPersistedModel maybePersistedModel
+    let model =
+        (Maybe.withDefault emptyModel (Maybe.map fromPersistedModel maybePersistedModel))
     in
-  (Maybe.withDefault emptyModel maybeModel, Cmd.none)
+        case (model.authToken) of
+            Just authToken -> initUserInfo model authToken
+            Nothing -> (emptyModel, Cmd.none)
+
+initUserInfo : Model -> String -> ( Model, Cmd Msg )
+initUserInfo model authToken =
+      let ( userInfoModel, userInfoCmd, userInfoLoaded ) =
+        UserInfo.init authToken
+      in
+        ({ model
+            | userInfo = userInfoModel
+         }
+         , Cmd.map UserInfoMsg userInfoCmd
+        )
 
 fromPersistedModel : PersistedModel -> Model
 fromPersistedModel persistedModel =
     { emptyModel
         | authToken = persistedModel.token
+        , activePage = authTokenToPage persistedModel.token
     }
+
+authTokenToPage : Maybe String -> Page
+authTokenToPage maybeAuthToken =
+    case (maybeAuthToken) of
+        Just authToken -> ReceiptListPage
+        Nothing -> LoginPage
 
 -- UPDATE
 
@@ -78,6 +99,7 @@ fromPersistedModel persistedModel =
 type Msg
     = LoginMsg LoginForm.Msg
     | ReceiptListMsg ReceiptList.Msg
+    | UserInfoMsg UserInfo.Msg
 --    | Init
 --    | InitUserInfoSucceed UserInfo
 --    | FetchUserInfo
@@ -108,6 +130,16 @@ update msg model =
          , Cmd.map ReceiptListMsg receiptListCmd
         )
 
+    UserInfoMsg message ->
+      let ( userInfoModel, userInfoCmd, userInfoLoaded ) =
+        UserInfo.update message model.userInfo
+      in
+        ({ model
+            | userInfo = userInfoModel
+         }
+         , Cmd.map UserInfoMsg userInfoCmd
+        )
+
 --    Init ->
 --        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
 
@@ -128,23 +160,23 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ App.map LoginMsg (LoginForm.view model.loginForm)
-        , div []
+        [ div []
             [ span [] [text <| toAuthToken model]
             ]
 --        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
+        , App.map UserInfoMsg (UserInfo.view model.userInfo)
         , div []
-            [ span [] [text (toUserId model)]
+            [ span [] [text <| toString model]
             ]
-        , div []
-            [ span [] [text (toString model)]
-            ]
-        , App.map ReceiptListMsg (ReceiptList.view model.receiptList)
+        , pageView model
         ]
 
-toUserId : Model -> String
-toUserId model =
-    Maybe.withDefault "no id" (Maybe.map (\ui -> ui.id) model.userInfo)
+pageView : Model -> Html Msg
+pageView model =
+    case (model.activePage) of
+        LoginPage -> App.map LoginMsg (LoginForm.view model.loginForm)
+        ReceiptListPage -> App.map ReceiptListMsg (ReceiptList.view model.receiptList)
+        LoadingPage -> span [] [text "Loading page"]
 
 toAuthToken : Model -> String
 toAuthToken model =
