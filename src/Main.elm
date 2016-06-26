@@ -144,23 +144,21 @@ update msg model =
                 , isUserInfoLoaded = Maybe.withDefault False (Maybe.map (\m -> True) <| UserInfo.userInfo userInfoModel)
              }
         in
-            if model.isUserInfoLoaded then
-                let (receiptListModel, receiptListCmd) =
-                    ReceiptList.init
-                        (Maybe.withDefault "" <| Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel)
-                        <| Maybe.withDefault "" model.authToken
-                in
-                    (
-                    { model
-                        | receiptList = receiptListModel
-                    }
-                     , Cmd.batch [Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd]
+            case (model.authToken, Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel) of
+                (Just authToken, Just userId) ->
+                    let (receiptListModel, receiptListCmd) =
+                        ReceiptList.init userId authToken
+                    in
+                        (
+                        { model
+                            | receiptList = receiptListModel
+                        }
+                         , Cmd.batch [Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd]
+                        )
+                _ ->
+                    ( model
+                     , Cmd.map UserInfoMsg userInfoCmd
                     )
-            else
-                ( model
-                 , Cmd.map UserInfoMsg userInfoCmd
-                )
-
 --    Init ->
 --        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
 

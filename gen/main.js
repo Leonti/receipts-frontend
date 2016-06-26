@@ -8999,21 +8999,20 @@ var _user$project$Main$update = F2(
 								},
 								_user$project$UserInfo$userInfo(userInfoModel)))
 					});
-				if (model.isUserInfoLoaded) {
-					var _p10 = A2(
-						_user$project$ReceiptList$init,
-						A2(
-							_elm_lang$core$Maybe$withDefault,
-							'',
-							A2(
-								_elm_lang$core$Maybe$map,
-								function (ui) {
-									return ui.id;
-								},
-								_user$project$UserInfo$userInfo(userInfoModel))),
-						A2(_elm_lang$core$Maybe$withDefault, '', model.authToken));
-					var receiptListModel = _p10._0;
-					var receiptListCmd = _p10._1;
+				var _p10 = {
+					ctor: '_Tuple2',
+					_0: model.authToken,
+					_1: A2(
+						_elm_lang$core$Maybe$map,
+						function (ui) {
+							return ui.id;
+						},
+						_user$project$UserInfo$userInfo(userInfoModel))
+				};
+				if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Just')) && (_p10._1.ctor === 'Just')) {
+					var _p11 = A2(_user$project$ReceiptList$init, _p10._1._0, _p10._0._0);
+					var receiptListModel = _p11._0;
+					var receiptListCmd = _p11._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -9036,8 +9035,8 @@ var _user$project$Main$update = F2(
 		}
 	});
 var _user$project$Main$pageView = function (model) {
-	var _p11 = model.activePage;
-	switch (_p11.ctor) {
+	var _p12 = model.activePage;
+	switch (_p12.ctor) {
 		case 'LoginPage':
 			return A2(
 				_elm_lang$html$Html_App$map,
