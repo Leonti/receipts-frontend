@@ -41,6 +41,7 @@ type alias PersistedModel =
 type alias Model =
   { activePage : Page
   , authToken : Maybe String
+  , isUserInfoLoaded : Bool
   , loginForm : LoginForm.Model
   , receiptList : ReceiptList.Model
   , userInfo : UserInfo.Model
@@ -50,6 +51,7 @@ emptyModel : Model
 emptyModel =
     { activePage = LoginPage
     , authToken = Nothing
+    , isUserInfoLoaded = False
     , loginForm = LoginForm.emptyModel
     , receiptList = ReceiptList.emptyModel
     , userInfo = UserInfo.emptyModel
@@ -57,7 +59,7 @@ emptyModel =
 
 persistedModel : Model -> PersistedModel
 persistedModel model =
-    { token = (LoginForm.token model.loginForm)
+    { token = model.authToken
     }
 
 init : Maybe PersistedModel -> ( Model, Cmd Msg )
@@ -71,7 +73,7 @@ init maybePersistedModel =
 
 initUserInfo : Model -> String -> ( Model, Cmd Msg )
 initUserInfo model authToken =
-      let ( userInfoModel, userInfoCmd, userInfoLoaded ) =
+      let ( userInfoModel, userInfoCmd ) =
         UserInfo.init authToken
       in
         ({ model
@@ -116,6 +118,8 @@ update msg model =
       in
         ({ model
             | loginForm = loginModel
+            , authToken = LoginForm.token loginModel
+            , activePage = authTokenToPage <| LoginForm.token loginModel
          }
          , Cmd.map LoginMsg loginCmd
         )
@@ -131,14 +135,31 @@ update msg model =
         )
 
     UserInfoMsg message ->
-      let ( userInfoModel, userInfoCmd, userInfoLoaded ) =
+      let ( userInfoModel, userInfoCmd ) =
         UserInfo.update message model.userInfo
       in
-        ({ model
-            | userInfo = userInfoModel
-         }
-         , Cmd.map UserInfoMsg userInfoCmd
-        )
+        let model =
+            { model
+                | userInfo = userInfoModel
+                , isUserInfoLoaded = Maybe.withDefault False (Maybe.map (\m -> True) <| UserInfo.userInfo userInfoModel)
+             }
+        in
+            if model.isUserInfoLoaded then
+                let (receiptListModel, receiptListCmd) =
+                    ReceiptList.init
+                        (Maybe.withDefault "" <| Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel)
+                        <| Maybe.withDefault "" model.authToken
+                in
+                    (
+                    { model
+                        | receiptList = receiptListModel
+                    }
+                     , Cmd.batch [Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd]
+                    )
+            else
+                ( model
+                 , Cmd.map UserInfoMsg userInfoCmd
+                )
 
 --    Init ->
 --        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)

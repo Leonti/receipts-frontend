@@ -1,4 +1,4 @@
-module UserInfo exposing (Model, Msg, emptyModel, init, update, view)
+module UserInfo exposing (Model, Msg, emptyModel, init, update, view, userInfo)
 
 import Html exposing (..)
 --import Html.Attributes exposing (..)
@@ -12,8 +12,10 @@ type alias Model =
   , userInfo : Maybe UserInfo
   }
 
+userInfo : Model -> Maybe UserInfo
+userInfo model = model.userInfo
 
-init : String -> (Model, Cmd Msg, Bool)
+init : String -> (Model, Cmd Msg)
 init token =
     let model =
         { token = token
@@ -33,17 +35,17 @@ type Msg
     | FetchSucceed UserInfo
     | FetchFail Api.Error
 
-update : Msg -> Model -> (Model, Cmd Msg, Bool)
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Fetch ->
-        (model, Api.fetchUserInfo model.token FetchFail FetchSucceed, False)
+        (model, Api.fetchUserInfo model.token FetchFail FetchSucceed)
 
     FetchSucceed userInfo ->
-        ({ model | userInfo = Just userInfo }, Cmd.none, True)
+        ({ model | userInfo = Just userInfo }, Cmd.none)
 
     FetchFail error ->
-        (model, Cmd.none, False)
+        (model, Cmd.none)
 
 view : Model -> Html Msg
 view model =

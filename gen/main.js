@@ -8809,6 +8809,9 @@ var _user$project$UserInfo$view = function (model) {
 			]));
 };
 var _user$project$UserInfo$emptyModel = {token: '', userInfo: _elm_lang$core$Maybe$Nothing};
+var _user$project$UserInfo$userInfo = function (model) {
+	return model.userInfo;
+};
 var _user$project$UserInfo$Model = F2(
 	function (a, b) {
 		return {token: a, userInfo: b};
@@ -8825,24 +8828,22 @@ var _user$project$UserInfo$update = F2(
 		switch (_p0.ctor) {
 			case 'Fetch':
 				return {
-					ctor: '_Tuple3',
+					ctor: '_Tuple2',
 					_0: model,
-					_1: A3(_user$project$Api$fetchUserInfo, model.token, _user$project$UserInfo$FetchFail, _user$project$UserInfo$FetchSucceed),
-					_2: false
+					_1: A3(_user$project$Api$fetchUserInfo, model.token, _user$project$UserInfo$FetchFail, _user$project$UserInfo$FetchSucceed)
 				};
 			case 'FetchSucceed':
 				return {
-					ctor: '_Tuple3',
+					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
 							userInfo: _elm_lang$core$Maybe$Just(_p0._0)
 						}),
-					_1: _elm_lang$core$Platform_Cmd$none,
-					_2: true
+					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
-				return {ctor: '_Tuple3', _0: model, _1: _elm_lang$core$Platform_Cmd$none, _2: false};
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 var _user$project$UserInfo$Fetch = {ctor: 'Fetch'};
@@ -8858,9 +8859,7 @@ var _user$project$Main$toAuthToken = function (model) {
 		_user$project$LoginForm$token(model.loginForm));
 };
 var _user$project$Main$persistedModel = function (model) {
-	return {
-		token: _user$project$LoginForm$token(model.loginForm)
-	};
+	return {token: model.authToken};
 };
 var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
 	'setStorage',
@@ -8887,14 +8886,14 @@ var _user$project$Main$withSetStorage = function (_p0) {
 var _user$project$Main$PersistedModel = function (a) {
 	return {token: a};
 };
-var _user$project$Main$Model = F5(
-	function (a, b, c, d, e) {
-		return {activePage: a, authToken: b, loginForm: c, receiptList: d, userInfo: e};
+var _user$project$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {activePage: a, authToken: b, isUserInfoLoaded: c, loginForm: d, receiptList: e, userInfo: f};
 	});
 var _user$project$Main$LoadingPage = {ctor: 'LoadingPage'};
 var _user$project$Main$ReceiptListPage = {ctor: 'ReceiptListPage'};
 var _user$project$Main$LoginPage = {ctor: 'LoginPage'};
-var _user$project$Main$emptyModel = {activePage: _user$project$Main$LoginPage, authToken: _elm_lang$core$Maybe$Nothing, loginForm: _user$project$LoginForm$emptyModel, receiptList: _user$project$ReceiptList$emptyModel, userInfo: _user$project$UserInfo$emptyModel};
+var _user$project$Main$emptyModel = {activePage: _user$project$Main$LoginPage, authToken: _elm_lang$core$Maybe$Nothing, isUserInfoLoaded: false, loginForm: _user$project$LoginForm$emptyModel, receiptList: _user$project$ReceiptList$emptyModel, userInfo: _user$project$UserInfo$emptyModel};
 var _user$project$Main$authTokenToPage = function (maybeAuthToken) {
 	var _p3 = maybeAuthToken;
 	if (_p3.ctor === 'Just') {
@@ -8919,7 +8918,6 @@ var _user$project$Main$initUserInfo = F2(
 		var _p4 = _user$project$UserInfo$init(authToken);
 		var userInfoModel = _p4._0;
 		var userInfoCmd = _p4._1;
-		var userInfoLoaded = _p4._2;
 		return {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$Native_Utils.update(
@@ -8964,7 +8962,12 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{loginForm: loginModel}),
+						{
+							loginForm: loginModel,
+							authToken: _user$project$LoginForm$token(loginModel),
+							activePage: _user$project$Main$authTokenToPage(
+								_user$project$LoginForm$token(loginModel))
+						}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LoginMsg, loginCmd)
 				};
 			case 'ReceiptListMsg':
@@ -8982,19 +8985,59 @@ var _user$project$Main$update = F2(
 				var _p9 = A2(_user$project$UserInfo$update, _p6._0, model.userInfo);
 				var userInfoModel = _p9._0;
 				var userInfoCmd = _p9._1;
-				var userInfoLoaded = _p9._2;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{userInfo: userInfoModel}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd)
-				};
+				var model = _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						userInfo: userInfoModel,
+						isUserInfoLoaded: A2(
+							_elm_lang$core$Maybe$withDefault,
+							false,
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (m) {
+									return true;
+								},
+								_user$project$UserInfo$userInfo(userInfoModel)))
+					});
+				if (model.isUserInfoLoaded) {
+					var _p10 = A2(
+						_user$project$ReceiptList$init,
+						A2(
+							_elm_lang$core$Maybe$withDefault,
+							'',
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (ui) {
+									return ui.id;
+								},
+								_user$project$UserInfo$userInfo(userInfoModel))),
+						A2(_elm_lang$core$Maybe$withDefault, '', model.authToken));
+					var receiptListModel = _p10._0;
+					var receiptListCmd = _p10._1;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{receiptList: receiptListModel}),
+						_1: _elm_lang$core$Platform_Cmd$batch(
+							_elm_lang$core$Native_List.fromArray(
+								[
+									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd),
+									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
+								]))
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: model,
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd)
+					};
+				}
 		}
 	});
 var _user$project$Main$pageView = function (model) {
-	var _p10 = model.activePage;
-	switch (_p10.ctor) {
+	var _p11 = model.activePage;
+	switch (_p11.ctor) {
 		case 'LoginPage':
 			return A2(
 				_elm_lang$html$Html_App$map,
