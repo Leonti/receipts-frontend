@@ -8603,26 +8603,199 @@ var _user$project$Ports$LoadImageResult = F2(
 		return {fileId: a, imageData: b};
 	});
 
+var _user$project$ReceiptView$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'LoadImage') {
+			return {
+				ctor: '_Tuple2',
+				_0: model,
+				_1: _user$project$Ports$loadImage(_p0._0)
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$ReceiptView$toFile = function (receipt) {
+	var _p1 = receipt.files;
+	if (_p1.ctor === '::') {
+		if (_p1._1.ctor === '[]') {
+			return _elm_lang$core$Maybe$Just(_p1._0);
+		} else {
+			if (_p1._1._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p1._1._0);
+			} else {
+				return _elm_lang$core$Maybe$Just(_p1._1._0);
+			}
+		}
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _user$project$ReceiptView$toImageParams = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$map,
+		function (file) {
+			return A3(
+				_user$project$Ports$LoadImageParams,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_user$project$Api$baseUrl,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'/user/',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							model.userId,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'/receipt/',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									model.receipt.id,
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										'/file/',
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											file.id,
+											A2(_elm_lang$core$Basics_ops['++'], '.', file.ext)))))))),
+				model.token,
+				file.id);
+		},
+		_user$project$ReceiptView$toFile(model.receipt));
+};
+var _user$project$ReceiptView$Model = F3(
+	function (a, b, c) {
+		return {userId: a, token: b, receipt: c};
+	});
+var _user$project$ReceiptView$LoadImageSucceed = function (a) {
+	return {ctor: 'LoadImageSucceed', _0: a};
+};
+var _user$project$ReceiptView$subscriptions = _user$project$Ports$imageLoaded(_user$project$ReceiptView$LoadImageSucceed);
+var _user$project$ReceiptView$LoadImage = function (a) {
+	return {ctor: 'LoadImage', _0: a};
+};
+var _user$project$ReceiptView$init = F3(
+	function (userId, token, receipt) {
+		var model = {userId: userId, token: token, receipt: receipt};
+		var _p2 = _user$project$ReceiptView$toImageParams(model);
+		if (_p2.ctor === 'Just') {
+			return A2(
+				_user$project$ReceiptView$update,
+				_user$project$ReceiptView$LoadImage(_p2._0),
+				model);
+		} else {
+			return A2(
+				_elm_lang$core$Platform_Cmd_ops['!'],
+				model,
+				_elm_lang$core$Native_List.fromArray(
+					[]));
+		}
+	});
+var _user$project$ReceiptView$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Receipt view:')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(model.receipt.id)
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				A2(
+					_elm_lang$core$List$map,
+					function (file) {
+						return A2(
+							_elm_lang$html$Html$div,
+							_elm_lang$core$Native_List.fromArray(
+								[]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text(''),
+									A2(
+									_elm_lang$html$Html$button,
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html_Events$onClick(
+											_user$project$ReceiptView$LoadImage(
+												A3(
+													_user$project$Ports$LoadImageParams,
+													A2(
+														_elm_lang$core$Basics_ops['++'],
+														_user$project$Api$baseUrl,
+														A2(
+															_elm_lang$core$Basics_ops['++'],
+															'/user/',
+															A2(
+																_elm_lang$core$Basics_ops['++'],
+																model.userId,
+																A2(
+																	_elm_lang$core$Basics_ops['++'],
+																	'/receipt/',
+																	A2(
+																		_elm_lang$core$Basics_ops['++'],
+																		model.receipt.id,
+																		A2(
+																			_elm_lang$core$Basics_ops['++'],
+																			'/file/',
+																			A2(
+																				_elm_lang$core$Basics_ops['++'],
+																				file.id,
+																				A2(_elm_lang$core$Basics_ops['++'], '.', file.ext)))))))),
+													model.token,
+													file.id)))
+										]),
+									_elm_lang$core$Native_List.fromArray(
+										[
+											_elm_lang$html$Html$text('Load image')
+										]))
+								]));
+					},
+					model.receipt.files)),
+				A2(
+				_elm_lang$html$Html$img,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$id('image')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
+};
+
 var _user$project$ReceiptList$emptyModel = {
 	userId: '',
 	token: '',
 	receipts: _elm_lang$core$Native_List.fromArray(
-		[])
+		[]),
+	openedReceiptView: _elm_lang$core$Maybe$Nothing
 };
-var _user$project$ReceiptList$Model = F3(
-	function (a, b, c) {
-		return {userId: a, token: b, receipts: c};
+var _user$project$ReceiptList$Model = F4(
+	function (a, b, c, d) {
+		return {userId: a, token: b, receipts: c, openedReceiptView: d};
 	});
-var _user$project$ReceiptList$LoadImageSucceed = function (a) {
-	return {ctor: 'LoadImageSucceed', _0: a};
+var _user$project$ReceiptList$OpenReceiptView = function (a) {
+	return {ctor: 'OpenReceiptView', _0: a};
 };
-var _user$project$ReceiptList$subscriptions = function (model) {
-	return _user$project$Ports$imageLoaded(_user$project$ReceiptList$LoadImageSucceed);
-};
-var _user$project$ReceiptList$LoadImage = function (a) {
-	return {ctor: 'LoadImage', _0: a};
-};
-var _user$project$ReceiptList$receiptView = F3(
+var _user$project$ReceiptList$receiptRow = F3(
 	function (userId, authToken, receipt) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -8636,64 +8809,43 @@ var _user$project$ReceiptList$receiptView = F3(
 						[]),
 					_elm_lang$core$Native_List.fromArray(
 						[
-							_elm_lang$html$Html$text(receipt.id)
-						])),
-					A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					A2(
-						_elm_lang$core$List$map,
-						function (file) {
-							return A2(
-								_elm_lang$html$Html$div,
-								_elm_lang$core$Native_List.fromArray(
-									[]),
-								_elm_lang$core$Native_List.fromArray(
-									[
-										_elm_lang$html$Html$text(''),
-										A2(
-										_elm_lang$html$Html$button,
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html_Events$onClick(
-												_user$project$ReceiptList$LoadImage(
-													A3(
-														_user$project$Ports$LoadImageParams,
-														A2(
-															_elm_lang$core$Basics_ops['++'],
-															_user$project$Api$baseUrl,
-															A2(
-																_elm_lang$core$Basics_ops['++'],
-																'/user/',
-																A2(
-																	_elm_lang$core$Basics_ops['++'],
-																	userId,
-																	A2(
-																		_elm_lang$core$Basics_ops['++'],
-																		'/receipt/',
-																		A2(
-																			_elm_lang$core$Basics_ops['++'],
-																			receipt.id,
-																			A2(
-																				_elm_lang$core$Basics_ops['++'],
-																				'/file/',
-																				A2(
-																					_elm_lang$core$Basics_ops['++'],
-																					file.id,
-																					A2(_elm_lang$core$Basics_ops['++'], '.', file.ext)))))))),
-														authToken,
-														file.id)))
-											]),
-										_elm_lang$core$Native_List.fromArray(
-											[
-												_elm_lang$html$Html$text('Load image')
-											]))
-									]));
-						},
-						receipt.files))
+							_elm_lang$html$Html$text(receipt.id),
+							A2(
+							_elm_lang$html$Html$button,
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html_Events$onClick(
+									_user$project$ReceiptList$OpenReceiptView(receipt))
+								]),
+							_elm_lang$core$Native_List.fromArray(
+								[
+									_elm_lang$html$Html$text('View Receipt')
+								]))
+						]))
 				]));
 	});
+var _user$project$ReceiptList$ReceiptViewMsg = function (a) {
+	return {ctor: 'ReceiptViewMsg', _0: a};
+};
+var _user$project$ReceiptList$subscriptions = function (model) {
+	return A2(_elm_lang$core$Platform_Sub$map, _user$project$ReceiptList$ReceiptViewMsg, _user$project$ReceiptView$subscriptions);
+};
+var _user$project$ReceiptList$receiptView = function (model) {
+	var _p0 = model.openedReceiptView;
+	if (_p0.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html_App$map,
+			_user$project$ReceiptList$ReceiptViewMsg,
+			_user$project$ReceiptView$view(_p0._0));
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			_elm_lang$core$Native_List.fromArray(
+				[]),
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	}
+};
 var _user$project$ReceiptList$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8716,17 +8868,10 @@ var _user$project$ReceiptList$view = function (model) {
 				A2(
 					_elm_lang$core$List$map,
 					function (receipt) {
-						return A3(_user$project$ReceiptList$receiptView, model.userId, model.token, receipt);
+						return A3(_user$project$ReceiptList$receiptRow, model.userId, model.token, receipt);
 					},
 					model.receipts)),
-				A2(
-				_elm_lang$html$Html$img,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$id('image')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[]))
+				_user$project$ReceiptList$receiptView(model)
 			]));
 };
 var _user$project$ReceiptList$FetchFail = function (a) {
@@ -8737,8 +8882,8 @@ var _user$project$ReceiptList$FetchSucceed = function (a) {
 };
 var _user$project$ReceiptList$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'Fetch':
 				return {
 					ctor: '_Tuple2',
@@ -8751,20 +8896,43 @@ var _user$project$ReceiptList$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							receipts: A2(_elm_lang$core$List$take, 10, _p0._0)
+							receipts: A2(_elm_lang$core$List$take, 10, _p1._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'FetchFail':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			case 'LoadImage':
+			case 'OpenReceiptView':
+				var _p2 = A3(_user$project$ReceiptView$init, model.userId, model.token, _p1._0);
+				var receiptViewModel = _p2._0;
+				var receiptViewCmd = _p2._1;
 				return {
 					ctor: '_Tuple2',
-					_0: model,
-					_1: _user$project$Ports$loadImage(_p0._0)
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel)
+						}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 				};
 			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				var _p3 = model.openedReceiptView;
+				if (_p3.ctor === 'Just') {
+					var _p4 = A2(_user$project$ReceiptView$update, _p1._0, _p3._0);
+					var receiptViewModel = _p4._0;
+					var receiptViewCmd = _p4._1;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel)
+							}),
+						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 		}
 	});
 var _user$project$ReceiptList$Fetch = {ctor: 'Fetch'};
@@ -8774,7 +8942,8 @@ var _user$project$ReceiptList$init = F2(
 			userId: userId,
 			token: token,
 			receipts: _elm_lang$core$Native_List.fromArray(
-				[])
+				[]),
+			openedReceiptView: _elm_lang$core$Maybe$Nothing
 		};
 		return A2(_user$project$ReceiptList$update, _user$project$ReceiptList$Fetch, model);
 	});
@@ -8886,14 +9055,14 @@ var _user$project$Main$withSetStorage = function (_p0) {
 var _user$project$Main$PersistedModel = function (a) {
 	return {token: a};
 };
-var _user$project$Main$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {activePage: a, authToken: b, isUserInfoLoaded: c, loginForm: d, receiptList: e, userInfo: f};
+var _user$project$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {activePage: a, authToken: b, loginForm: c, receiptList: d, userInfo: e};
 	});
 var _user$project$Main$LoadingPage = {ctor: 'LoadingPage'};
 var _user$project$Main$ReceiptListPage = {ctor: 'ReceiptListPage'};
 var _user$project$Main$LoginPage = {ctor: 'LoginPage'};
-var _user$project$Main$emptyModel = {activePage: _user$project$Main$LoginPage, authToken: _elm_lang$core$Maybe$Nothing, isUserInfoLoaded: false, loginForm: _user$project$LoginForm$emptyModel, receiptList: _user$project$ReceiptList$emptyModel, userInfo: _user$project$UserInfo$emptyModel};
+var _user$project$Main$emptyModel = {activePage: _user$project$Main$LoginPage, authToken: _elm_lang$core$Maybe$Nothing, loginForm: _user$project$LoginForm$emptyModel, receiptList: _user$project$ReceiptList$emptyModel, userInfo: _user$project$UserInfo$emptyModel};
 var _user$project$Main$authTokenToPage = function (maybeAuthToken) {
 	var _p3 = maybeAuthToken;
 	if (_p3.ctor === 'Just') {
@@ -8987,18 +9156,7 @@ var _user$project$Main$update = F2(
 				var userInfoCmd = _p9._1;
 				var model = _elm_lang$core$Native_Utils.update(
 					model,
-					{
-						userInfo: userInfoModel,
-						isUserInfoLoaded: A2(
-							_elm_lang$core$Maybe$withDefault,
-							false,
-							A2(
-								_elm_lang$core$Maybe$map,
-								function (m) {
-									return true;
-								},
-								_user$project$UserInfo$userInfo(userInfoModel)))
-					});
+					{userInfo: userInfoModel});
 				var _p10 = {
 					ctor: '_Tuple2',
 					_0: model.authToken,

@@ -41,7 +41,6 @@ type alias PersistedModel =
 type alias Model =
   { activePage : Page
   , authToken : Maybe String
-  , isUserInfoLoaded : Bool
   , loginForm : LoginForm.Model
   , receiptList : ReceiptList.Model
   , userInfo : UserInfo.Model
@@ -51,7 +50,6 @@ emptyModel : Model
 emptyModel =
     { activePage = LoginPage
     , authToken = Nothing
-    , isUserInfoLoaded = False
     , loginForm = LoginForm.emptyModel
     , receiptList = ReceiptList.emptyModel
     , userInfo = UserInfo.emptyModel
@@ -139,10 +137,7 @@ update msg model =
         UserInfo.update message model.userInfo
       in
         let model =
-            { model
-                | userInfo = userInfoModel
-                , isUserInfoLoaded = Maybe.withDefault False (Maybe.map (\m -> True) <| UserInfo.userInfo userInfoModel)
-             }
+            { model | userInfo = userInfoModel }
         in
             case (model.authToken, Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel) of
                 (Just authToken, Just userId) ->

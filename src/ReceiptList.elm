@@ -1,17 +1,18 @@
 module ReceiptList exposing (Model, Msg, emptyModel, init, update, view, subscriptions)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Ports
+import Html.App as App
 
 import Api
 import Models exposing (UserInfo, Receipt)
+import ReceiptView
 
 type alias Model =
   { userId : String
   , token : String
   , receipts : List Receipt
+  , openedReceiptView : Maybe ReceiptView.Model
   }
 
 
@@ -21,23 +22,25 @@ init userId token =
         { userId = userId
         , token = token
         , receipts = []
+        , openedReceiptView = Nothing
         }
     in
         update Fetch model
-        
+
 emptyModel : Model
 emptyModel =
     { userId = ""
     , token = ""
     , receipts = []
+    , openedReceiptView = Nothing
     }
 
 type Msg
     = Fetch
     | FetchSucceed (List Receipt)
     | FetchFail Api.Error
-    | LoadImage Ports.LoadImageParams
-    | LoadImageSucceed Ports.LoadImageResult
+    | ReceiptViewMsg ReceiptView.Msg
+    | OpenReceiptView Receipt
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -51,34 +54,54 @@ update msg model =
     FetchFail error ->
         (model, Cmd.none)
 
-    LoadImage loadImageParams ->
-        (model, Ports.loadImage loadImageParams)
+    OpenReceiptView receipt ->
+        let ( receiptViewModel, receiptViewCmd ) =
+            ReceiptView.init model.userId model.token receipt
+        in
+            ({ model
+                | openedReceiptView = Just receiptViewModel
+             }
+             , Cmd.map ReceiptViewMsg receiptViewCmd
+            )
 
-    LoadImageSucceed loadImageResult ->
-        (model, Cmd.none)
+    ReceiptViewMsg message ->
+        case model.openedReceiptView of
+            Just openedReceiptView ->
+              let ( receiptViewModel, receiptViewCmd ) =
+                ReceiptView.update message openedReceiptView
+              in
+                ({ model
+                    | openedReceiptView = Just receiptViewModel
+                 }
+                 , Cmd.map ReceiptViewMsg receiptViewCmd
+                )
+            Nothing ->
+                (model, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Ports.imageLoaded LoadImageSucceed
+    Sub.map ReceiptViewMsg (ReceiptView.subscriptions)
 
 view : Model -> Html Msg
 view model =
   div []
         [ div []
             [text "Receipts:"]
-        , div [] (List.map (\receipt -> receiptView model.userId model.token receipt)  model.receipts)
-        , img [Html.Attributes.id "image"] []
+        , div [] (List.map (\receipt -> receiptRow model.userId model.token receipt)  model.receipts)
+        , receiptView model
         ]
 
-receiptView : String -> String -> Receipt -> Html Msg
-receiptView userId authToken receipt =
+receiptView : Model -> Html Msg
+receiptView model =
+    case model.openedReceiptView of
+        Just openedReceiptView -> App.map ReceiptViewMsg (ReceiptView.view openedReceiptView)
+        Nothing -> div [] []
+
+receiptRow : String -> String -> Receipt -> Html Msg
+receiptRow userId authToken receipt =
     div []
         [ div []
-            [ text receipt.id ]
-        , div [] (List.map (\file -> div []
-            [text ""
-            , button [ onClick <| LoadImage <| Ports.LoadImageParams (Api.baseUrl ++ "/user/" ++ userId ++ "/receipt/" ++ receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) authToken file.id]
-                [ text "Load image" ]
+            [ text receipt.id
+            , button [ onClick <| OpenReceiptView receipt] [ text "View Receipt" ]
             ]
-            ) receipt.files)
         ]
