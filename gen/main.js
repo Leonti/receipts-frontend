@@ -8603,6 +8603,39 @@ var _user$project$Ports$LoadImageResult = F2(
 		return {fileId: a, imageData: b};
 	});
 
+var _user$project$ReceiptView$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Receipt view:')
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(model.receipt.id)
+					])),
+				A2(
+				_elm_lang$html$Html$img,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$id('image')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
+};
 var _user$project$ReceiptView$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -8693,93 +8726,6 @@ var _user$project$ReceiptView$init = F3(
 					[]));
 		}
 	});
-var _user$project$ReceiptView$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Receipt view:')
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text(model.receipt.id)
-					])),
-				A2(
-				_elm_lang$html$Html$div,
-				_elm_lang$core$Native_List.fromArray(
-					[]),
-				A2(
-					_elm_lang$core$List$map,
-					function (file) {
-						return A2(
-							_elm_lang$html$Html$div,
-							_elm_lang$core$Native_List.fromArray(
-								[]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html$text(''),
-									A2(
-									_elm_lang$html$Html$button,
-									_elm_lang$core$Native_List.fromArray(
-										[
-											_elm_lang$html$Html_Events$onClick(
-											_user$project$ReceiptView$LoadImage(
-												A3(
-													_user$project$Ports$LoadImageParams,
-													A2(
-														_elm_lang$core$Basics_ops['++'],
-														_user$project$Api$baseUrl,
-														A2(
-															_elm_lang$core$Basics_ops['++'],
-															'/user/',
-															A2(
-																_elm_lang$core$Basics_ops['++'],
-																model.userId,
-																A2(
-																	_elm_lang$core$Basics_ops['++'],
-																	'/receipt/',
-																	A2(
-																		_elm_lang$core$Basics_ops['++'],
-																		model.receipt.id,
-																		A2(
-																			_elm_lang$core$Basics_ops['++'],
-																			'/file/',
-																			A2(
-																				_elm_lang$core$Basics_ops['++'],
-																				file.id,
-																				A2(_elm_lang$core$Basics_ops['++'], '.', file.ext)))))))),
-													model.token,
-													file.id)))
-										]),
-									_elm_lang$core$Native_List.fromArray(
-										[
-											_elm_lang$html$Html$text('Load image')
-										]))
-								]));
-					},
-					model.receipt.files)),
-				A2(
-				_elm_lang$html$Html$img,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$id('image')
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[]))
-			]));
-};
 
 var _user$project$ReceiptList$emptyModel = {
 	userId: '',

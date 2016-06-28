@@ -2,7 +2,6 @@ module ReceiptView exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Ports
 
 import Api
@@ -63,11 +62,5 @@ view model =
       [ div []
           [text "Receipt view:"]
       , div [] [text model.receipt.id]
-      , div [] (List.map (\file -> div []
-          [text ""
-          , button [ onClick <| LoadImage <| Ports.LoadImageParams (Api.baseUrl ++ "/user/" ++ model.userId ++ "/receipt/" ++ model.receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) model.token file.id]
-              [ text "Load image" ]
-          ]
-          ) model.receipt.files)
       , img [Html.Attributes.id "image"] []
       ]
