@@ -3,29 +3,31 @@ module ReceiptList exposing (Model, Msg, emptyModel, init, update, view, subscri
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.App as App
-
 import Api
 import Models exposing (UserInfo, Receipt)
 import ReceiptView
 
+
 type alias Model =
-  { userId : String
-  , token : String
-  , receipts : List Receipt
-  , openedReceiptView : Maybe ReceiptView.Model
-  }
+    { userId : String
+    , token : String
+    , receipts : List Receipt
+    , openedReceiptView : Maybe ReceiptView.Model
+    }
 
 
-init : String -> String -> (Model, Cmd Msg)
+init : String -> String -> ( Model, Cmd Msg )
 init userId token =
-    let model =
-        { userId = userId
-        , token = token
-        , receipts = []
-        , openedReceiptView = Nothing
-        }
+    let
+        model =
+            { userId = userId
+            , token = token
+            , receipts = []
+            , openedReceiptView = Nothing
+            }
     in
         update Fetch model
+
 
 emptyModel : Model
 emptyModel =
@@ -35,6 +37,7 @@ emptyModel =
     , openedReceiptView = Nothing
     }
 
+
 type Msg
     = Fetch
     | FetchSucceed (List Receipt)
@@ -42,66 +45,77 @@ type Msg
     | ReceiptViewMsg ReceiptView.Msg
     | OpenReceiptView Receipt
 
-update : Msg -> Model -> (Model, Cmd Msg)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    Fetch ->
-        (model, Api.fetchReceipts model.token model.userId FetchFail FetchSucceed)
+    case msg of
+        Fetch ->
+            ( model, Api.fetchReceipts model.token model.userId FetchFail FetchSucceed )
 
-    FetchSucceed receipts ->
-        ({ model | receipts = List.take 10 receipts }, Cmd.none)
+        FetchSucceed receipts ->
+            ( { model | receipts = List.take 10 receipts }, Cmd.none )
 
-    FetchFail error ->
-        (model, Cmd.none)
+        FetchFail error ->
+            ( model, Cmd.none )
 
-    OpenReceiptView receipt ->
-        let ( receiptViewModel, receiptViewCmd ) =
-            ReceiptView.init model.userId model.token receipt
-        in
-            ({ model
-                | openedReceiptView = Just receiptViewModel
-             }
-             , Cmd.map ReceiptViewMsg receiptViewCmd
-            )
-
-    ReceiptViewMsg message ->
-        case model.openedReceiptView of
-            Just openedReceiptView ->
-              let ( receiptViewModel, receiptViewCmd ) =
-                ReceiptView.update message openedReceiptView
-              in
-                ({ model
+        OpenReceiptView receipt ->
+            let
+                ( receiptViewModel, receiptViewCmd ) =
+                    ReceiptView.init model.userId model.token receipt
+            in
+                ( { model
                     | openedReceiptView = Just receiptViewModel
-                 }
-                 , Cmd.map ReceiptViewMsg receiptViewCmd
+                  }
+                , Cmd.map ReceiptViewMsg receiptViewCmd
                 )
-            Nothing ->
-                (model, Cmd.none)
+
+        ReceiptViewMsg message ->
+            case model.openedReceiptView of
+                Just openedReceiptView ->
+                    let
+                        ( receiptViewModel, receiptViewCmd ) =
+                            ReceiptView.update message openedReceiptView
+                    in
+                        ( { model
+                            | openedReceiptView = Just receiptViewModel
+                          }
+                        , Cmd.map ReceiptViewMsg receiptViewCmd
+                        )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.map ReceiptViewMsg (ReceiptView.subscriptions)
 
+
 view : Model -> Html Msg
 view model =
-  div []
+    div []
         [ div []
-            [text "Receipts:"]
-        , div [] (List.map (\receipt -> receiptRow model.userId model.token receipt)  model.receipts)
+            [ text "Receipts:" ]
+        , div [] (List.map (\receipt -> receiptRow model.userId model.token receipt) model.receipts)
         , receiptView model
         ]
+
 
 receiptView : Model -> Html Msg
 receiptView model =
     case model.openedReceiptView of
-        Just openedReceiptView -> App.map ReceiptViewMsg (ReceiptView.view openedReceiptView)
-        Nothing -> div [] []
+        Just openedReceiptView ->
+            App.map ReceiptViewMsg (ReceiptView.view openedReceiptView)
+
+        Nothing ->
+            div [] []
+
 
 receiptRow : String -> String -> Receipt -> Html Msg
 receiptRow userId authToken receipt =
     div []
         [ div []
             [ text receipt.id
-            , button [ onClick <| OpenReceiptView receipt] [ text "View Receipt" ]
+            , button [ onClick <| OpenReceiptView receipt ] [ text "View Receipt" ]
             ]
         ]

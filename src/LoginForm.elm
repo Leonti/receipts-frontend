@@ -6,12 +6,14 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http
 
+
 type alias Model =
-  { username : String
-  , password : String
-  , token: Maybe String
-  , basicHeader: String
-  }
+    { username : String
+    , password : String
+    , token : Maybe String
+    , basicHeader : String
+    }
+
 
 emptyModel : Model
 emptyModel =
@@ -21,14 +23,19 @@ emptyModel =
     , basicHeader = ""
     }
 
+
 token : Model -> Maybe String
-token model = model.token
+token model =
+    model.token
+
 
 init : Maybe String -> ( Model, Cmd Msg )
 init maybeToken =
     { emptyModel
-    | token = maybeToken
-    } ! []
+        | token = maybeToken
+    }
+        ! []
+
 
 type Msg
     = Name String
@@ -37,30 +44,34 @@ type Msg
     | LoginSucceed String
     | LoginFail Http.Error
 
-update : Msg -> Model -> (Model, Cmd Msg)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  case msg of
-    Name username ->
-      ({ model | username = username }, Cmd.none)
+    case msg of
+        Name username ->
+            ( { model | username = username }, Cmd.none )
 
-    Password password ->
-      ({ model | password = password }, Cmd.none)
+        Password password ->
+            ( { model | password = password }, Cmd.none )
 
-    Login ->
-        (model, (Api.authenticate model.username model.password LoginFail LoginSucceed))
+        Login ->
+            ( model, (Api.authenticate model.username model.password LoginFail LoginSucceed) )
 
-    LoginSucceed token ->
-        ({model | token = Just token}, Cmd.none)
+        LoginSucceed token ->
+            ( { model | token = Just token }, Cmd.none )
 
-    LoginFail error ->
-        (model, Cmd.none)
+        LoginFail error ->
+            ( model, Cmd.none )
+
+
 
 -- VIEW
 
+
 view : Model -> Html Msg
 view model =
-  div []
-    [ input [ type' "text", placeholder "Name", value model.username, onInput Name ] []
-    , input [ type' "password", placeholder "Password", onInput Password ] []
-    , button [ onClick Login] [ text "Login" ]
-    ]
+    div []
+        [ input [ type' "text", placeholder "Name", value model.username, onInput Name ] []
+        , input [ type' "password", placeholder "Password", onInput Password ] []
+        , button [ onClick Login ] [ text "Login" ]
+        ]
