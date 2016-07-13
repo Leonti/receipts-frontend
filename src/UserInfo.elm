@@ -1,4 +1,4 @@
-module UserInfo exposing (Model, Msg, emptyModel, init, update, view, userInfo)
+module UserInfo exposing (Model, Msg, init, update, view, userInfo)
 
 import Html exposing (..)
 
@@ -16,27 +16,32 @@ type alias Model =
     }
 
 
-userInfo : Model -> Maybe UserInfo
-userInfo model =
-    model.userInfo
-
-
-init : String -> ( Model, Cmd Msg )
-init token =
-    let
-        model =
-            { token = token
-            , userInfo = Nothing
-            }
-    in
-        update Fetch model
-
-
 emptyModel : Model
 emptyModel =
     { token = ""
     , userInfo = Nothing
     }
+
+
+userInfo : Model -> Maybe UserInfo
+userInfo model =
+    model.userInfo
+
+
+init : Maybe String -> ( Model, Cmd Msg )
+init maybeToken =
+    case maybeToken of
+        Just token ->
+            let
+                model =
+                    { token = token
+                    , userInfo = Nothing
+                    }
+            in
+                update Fetch model
+
+        Nothing ->
+            ( emptyModel, Cmd.none )
 
 
 type Msg

@@ -1,10 +1,10 @@
-module ReceiptList exposing (Model, Msg, emptyModel, init, update, view, subscriptions)
+module ReceiptList exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.App as App
 import Api
-import Models exposing (UserInfo, Receipt)
+import Models exposing (UserInfo, Receipt, Authentication)
 import ReceiptView
 
 
@@ -16,17 +16,19 @@ type alias Model =
     }
 
 
-init : String -> String -> ( Model, Cmd Msg )
-init userId token =
-    let
-        model =
-            { userId = userId
-            , token = token
-            , receipts = []
-            , openedReceiptView = Nothing
-            }
-    in
-        update Fetch model
+init : Maybe Authentication -> ( Model, Cmd Msg )
+init maybeAuthentication =
+    case maybeAuthentication of
+        Just authentication ->
+            update Fetch
+                { userId = authentication.userId
+                , token = authentication.token
+                , receipts = []
+                , openedReceiptView = Nothing
+                }
+
+        Nothing ->
+            ( emptyModel, Cmd.none )
 
 
 emptyModel : Model

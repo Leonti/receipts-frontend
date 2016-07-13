@@ -10,7 +10,7 @@ import Html.App as App
 --import Html.Events exposing (..)
 --import Html.Attributes
 --import Api
---import Models exposing (Receipt)
+--import Models exposing (Authentication)
 
 import Debug
 
@@ -32,7 +32,7 @@ withSetStorage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 withSetStorage ( model, cmds ) =
     ( model
     , Cmd.batch
-        [ setStorage (persistedModel model), cmds ]
+        [ setStorage (toPersistedModel model), cmds ]
     )
 
 
@@ -60,55 +60,67 @@ type alias Model =
     }
 
 
-emptyModel : Model
-emptyModel =
-    { activePage = LoginPage
-    , authToken = Nothing
-    , loginForm = LoginForm.emptyModel
-    , receiptList = ReceiptList.emptyModel
-    , userInfo = UserInfo.emptyModel
-    }
-
-
-persistedModel : Model -> PersistedModel
-persistedModel model =
+toPersistedModel : Model -> PersistedModel
+toPersistedModel model =
     { token = model.authToken
     }
+
+
+emptyPersistedModel : PersistedModel
+emptyPersistedModel =
+    { token = Nothing }
 
 
 init : Maybe PersistedModel -> ( Model, Cmd Msg )
 init maybePersistedModel =
     let
-        model =
-            (Maybe.withDefault emptyModel (Maybe.map fromPersistedModel maybePersistedModel))
-    in
-        case (model.authToken) of
-            Just authToken ->
-                initUserInfo model authToken
+        persistedModel =
+            Maybe.withDefault emptyPersistedModel maybePersistedModel
 
-            Nothing ->
-                ( emptyModel, Cmd.none )
+        ( loginFormModel, loginFormCmd ) =
+            LoginForm.init persistedModel.token
 
-
-initUserInfo : Model -> String -> ( Model, Cmd Msg )
-initUserInfo model authToken =
-    let
         ( userInfoModel, userInfoCmd ) =
-            UserInfo.init authToken
+            UserInfo.init persistedModel.token
+
+        ( receiptListModel, receiptListCmd ) =
+            ReceiptList.init <|
+                Maybe.map2
+                    (\token userInfo ->
+                        { userId = userInfo.id
+                        , token = token
+                        }
+                    )
+                    persistedModel.token
+                    (UserInfo.userInfo userInfoModel)
     in
-        ( { model
-            | userInfo = userInfoModel
+        ( { activePage = LoginPage
+          , authToken = Nothing
+          , loginForm = loginFormModel
+          , userInfo = userInfoModel
+          , receiptList = receiptListModel
           }
-        , Cmd.map UserInfoMsg userInfoCmd
+          -- proper commands here
+        , Cmd.batch
+            [ Cmd.map LoginFormMsg loginFormCmd
+            , Cmd.map UserInfoMsg userInfoCmd
+            , Cmd.map ReceiptListMsg receiptListCmd
+            ]
         )
 
 
-fromPersistedModel : PersistedModel -> Model
-fromPersistedModel persistedModel =
-    { emptyModel
-        | authToken = persistedModel.token
-        , activePage = authTokenToPage persistedModel.token
-    }
+
+--initUserInfo : Model -> String -> ( Model, Cmd Msg )
+--initUserInfo model authToken =
+--    let
+--        ( userInfoModel, userInfoCmd ) =
+--            UserInfo.init authToken
+--    in
+--        ( { model
+--            | userInfo = userInfoModel
+--          }
+--        , Cmd.map UserInfoMsg userInfoCmd
+--        )
 
 
 authTokenToPage : Maybe String -> Page
@@ -126,7 +138,7 @@ authTokenToPage maybeAuthToken =
 
 
 type Msg
-    = LoginMsg LoginForm.Msg
+    = LoginFormMsg LoginForm.Msg
     | ReceiptListMsg ReceiptList.Msg
     | UserInfoMsg UserInfo.Msg
 
@@ -143,7 +155,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "msg" msg) of
-        LoginMsg message ->
+        LoginFormMsg message ->
             let
                 ( loginModel, loginCmd ) =
                     LoginForm.update message model.loginForm
@@ -153,7 +165,7 @@ update msg model =
                     , authToken = LoginForm.token loginModel
                     , activePage = authTokenToPage <| LoginForm.token loginModel
                   }
-                , Cmd.map LoginMsg loginCmd
+                , Cmd.map LoginFormMsg loginCmd
                 )
 
         ReceiptListMsg message ->
@@ -172,26 +184,28 @@ update msg model =
                 ( userInfoModel, userInfoCmd ) =
                     UserInfo.update message model.userInfo
             in
-                let
-                    model =
-                        { model | userInfo = userInfoModel }
-                in
-                    case ( model.authToken, Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel ) of
-                        ( Just authToken, Just userId ) ->
-                            let
-                                ( receiptListModel, receiptListCmd ) =
-                                    ReceiptList.init userId authToken
-                            in
-                                ( { model
-                                    | receiptList = receiptListModel
-                                  }
-                                , Cmd.batch [ Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd ]
-                                )
-
-                        _ ->
-                            ( model
-                            , Cmd.map UserInfoMsg userInfoCmd
+                case
+                    ( model.authToken
+                    , Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel
+                    , (UserInfo.userInfo model.userInfo)
+                    )
+                of
+                    ( Just authToken, Just userId, Nothing ) ->
+                        let
+                            ( receiptListModel, receiptListCmd ) =
+                                ReceiptList.init (Just { userId = userId, token = authToken })
+                        in
+                            ( { model
+                                | userInfo = userInfoModel
+                                , receiptList = receiptListModel
+                              }
+                            , Cmd.batch [ Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd ]
                             )
+
+                    _ ->
+                        ( { model | userInfo = userInfoModel }
+                        , Cmd.map UserInfoMsg userInfoCmd
+                        )
 
 
 
@@ -227,7 +241,7 @@ pageView : Model -> Html Msg
 pageView model =
     case (model.activePage) of
         LoginPage ->
-            App.map LoginMsg (LoginForm.view model.loginForm)
+            App.map LoginFormMsg (LoginForm.view model.loginForm)
 
         ReceiptListPage ->
             App.map ReceiptListMsg (ReceiptList.view model.receiptList)

@@ -10,6 +10,12 @@ type alias UserInfo =
     }
 
 
+type alias Authentication =
+    { userId : String
+    , token : String
+    }
+
+
 type alias Receipt =
     { id : String
     , userId : String
