@@ -5,6 +5,8 @@ import ReceiptList
 import UserInfo
 import Html exposing (..)
 import Html.App as App
+import Navigation
+import Result
 
 
 --import Html.Events exposing (..)
@@ -17,15 +19,27 @@ import Debug
 
 main : Program (Maybe PersistedModel)
 main =
-    App.programWithFlags
+    Navigation.programWithFlags
+        urlParser
         { init = init
         , view = view
         , update = (\msg model -> withSetStorage (Debug.log "model" (update msg model)))
+        , urlUpdate = urlUpdate
         , subscriptions = subscriptions
         }
 
 
 port setStorage : PersistedModel -> Cmd msg
+
+
+fromUrl : String -> Result String String
+fromUrl url =
+    Result.fromMaybe "impossible" (Just url)
+
+
+urlParser : Navigation.Parser (Result String String)
+urlParser =
+    Navigation.makeParser (fromUrl << .hash)
 
 
 withSetStorage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -53,7 +67,6 @@ type alias PersistedModel =
 
 type alias Model =
     { activePage : Page
-    , authToken : Maybe String
     , loginForm : LoginForm.Model
     , receiptList : ReceiptList.Model
     , userInfo : UserInfo.Model
@@ -62,7 +75,7 @@ type alias Model =
 
 toPersistedModel : Model -> PersistedModel
 toPersistedModel model =
-    { token = model.authToken
+    { token = LoginForm.token model.loginForm
     }
 
 
@@ -71,9 +84,12 @@ emptyPersistedModel =
     { token = Nothing }
 
 
-init : Maybe PersistedModel -> ( Model, Cmd Msg )
-init maybePersistedModel =
+init : Maybe PersistedModel -> Result String String -> ( Model, Cmd Msg )
+init maybePersistedModel url =
     let
+        newUrl =
+            Debug.log "url" url
+
         persistedModel =
             Maybe.withDefault emptyPersistedModel maybePersistedModel
 
@@ -94,13 +110,11 @@ init maybePersistedModel =
                     persistedModel.token
                     (UserInfo.userInfo userInfoModel)
     in
-        ( { activePage = LoginPage
-          , authToken = Nothing
+        ( { activePage = authTokenToPage persistedModel.token
           , loginForm = loginFormModel
           , userInfo = userInfoModel
           , receiptList = receiptListModel
           }
-          -- proper commands here
         , Cmd.batch
             [ Cmd.map LoginFormMsg loginFormCmd
             , Cmd.map UserInfoMsg userInfoCmd
@@ -152,6 +166,11 @@ type Msg
 -- https://github.com/afcastano/elm-nested-component-communication
 
 
+urlUpdate : Result String String -> Model -> ( Model, Cmd Msg )
+urlUpdate url model =
+    ( model, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "msg" msg) of
@@ -160,13 +179,29 @@ update msg model =
                 ( loginModel, loginCmd ) =
                     LoginForm.update message model.loginForm
             in
-                ( { model
-                    | loginForm = loginModel
-                    , authToken = LoginForm.token loginModel
-                    , activePage = authTokenToPage <| LoginForm.token loginModel
-                  }
-                , Cmd.map LoginFormMsg loginCmd
-                )
+                case
+                    ( LoginForm.token model.loginForm, LoginForm.token loginModel )
+                of
+                    ( Nothing, Just token ) ->
+                        let
+                            ( userInfoModel, userInfoCmd ) =
+                                UserInfo.init (Just token)
+                        in
+                            ( { model
+                                | loginForm = loginModel
+                                , userInfo = userInfoModel
+                                , activePage = authTokenToPage <| LoginForm.token loginModel
+                              }
+                            , Cmd.batch [ Cmd.map LoginFormMsg loginCmd, Cmd.map UserInfoMsg userInfoCmd ]
+                            )
+
+                    _ ->
+                        ( { model
+                            | loginForm = loginModel
+                            , activePage = authTokenToPage <| LoginForm.token loginModel
+                          }
+                        , Cmd.map LoginFormMsg loginCmd
+                        )
 
         ReceiptListMsg message ->
             let
@@ -185,7 +220,7 @@ update msg model =
                     UserInfo.update message model.userInfo
             in
                 case
-                    ( model.authToken
+                    ( LoginForm.token model.loginForm
                     , Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel
                     , (UserInfo.userInfo model.userInfo)
                     )
