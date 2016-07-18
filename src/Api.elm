@@ -1,9 +1,10 @@
-module Api exposing (Error, authenticate, fetchUserInfo, fetchReceipts, baseUrl)
+module Api exposing (Error, authenticate, authenticateWithGoogle, fetchAppConfig, fetchUserInfo, fetchReceipts, baseUrl)
 
 import Http
 import Models exposing (..)
 import Task
 import Base64
+import Json.Encode
 
 
 baseUrl : String
@@ -20,10 +21,22 @@ type Error
 
 
 
+-- App config
+
+
+fetchAppConfig : (Error -> msg) -> (AppConfig -> msg) -> Cmd msg
+fetchAppConfig fetchFail fetchSucceed =
+    Task.perform
+        (handleError transformHttpError fetchFail)
+        fetchSucceed
+        (Http.get Models.appConfigDecoder (baseUrl ++ "/config"))
+
+
+
 -- Authentication
 
 
-authenticate : String -> String -> (Http.Error -> msg) -> (String -> msg) -> Cmd msg
+authenticate : String -> String -> (Error -> msg) -> (String -> msg) -> Cmd msg
 authenticate username password loginFail loginSucceed =
     let
         basicAuthHeaderResult =
@@ -31,7 +44,7 @@ authenticate username password loginFail loginSucceed =
     in
         case basicAuthHeaderResult of
             Result.Ok header ->
-                Task.perform loginFail loginSucceed (authenticationGet header)
+                Task.perform (handleError transformHttpError loginFail) loginSucceed (authenticationGet header)
 
             Result.Err error ->
                 Cmd.none
@@ -53,6 +66,29 @@ authenticationGet basicAuthHeader =
             }
     in
         Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
+
+
+authenticateWithGoogle : String -> (Error -> msg) -> (String -> msg) -> Cmd msg
+authenticateWithGoogle accessToken loginFail loginSucceed =
+    let
+        accessTokenValue =
+            Json.Encode.object
+                [ ( "token", Json.Encode.string accessToken ) ]
+
+        accessTokenBody =
+            Http.string <| Json.Encode.encode 0 accessTokenValue
+
+        request =
+            { verb = "POST"
+            , headers = [ ( "Content-Type", "application/json" ) ]
+            , url = baseUrl ++ "/oauth/google-access-token"
+            , body = accessTokenBody
+            }
+
+        task =
+            Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
+    in
+        Task.perform (handleError transformHttpError loginFail) loginSucceed task
 
 
 

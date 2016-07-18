@@ -9180,6 +9180,52 @@ var _truqu$elm_base64$Base64$encode = function (s) {
 					_truqu$elm_base64$Base64$toCodeList(s)))));
 };
 
+var _user$project$AccessTokenParser$firstOccurrence = F2(
+	function (c, s) {
+		var _p0 = A2(
+			_elm_lang$core$String$indexes,
+			_elm_lang$core$String$fromChar(c),
+			s);
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			return _elm_lang$core$Maybe$Just(_p0._0);
+		}
+	});
+var _user$project$AccessTokenParser$splitAtFirst = F2(
+	function (c, s) {
+		var _p1 = A2(_user$project$AccessTokenParser$firstOccurrence, c, s);
+		if (_p1.ctor === 'Nothing') {
+			return {ctor: '_Tuple2', _0: s, _1: ''};
+		} else {
+			var _p2 = _p1._0;
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_elm_lang$core$String$left, _p2, s),
+				_1: A2(_elm_lang$core$String$dropLeft, _p2 + 1, s)
+			};
+		}
+	});
+var _user$project$AccessTokenParser$extractAccessToken = function (hash) {
+	var eachParam = A2(_elm_lang$core$String$split, '&', hash);
+	var eachPair = A2(
+		_elm_lang$core$List$map,
+		_user$project$AccessTokenParser$splitAtFirst(
+			_elm_lang$core$Native_Utils.chr('=')),
+		eachParam);
+	var allParams = _elm_lang$core$Dict$fromList(eachPair);
+	return A2(_elm_lang$core$Dict$get, 'access_token', allParams);
+};
+var _user$project$AccessTokenParser$parse = function (hash) {
+	var _p3 = _elm_lang$core$String$toList(hash);
+	if ((_p3.ctor === '::') && (_p3._0.valueOf() === '#')) {
+		return _user$project$AccessTokenParser$extractAccessToken(
+			_elm_lang$core$String$fromList(_p3._1));
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+
 var _user$project$Models$nullOr = function (decoder) {
 	return _elm_lang$core$Json_Decode$oneOf(
 		_elm_lang$core$Native_List.fromArray(
@@ -9248,6 +9294,13 @@ var _user$project$Models$receiptDecoder = A7(
 		_user$project$Models$nullOr(_elm_lang$core$Json_Decode$float)),
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'description', _elm_lang$core$Json_Decode$string));
 var _user$project$Models$receiptsDecoder = _elm_lang$core$Json_Decode$list(_user$project$Models$receiptDecoder);
+var _user$project$Models$AppConfig = function (a) {
+	return {googleClientId: a};
+};
+var _user$project$Models$appConfigDecoder = A2(
+	_elm_lang$core$Json_Decode$object1,
+	_user$project$Models$AppConfig,
+	A2(_elm_lang$core$Json_Decode_ops[':='], 'googleClientId', _elm_lang$core$Json_Decode$string));
 
 var _user$project$Api$handleError = F3(
 	function (toError, toMsg, httpError) {
@@ -9283,20 +9336,6 @@ var _user$project$Api$authenticationGet = function (basicAuthHeader) {
 		_user$project$Models$accessTokenDecoder,
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
-var _user$project$Api$authenticate = F4(
-	function (username, password, loginFail, loginSucceed) {
-		var basicAuthHeaderResult = A2(_user$project$Api$basicAuthHeader, username, password);
-		var _p0 = basicAuthHeaderResult;
-		if (_p0.ctor === 'Ok') {
-			return A3(
-				_elm_lang$core$Task$perform,
-				loginFail,
-				loginSucceed,
-				_user$project$Api$authenticationGet(_p0._0));
-		} else {
-			return _elm_lang$core$Platform_Cmd$none;
-		}
-	});
 var _user$project$Api$fetchUserInfoGet = function (token) {
 	var request = {
 		verb: 'GET',
@@ -9346,15 +9385,15 @@ var _user$project$Api$Error = function (a) {
 	return {ctor: 'Error', _0: a};
 };
 var _user$project$Api$transformHttpError = function (httpError) {
-	var _p1 = httpError;
-	switch (_p1.ctor) {
+	var _p0 = httpError;
+	switch (_p0.ctor) {
 		case 'Timeout':
 			return _user$project$Api$Error('Timeout');
 		case 'NetworkError':
 			return _user$project$Api$Error('NetworkError');
 		case 'UnexpectedPayload':
 			return _user$project$Api$Error(
-				A2(_elm_lang$core$Basics_ops['++'], 'UnexpectedPayload ', _p1._0));
+				A2(_elm_lang$core$Basics_ops['++'], 'UnexpectedPayload ', _p0._0));
 		default:
 			return _user$project$Api$Error(
 				A2(
@@ -9362,10 +9401,67 @@ var _user$project$Api$transformHttpError = function (httpError) {
 					'BadResponse ',
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_p1._0),
-						A2(_elm_lang$core$Basics_ops['++'], ' ', _p1._1))));
+						_elm_lang$core$Basics$toString(_p0._0),
+						A2(_elm_lang$core$Basics_ops['++'], ' ', _p0._1))));
 	}
 };
+var _user$project$Api$fetchAppConfig = F2(
+	function (fetchFail, fetchSucceed) {
+		return A3(
+			_elm_lang$core$Task$perform,
+			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
+			fetchSucceed,
+			A2(
+				_evancz$elm_http$Http$get,
+				_user$project$Models$appConfigDecoder,
+				A2(_elm_lang$core$Basics_ops['++'], _user$project$Api$baseUrl, '/config')));
+	});
+var _user$project$Api$authenticate = F4(
+	function (username, password, loginFail, loginSucceed) {
+		var basicAuthHeaderResult = A2(_user$project$Api$basicAuthHeader, username, password);
+		var _p1 = basicAuthHeaderResult;
+		if (_p1.ctor === 'Ok') {
+			return A3(
+				_elm_lang$core$Task$perform,
+				A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, loginFail),
+				loginSucceed,
+				_user$project$Api$authenticationGet(_p1._0));
+		} else {
+			return _elm_lang$core$Platform_Cmd$none;
+		}
+	});
+var _user$project$Api$authenticateWithGoogle = F3(
+	function (accessToken, loginFail, loginSucceed) {
+		var accessTokenValue = _elm_lang$core$Json_Encode$object(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'token',
+					_1: _elm_lang$core$Json_Encode$string(accessToken)
+				}
+				]));
+		var accessTokenBody = _evancz$elm_http$Http$string(
+			A2(_elm_lang$core$Json_Encode$encode, 0, accessTokenValue));
+		var request = {
+			verb: 'POST',
+			headers: _elm_lang$core$Native_List.fromArray(
+				[
+					{ctor: '_Tuple2', _0: 'Content-Type', _1: 'application/json'}
+				]),
+			url: A2(_elm_lang$core$Basics_ops['++'], _user$project$Api$baseUrl, '/oauth/google-access-token'),
+			body: accessTokenBody
+		};
+		var task = A2(
+			_evancz$elm_http$Http$fromJson,
+			_user$project$Models$accessTokenDecoder,
+			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+		return A3(
+			_elm_lang$core$Task$perform,
+			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, loginFail),
+			loginSucceed,
+			task);
+	});
 var _user$project$Api$fetchUserInfo = F3(
 	function (token, fetchFail, fetchSucceed) {
 		return A3(
@@ -9383,28 +9479,35 @@ var _user$project$Api$fetchReceipts = F4(
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
 	});
 
+var _user$project$LoginForm$googleOauthUrl = function (googleClientId) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'https://accounts.google.com/o/oauth2/v2/auth?response_type=token&client_id=',
+		A2(_elm_lang$core$Basics_ops['++'], googleClientId, '&redirect_uri=http://localhost:8000&state=some_state&scope=email profile'));
+};
 var _user$project$LoginForm$token = function (model) {
 	return model.token;
 };
-var _user$project$LoginForm$emptyModel = {username: '', password: '', token: _elm_lang$core$Maybe$Nothing, basicHeader: ''};
-var _user$project$LoginForm$init = function (maybeToken) {
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		_elm_lang$core$Native_Utils.update(
-			_user$project$LoginForm$emptyModel,
-			{token: maybeToken}),
-		_elm_lang$core$Native_List.fromArray(
-			[]));
-};
-var _user$project$LoginForm$Model = F4(
-	function (a, b, c, d) {
-		return {username: a, password: b, token: c, basicHeader: d};
+var _user$project$LoginForm$emptyModel = {username: '', password: '', token: _elm_lang$core$Maybe$Nothing, basicHeader: '', googleClientId: ''};
+var _user$project$LoginForm$Model = F5(
+	function (a, b, c, d, e) {
+		return {username: a, password: b, token: c, basicHeader: d, googleClientId: e};
 	});
 var _user$project$LoginForm$LoginFail = function (a) {
 	return {ctor: 'LoginFail', _0: a};
 };
 var _user$project$LoginForm$LoginSucceed = function (a) {
 	return {ctor: 'LoginSucceed', _0: a};
+};
+var _user$project$LoginForm$LoginWithGoogle = function (a) {
+	return {ctor: 'LoginWithGoogle', _0: a};
+};
+var _user$project$LoginForm$Login = {ctor: 'Login'};
+var _user$project$LoginForm$AppConfigFetchFail = function (a) {
+	return {ctor: 'AppConfigFetchFail', _0: a};
+};
+var _user$project$LoginForm$AppConfigFetchSucceed = function (a) {
+	return {ctor: 'AppConfigFetchSucceed', _0: a};
 };
 var _user$project$LoginForm$update = F2(
 	function (msg, model) {
@@ -9426,11 +9529,33 @@ var _user$project$LoginForm$update = F2(
 						{password: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'AppConfigFetch':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(_user$project$Api$fetchAppConfig, _user$project$LoginForm$AppConfigFetchFail, _user$project$LoginForm$AppConfigFetchSucceed)
+				};
+			case 'AppConfigFetchSucceed':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{googleClientId: _p0._0.googleClientId}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'AppConfigFetchFail':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'Login':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
 					_1: A4(_user$project$Api$authenticate, model.username, model.password, _user$project$LoginForm$LoginFail, _user$project$LoginForm$LoginSucceed)
+				};
+			case 'LoginWithGoogle':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A3(_user$project$Api$authenticateWithGoogle, _p0._0, _user$project$LoginForm$LoginFail, _user$project$LoginForm$LoginSucceed)
 				};
 			case 'LoginSucceed':
 				return {
@@ -9446,7 +9571,34 @@ var _user$project$LoginForm$update = F2(
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
-var _user$project$LoginForm$Login = {ctor: 'Login'};
+var _user$project$LoginForm$AppConfigFetch = {ctor: 'AppConfigFetch'};
+var _user$project$LoginForm$init = F2(
+	function (maybeToken, hash) {
+		var initModel = _elm_lang$core$Native_Utils.update(
+			_user$project$LoginForm$emptyModel,
+			{token: maybeToken});
+		var _p1 = A2(_user$project$LoginForm$update, _user$project$LoginForm$AppConfigFetch, initModel);
+		var modelWithClientId = _p1._0;
+		var appConfigCmd = _p1._1;
+		var _p2 = _user$project$AccessTokenParser$parse(hash);
+		if (_p2.ctor === 'Just') {
+			var _p3 = A2(
+				_user$project$LoginForm$update,
+				_user$project$LoginForm$LoginWithGoogle(_p2._0),
+				modelWithClientId);
+			var loginModel = _p3._0;
+			var loginCmd = _p3._1;
+			return {
+				ctor: '_Tuple2',
+				_0: loginModel,
+				_1: _elm_lang$core$Platform_Cmd$batch(
+					_elm_lang$core$Native_List.fromArray(
+						[appConfigCmd, loginCmd]))
+			};
+		} else {
+			return {ctor: '_Tuple2', _0: modelWithClientId, _1: appConfigCmd};
+		}
+	});
 var _user$project$LoginForm$Password = function (a) {
 	return {ctor: 'Password', _0: a};
 };
@@ -9490,6 +9642,17 @@ var _user$project$LoginForm$view = function (model) {
 				_elm_lang$core$Native_List.fromArray(
 					[
 						_elm_lang$html$Html$text('Login')
+					])),
+				A2(
+				_elm_lang$html$Html$a,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$href(
+						_user$project$LoginForm$googleOauthUrl(model.googleClientId))
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Google Login')
 					]))
 			]));
 };
@@ -9983,9 +10146,12 @@ var _user$project$Main$LoginFormMsg = function (a) {
 	return {ctor: 'LoginFormMsg', _0: a};
 };
 var _user$project$Main$init = F2(
-	function (maybePersistedModel, url) {
+	function (maybePersistedModel, hash) {
 		var persistedModel = A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyPersistedModel, maybePersistedModel);
-		var _p5 = _user$project$LoginForm$init(persistedModel.token);
+		var _p5 = A2(
+			_user$project$LoginForm$init,
+			persistedModel.token,
+			A2(_elm_lang$core$Result$withDefault, '', hash));
 		var loginFormModel = _p5._0;
 		var loginFormCmd = _p5._1;
 		var _p6 = _user$project$UserInfo$init(persistedModel.token);
@@ -10002,7 +10168,6 @@ var _user$project$Main$init = F2(
 				_user$project$UserInfo$userInfo(userInfoModel)));
 		var receiptListModel = _p7._0;
 		var receiptListCmd = _p7._1;
-		var newUrl = A2(_elm_lang$core$Debug$log, 'url', url);
 		return {
 			ctor: '_Tuple2',
 			_0: {

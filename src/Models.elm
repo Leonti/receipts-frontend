@@ -42,6 +42,10 @@ type alias FileMetadata =
     }
 
 
+type alias AppConfig =
+    { googleClientId : String }
+
+
 accessTokenDecoder : Json.Decoder String
 accessTokenDecoder =
     Json.at [ "access_token" ] Json.string
@@ -86,6 +90,12 @@ fileMetadataDecoder =
         ("length" := Json.int)
         ("width" := Json.int)
         ("height" := Json.int)
+
+
+appConfigDecoder : Json.Decoder AppConfig
+appConfigDecoder =
+    Json.object1 AppConfig
+        ("googleClientId" := Json.string)
 
 
 nullOr : Json.Decoder a -> Json.Decoder (Maybe a)
