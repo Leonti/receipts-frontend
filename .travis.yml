@@ -1,0 +1,10 @@
+sudo: false
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+script: bash publish.sh
