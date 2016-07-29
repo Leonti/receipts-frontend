@@ -1,4 +1,14 @@
-module Api exposing (Error, authenticate, authenticateWithGoogle, fetchAppConfig, fetchUserInfo, fetchReceipts, baseUrl)
+module Api
+    exposing
+        ( Error
+        , authenticate
+        , authenticateWithGoogle
+        , fetchAppConfig
+        , fetchUserInfo
+        , fetchReceipts
+        , baseUrl
+        , fetchBackupUrl
+        )
 
 import Http
 import Models exposing (..)
@@ -30,6 +40,25 @@ fetchAppConfig fetchFail fetchSucceed =
         (handleError transformHttpError fetchFail)
         fetchSucceed
         (Http.get Models.appConfigDecoder (baseUrl ++ "/config"))
+
+
+fetchBackupUrl : String -> String -> (Error -> msg) -> (String -> msg) -> Cmd msg
+fetchBackupUrl accessToken userId fetchFail fetchSucceed =
+    let
+        request =
+            { verb = "GET"
+            , headers = [ ( "Authorization", "Bearer " ++ accessToken ) ]
+            , url = baseUrl ++ "/user/" ++ userId ++ "/backup/token"
+            , body = Http.empty
+            }
+
+        accessTokenTask =
+            Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
+
+        backupUrlTask =
+            Task.map (\token -> baseUrl ++ "/user/" ++ userId ++ "/backup/download") accessTokenTask
+    in
+        Task.perform (handleError transformHttpError fetchFail) fetchSucceed backupUrlTask
 
 
 

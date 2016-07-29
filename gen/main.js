@@ -9420,6 +9420,49 @@ var _user$project$Api$fetchAppConfig = F2(
 				_user$project$Models$appConfigDecoder,
 				A2(_elm_lang$core$Basics_ops['++'], _user$project$Api$baseUrl, '/config')));
 	});
+var _user$project$Api$fetchBackupUrl = F4(
+	function (accessToken, userId, fetchFail, fetchSucceed) {
+		var request = {
+			verb: 'GET',
+			headers: _elm_lang$core$Native_List.fromArray(
+				[
+					{
+					ctor: '_Tuple2',
+					_0: 'Authorization',
+					_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', accessToken)
+				}
+				]),
+			url: A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$Api$baseUrl,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'/user/',
+					A2(_elm_lang$core$Basics_ops['++'], userId, '/backup/token'))),
+			body: _evancz$elm_http$Http$empty
+		};
+		var accessTokenTask = A2(
+			_evancz$elm_http$Http$fromJson,
+			_user$project$Models$accessTokenDecoder,
+			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+		var backupUrlTask = A2(
+			_elm_lang$core$Task$map,
+			function (token) {
+				return A2(
+					_elm_lang$core$Basics_ops['++'],
+					_user$project$Api$baseUrl,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'/user/',
+						A2(_elm_lang$core$Basics_ops['++'], userId, '/backup/download')));
+			},
+			accessTokenTask);
+		return A3(
+			_elm_lang$core$Task$perform,
+			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
+			fetchSucceed,
+			backupUrlTask);
+	});
 var _user$project$Api$authenticate = F4(
 	function (username, password, loginFail, loginSucceed) {
 		var basicAuthHeaderResult = A2(_user$project$Api$basicAuthHeader, username, password);
@@ -9482,6 +9525,77 @@ var _user$project$Api$fetchReceipts = F4(
 			fetchSucceed,
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
 	});
+
+var _user$project$Backup$emptyModel = {userId: '', token: ''};
+var _user$project$Backup$init = function (maybeAuthentication) {
+	var _p0 = maybeAuthentication;
+	if (_p0.ctor === 'Just') {
+		var _p1 = _p0._0;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				_user$project$Backup$emptyModel,
+				{userId: _p1.userId, token: _p1.token}),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	} else {
+		return {ctor: '_Tuple2', _0: _user$project$Backup$emptyModel, _1: _elm_lang$core$Platform_Cmd$none};
+	}
+};
+var _user$project$Backup$Model = F2(
+	function (a, b) {
+		return {userId: a, token: b};
+	});
+var _user$project$Backup$BackupUrlFail = function (a) {
+	return {ctor: 'BackupUrlFail', _0: a};
+};
+var _user$project$Backup$BackupUrlSucceed = function (a) {
+	return {ctor: 'BackupUrlSucceed', _0: a};
+};
+var _user$project$Backup$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
+			case 'DownloadBackup':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A4(_user$project$Api$fetchBackupUrl, model.token, model.userId, _user$project$Backup$BackupUrlFail, _user$project$Backup$BackupUrlSucceed)
+				};
+			case 'BackupUrlSucceed':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Backup$DownloadBackup = {ctor: 'DownloadBackup'};
+var _user$project$Backup$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Receipts:')
+					])),
+				A2(
+				_elm_lang$html$Html$button,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Events$onClick(_user$project$Backup$DownloadBackup)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Download backup')
+					]))
+			]));
+};
 
 var _user$project$LoginForm$googleOauthUrl = function (googleClientId) {
 	return A2(
@@ -10162,9 +10276,9 @@ var _user$project$Main$withSetStorage = function (_p1) {
 var _user$project$Main$PersistedModel = function (a) {
 	return {token: a};
 };
-var _user$project$Main$Model = F4(
-	function (a, b, c, d) {
-		return {activePage: a, loginForm: b, receiptList: c, userInfo: d};
+var _user$project$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {activePage: a, loginForm: b, receiptList: c, userInfo: d, backupModel: e};
 	});
 var _user$project$Main$LoadingPage = {ctor: 'LoadingPage'};
 var _user$project$Main$ReceiptListPage = {ctor: 'ReceiptListPage'};
@@ -10176,6 +10290,9 @@ var _user$project$Main$authTokenToPage = function (maybeAuthToken) {
 	} else {
 		return _user$project$Main$LoginPage;
 	}
+};
+var _user$project$Main$BackupMsg = function (a) {
+	return {ctor: 'BackupMsg', _0: a};
 };
 var _user$project$Main$UserInfoMsg = function (a) {
 	return {ctor: 'UserInfoMsg', _0: a};
@@ -10215,41 +10332,54 @@ var _user$project$Main$init = F2(
 				_user$project$UserInfo$userInfo(userInfoModel)));
 		var receiptListModel = _p7._0;
 		var receiptListCmd = _p7._1;
+		var _p8 = _user$project$Backup$init(
+			A3(
+				_elm_lang$core$Maybe$map2,
+				F2(
+					function (token, userInfo) {
+						return {userId: userInfo.id, token: token};
+					}),
+				persistedModel.token,
+				_user$project$UserInfo$userInfo(userInfoModel)));
+		var backupModel = _p8._0;
+		var backupCmd = _p8._1;
 		return {
 			ctor: '_Tuple2',
 			_0: {
 				activePage: _user$project$Main$authTokenToPage(persistedModel.token),
 				loginForm: loginFormModel,
 				userInfo: userInfoModel,
-				receiptList: receiptListModel
+				receiptList: receiptListModel,
+				backupModel: backupModel
 			},
 			_1: _elm_lang$core$Platform_Cmd$batch(
 				_elm_lang$core$Native_List.fromArray(
 					[
 						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LoginFormMsg, loginFormCmd),
 						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd),
-						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
+						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd),
+						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd)
 					]))
 		};
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p8 = A2(_elm_lang$core$Debug$log, 'msg', msg);
-		switch (_p8.ctor) {
+		var _p9 = A2(_elm_lang$core$Debug$log, 'msg', msg);
+		switch (_p9.ctor) {
 			case 'LoginFormMsg':
-				var _p9 = A2(_user$project$LoginForm$update, _p8._0, model.loginForm);
-				var loginModel = _p9._0;
-				var loginCmd = _p9._1;
-				var _p10 = {
+				var _p10 = A2(_user$project$LoginForm$update, _p9._0, model.loginForm);
+				var loginModel = _p10._0;
+				var loginCmd = _p10._1;
+				var _p11 = {
 					ctor: '_Tuple2',
 					_0: _user$project$LoginForm$token(model.loginForm),
 					_1: _user$project$LoginForm$token(loginModel)
 				};
-				if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Nothing')) && (_p10._1.ctor === 'Just')) {
-					var _p11 = _user$project$UserInfo$init(
-						_elm_lang$core$Maybe$Just(_p10._1._0));
-					var userInfoModel = _p11._0;
-					var userInfoCmd = _p11._1;
+				if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Nothing')) && (_p11._1.ctor === 'Just')) {
+					var _p12 = _user$project$UserInfo$init(
+						_elm_lang$core$Maybe$Just(_p11._1._0));
+					var userInfoModel = _p12._0;
+					var userInfoCmd = _p12._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -10281,9 +10411,9 @@ var _user$project$Main$update = F2(
 					};
 				}
 			case 'ReceiptListMsg':
-				var _p12 = A2(_user$project$ReceiptList$update, _p8._0, model.receiptList);
-				var receiptListModel = _p12._0;
-				var receiptListCmd = _p12._1;
+				var _p13 = A2(_user$project$ReceiptList$update, _p9._0, model.receiptList);
+				var receiptListModel = _p13._0;
+				var receiptListCmd = _p13._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10291,11 +10421,22 @@ var _user$project$Main$update = F2(
 						{receiptList: receiptListModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
 				};
+			case 'BackupMsg':
+				var _p14 = A2(_user$project$Backup$update, _p9._0, model.backupModel);
+				var backupModel = _p14._0;
+				var backupCmd = _p14._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{backupModel: backupModel}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd)
+				};
 			default:
-				var _p13 = A2(_user$project$UserInfo$update, _p8._0, model.userInfo);
-				var userInfoModel = _p13._0;
-				var userInfoCmd = _p13._1;
-				var _p14 = {
+				var _p15 = A2(_user$project$UserInfo$update, _p9._0, model.userInfo);
+				var userInfoModel = _p15._0;
+				var userInfoCmd = _p15._1;
+				var _p16 = {
 					ctor: '_Tuple3',
 					_0: _user$project$LoginForm$token(model.loginForm),
 					_1: A2(
@@ -10306,22 +10447,30 @@ var _user$project$Main$update = F2(
 						_user$project$UserInfo$userInfo(userInfoModel)),
 					_2: _user$project$UserInfo$userInfo(model.userInfo)
 				};
-				if ((((_p14.ctor === '_Tuple3') && (_p14._0.ctor === 'Just')) && (_p14._1.ctor === 'Just')) && (_p14._2.ctor === 'Nothing')) {
-					var _p15 = _user$project$ReceiptList$init(
+				if ((((_p16.ctor === '_Tuple3') && (_p16._0.ctor === 'Just')) && (_p16._1.ctor === 'Just')) && (_p16._2.ctor === 'Nothing')) {
+					var _p20 = _p16._1._0;
+					var _p19 = _p16._0._0;
+					var _p17 = _user$project$Backup$init(
 						_elm_lang$core$Maybe$Just(
-							{userId: _p14._1._0, token: _p14._0._0}));
-					var receiptListModel = _p15._0;
-					var receiptListCmd = _p15._1;
+							{userId: _p20, token: _p19}));
+					var backupModel = _p17._0;
+					var backupCmd = _p17._1;
+					var _p18 = _user$project$ReceiptList$init(
+						_elm_lang$core$Maybe$Just(
+							{userId: _p20, token: _p19}));
+					var receiptListModel = _p18._0;
+					var receiptListCmd = _p18._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{userInfo: userInfoModel, receiptList: receiptListModel}),
+							{userInfo: userInfoModel, receiptList: receiptListModel, backupModel: backupModel}),
 						_1: _elm_lang$core$Platform_Cmd$batch(
 							_elm_lang$core$Native_List.fromArray(
 								[
 									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd),
-									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
+									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd),
+									A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd)
 								]))
 					};
 				} else {
@@ -10336,8 +10485,8 @@ var _user$project$Main$update = F2(
 		}
 	});
 var _user$project$Main$pageView = function (model) {
-	var _p16 = model.activePage;
-	switch (_p16.ctor) {
+	var _p21 = model.activePage;
+	switch (_p21.ctor) {
 		case 'LoginPage':
 			return A2(
 				_elm_lang$html$Html_App$map,
@@ -10386,6 +10535,10 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$html$Html_App$map,
 				_user$project$Main$UserInfoMsg,
 				_user$project$UserInfo$view(model.userInfo)),
+				A2(
+				_elm_lang$html$Html_App$map,
+				_user$project$Main$BackupMsg,
+				_user$project$Backup$view(model.backupModel)),
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(

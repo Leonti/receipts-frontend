@@ -3,6 +3,7 @@ port module Main exposing (..)
 import LoginForm
 import ReceiptList
 import UserInfo
+import Backup
 import Html exposing (..)
 import Html.App as App
 import Navigation
@@ -70,6 +71,7 @@ type alias Model =
     , loginForm : LoginForm.Model
     , receiptList : ReceiptList.Model
     , userInfo : UserInfo.Model
+    , backupModel : Backup.Model
     }
 
 
@@ -106,16 +108,29 @@ init maybePersistedModel hash =
                     )
                     persistedModel.token
                     (UserInfo.userInfo userInfoModel)
+
+        ( backupModel, backupCmd ) =
+            Backup.init <|
+                Maybe.map2
+                    (\token userInfo ->
+                        { userId = userInfo.id
+                        , token = token
+                        }
+                    )
+                    persistedModel.token
+                    (UserInfo.userInfo userInfoModel)
     in
         ( { activePage = authTokenToPage persistedModel.token
           , loginForm = loginFormModel
           , userInfo = userInfoModel
           , receiptList = receiptListModel
+          , backupModel = backupModel
           }
         , Cmd.batch
             [ Cmd.map LoginFormMsg loginFormCmd
             , Cmd.map UserInfoMsg userInfoCmd
             , Cmd.map ReceiptListMsg receiptListCmd
+            , Cmd.map BackupMsg backupCmd
             ]
         )
 
@@ -152,6 +167,7 @@ type Msg
     = LoginFormMsg LoginForm.Msg
     | ReceiptListMsg ReceiptList.Msg
     | UserInfoMsg UserInfo.Msg
+    | BackupMsg Backup.Msg
 
 
 
@@ -211,6 +227,17 @@ update msg model =
                 , Cmd.map ReceiptListMsg receiptListCmd
                 )
 
+        BackupMsg message ->
+            let
+                ( backupModel, backupCmd ) =
+                    Backup.update message model.backupModel
+            in
+                ( { model
+                    | backupModel = backupModel
+                  }
+                , Cmd.map BackupMsg backupCmd
+                )
+
         UserInfoMsg message ->
             let
                 ( userInfoModel, userInfoCmd ) =
@@ -226,12 +253,20 @@ update msg model =
                         let
                             ( receiptListModel, receiptListCmd ) =
                                 ReceiptList.init (Just { userId = userId, token = authToken })
+
+                            ( backupModel, backupCmd ) =
+                                Backup.init (Just { userId = userId, token = authToken })
                         in
                             ( { model
                                 | userInfo = userInfoModel
                                 , receiptList = receiptListModel
+                                , backupModel = backupModel
                               }
-                            , Cmd.batch [ Cmd.map UserInfoMsg userInfoCmd, Cmd.map ReceiptListMsg receiptListCmd ]
+                            , Cmd.batch
+                                [ Cmd.map UserInfoMsg userInfoCmd
+                                , Cmd.map ReceiptListMsg receiptListCmd
+                                , Cmd.map BackupMsg backupCmd
+                                ]
                             )
 
                     _ ->
@@ -262,6 +297,7 @@ view model =
             ]
           --        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
         , App.map UserInfoMsg (UserInfo.view model.userInfo)
+        , App.map BackupMsg (Backup.view model.backupModel)
         , div []
             [ span [] [ text <| toString model ]
             ]
