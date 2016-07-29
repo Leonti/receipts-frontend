@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Api
 import Models exposing (Authentication)
+import Ports exposing (initDownload)
 
 
 type alias Model =
@@ -47,7 +48,7 @@ update msg model =
             ( model, Api.fetchBackupUrl model.token model.userId BackupUrlFail BackupUrlSucceed )
 
         BackupUrlSucceed backupUrl ->
-            ( model, Cmd.none )
+            ( model, initDownload backupUrl )
 
         BackupUrlFail error ->
             ( model, Cmd.none )

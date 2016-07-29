@@ -56,7 +56,15 @@ fetchBackupUrl accessToken userId fetchFail fetchSucceed =
             Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
 
         backupUrlTask =
-            Task.map (\token -> baseUrl ++ "/user/" ++ userId ++ "/backup/download") accessTokenTask
+            Task.map
+                (\token ->
+                    baseUrl
+                        ++ "/user/"
+                        ++ userId
+                        ++ "/backup/download?access_token="
+                        ++ token
+                )
+                accessTokenTask
     in
         Task.perform (handleError transformHttpError fetchFail) fetchSucceed backupUrlTask
 

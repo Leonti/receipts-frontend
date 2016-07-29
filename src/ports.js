@@ -41,3 +41,7 @@ main.ports.loadImage.subscribe(function(params) {
 
     xhr.send();
 });
+
+main.ports.initDownload.subscribe(function(url) {
+    window.location = url;
+});

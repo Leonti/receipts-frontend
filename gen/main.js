@@ -9454,7 +9454,10 @@ var _user$project$Api$fetchBackupUrl = F4(
 					A2(
 						_elm_lang$core$Basics_ops['++'],
 						'/user/',
-						A2(_elm_lang$core$Basics_ops['++'], userId, '/backup/download')));
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							userId,
+							A2(_elm_lang$core$Basics_ops['++'], '/backup/download?access_token=', token))));
 			},
 			accessTokenTask);
 		return A3(
@@ -9526,6 +9529,82 @@ var _user$project$Api$fetchReceipts = F4(
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
 	});
 
+var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
+	'loadImage',
+	function (v) {
+		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
+	});
+var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
+	'imageLoaded',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'fileId', _elm_lang$core$Json_Decode$string),
+		function (fileId) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				A2(_elm_lang$core$Json_Decode_ops[':='], 'imageData', _elm_lang$core$Json_Decode$string),
+				function (imageData) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{fileId: fileId, imageData: imageData});
+				});
+		}));
+var _user$project$Ports$createReceipt = _elm_lang$core$Native_Platform.outgoingPort(
+	'createReceipt',
+	function (v) {
+		return {
+			receiptDetails: {
+				total: (v.receiptDetails.total.ctor === 'Nothing') ? null : v.receiptDetails.total._0,
+				description: v.receiptDetails.description
+			},
+			fileInputId: v.fileInputId,
+			url: v.url,
+			authToken: v.authToken
+		};
+	});
+var _user$project$Ports$receiptCreated = _elm_lang$core$Native_Platform.incomingPort(
+	'receiptCreated',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'receiptId', _elm_lang$core$Json_Decode$string),
+		function (receiptId) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				A2(
+					_elm_lang$core$Json_Decode_ops[':='],
+					'error',
+					_elm_lang$core$Json_Decode$oneOf(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+								A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string)
+							]))),
+				function (error) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{receiptId: receiptId, error: error});
+				});
+		}));
+var _user$project$Ports$initDownload = _elm_lang$core$Native_Platform.outgoingPort(
+	'initDownload',
+	function (v) {
+		return v;
+	});
+var _user$project$Ports$LoadImageParams = F3(
+	function (a, b, c) {
+		return {url: a, authToken: b, fileId: c};
+	});
+var _user$project$Ports$LoadImageResult = F2(
+	function (a, b) {
+		return {fileId: a, imageData: b};
+	});
+var _user$project$Ports$CreateReceiptParams = F4(
+	function (a, b, c, d) {
+		return {receiptDetails: a, fileInputId: b, url: c, authToken: d};
+	});
+var _user$project$Ports$CreateReceiptResult = F2(
+	function (a, b) {
+		return {receiptId: a, error: b};
+	});
+
 var _user$project$Backup$emptyModel = {userId: '', token: ''};
 var _user$project$Backup$init = function (maybeAuthentication) {
 	var _p0 = maybeAuthentication;
@@ -9563,7 +9642,11 @@ var _user$project$Backup$update = F2(
 					_1: A4(_user$project$Api$fetchBackupUrl, model.token, model.userId, _user$project$Backup$BackupUrlFail, _user$project$Backup$BackupUrlSucceed)
 				};
 			case 'BackupUrlSucceed':
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Ports$initDownload(_p2._0)
+				};
 			default:
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
@@ -9774,77 +9857,6 @@ var _user$project$LoginForm$view = function (model) {
 					]))
 			]));
 };
-
-var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
-	'loadImage',
-	function (v) {
-		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
-	});
-var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
-	'imageLoaded',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'fileId', _elm_lang$core$Json_Decode$string),
-		function (fileId) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				A2(_elm_lang$core$Json_Decode_ops[':='], 'imageData', _elm_lang$core$Json_Decode$string),
-				function (imageData) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{fileId: fileId, imageData: imageData});
-				});
-		}));
-var _user$project$Ports$createReceipt = _elm_lang$core$Native_Platform.outgoingPort(
-	'createReceipt',
-	function (v) {
-		return {
-			receiptDetails: {
-				total: (v.receiptDetails.total.ctor === 'Nothing') ? null : v.receiptDetails.total._0,
-				description: v.receiptDetails.description
-			},
-			fileInputId: v.fileInputId,
-			url: v.url,
-			authToken: v.authToken
-		};
-	});
-var _user$project$Ports$receiptCreated = _elm_lang$core$Native_Platform.incomingPort(
-	'receiptCreated',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'receiptId', _elm_lang$core$Json_Decode$string),
-		function (receiptId) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				A2(
-					_elm_lang$core$Json_Decode_ops[':='],
-					'error',
-					_elm_lang$core$Json_Decode$oneOf(
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-								A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string)
-							]))),
-				function (error) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{receiptId: receiptId, error: error});
-				});
-		}));
-var _user$project$Ports$LoadImageParams = F3(
-	function (a, b, c) {
-		return {url: a, authToken: b, fileId: c};
-	});
-var _user$project$Ports$LoadImageResult = F2(
-	function (a, b) {
-		return {fileId: a, imageData: b};
-	});
-var _user$project$Ports$CreateReceiptParams = F4(
-	function (a, b, c, d) {
-		return {receiptDetails: a, fileInputId: b, url: c, authToken: d};
-	});
-var _user$project$Ports$CreateReceiptResult = F2(
-	function (a, b) {
-		return {receiptId: a, error: b};
-	});
 
 var _user$project$ReceiptView$view = function (model) {
 	return A2(
