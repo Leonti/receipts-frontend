@@ -1,5 +1,7 @@
 port module Ports exposing (..)
 
+import Models exposing (ReceiptFormData)
+
 
 type alias LoadImageParams =
     { url : String
@@ -14,7 +16,27 @@ type alias LoadImageResult =
     }
 
 
-port imageLoaded : (LoadImageResult -> msg) -> Sub msg
+type alias CreateReceiptParams =
+    { receiptDetails : ReceiptFormData
+    , fileInputId : String
+    , url : String
+    , authToken : String
+    }
+
+
+type alias CreateReceiptResult =
+    { receiptId : String
+    , error : Maybe String
+    }
 
 
 port loadImage : LoadImageParams -> Cmd msg
+
+
+port imageLoaded : (LoadImageResult -> msg) -> Sub msg
+
+
+port createReceipt : CreateReceiptParams -> Cmd msg
+
+
+port receiptCreated : (CreateReceiptResult -> msg) -> Sub msg

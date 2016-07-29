@@ -26,6 +26,12 @@ type alias Receipt =
     }
 
 
+type alias ReceiptFormData =
+    { total : Maybe Float
+    , description : String
+    }
+
+
 type alias ReceiptFile =
     { id : String
     , ext : String
