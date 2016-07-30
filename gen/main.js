@@ -9226,6 +9226,73 @@ var _user$project$AccessTokenParser$parse = function (hash) {
 	}
 };
 
+var _user$project$ReceiptForm$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'TotalChange') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{total: _p0._0}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{description: _p0._0}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		}
+	});
+var _user$project$ReceiptForm$init = A2(
+	_elm_lang$core$Platform_Cmd_ops['!'],
+	{total: '', description: ''},
+	_elm_lang$core$Native_List.fromArray(
+		[]));
+var _user$project$ReceiptForm$Model = F2(
+	function (a, b) {
+		return {total: a, description: b};
+	});
+var _user$project$ReceiptForm$DescriptionChange = function (a) {
+	return {ctor: 'DescriptionChange', _0: a};
+};
+var _user$project$ReceiptForm$TotalChange = function (a) {
+	return {ctor: 'TotalChange', _0: a};
+};
+var _user$project$ReceiptForm$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$input,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$type$('text'),
+						_elm_lang$html$Html_Attributes$placeholder('Total'),
+						_elm_lang$html$Html_Attributes$value(model.total),
+						_elm_lang$html$Html_Events$onInput(_user$project$ReceiptForm$TotalChange)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				A2(
+				_elm_lang$html$Html$input,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$type$('text'),
+						_elm_lang$html$Html_Attributes$placeholder('Notes'),
+						_elm_lang$html$Html_Events$onInput(_user$project$ReceiptForm$DescriptionChange)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
+};
+
 var _user$project$Models$nullOr = function (decoder) {
 	return _elm_lang$core$Json_Decode$oneOf(
 		_elm_lang$core$Native_List.fromArray(
@@ -9305,6 +9372,163 @@ var _user$project$Models$appConfigDecoder = A2(
 	_elm_lang$core$Json_Decode$object1,
 	_user$project$Models$AppConfig,
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'googleClientId', _elm_lang$core$Json_Decode$string));
+
+var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
+	'loadImage',
+	function (v) {
+		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
+	});
+var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
+	'imageLoaded',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'fileId', _elm_lang$core$Json_Decode$string),
+		function (fileId) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				A2(_elm_lang$core$Json_Decode_ops[':='], 'imageData', _elm_lang$core$Json_Decode$string),
+				function (imageData) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{fileId: fileId, imageData: imageData});
+				});
+		}));
+var _user$project$Ports$createReceipt = _elm_lang$core$Native_Platform.outgoingPort(
+	'createReceipt',
+	function (v) {
+		return {
+			receiptDetails: {
+				total: (v.receiptDetails.total.ctor === 'Nothing') ? null : v.receiptDetails.total._0,
+				description: v.receiptDetails.description
+			},
+			fileInputId: v.fileInputId,
+			url: v.url,
+			authToken: v.authToken
+		};
+	});
+var _user$project$Ports$receiptCreated = _elm_lang$core$Native_Platform.incomingPort(
+	'receiptCreated',
+	A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'receiptId', _elm_lang$core$Json_Decode$string),
+		function (receiptId) {
+			return A2(
+				_elm_lang$core$Json_Decode$andThen,
+				A2(
+					_elm_lang$core$Json_Decode_ops[':='],
+					'error',
+					_elm_lang$core$Json_Decode$oneOf(
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+								A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string)
+							]))),
+				function (error) {
+					return _elm_lang$core$Json_Decode$succeed(
+						{receiptId: receiptId, error: error});
+				});
+		}));
+var _user$project$Ports$initDownload = _elm_lang$core$Native_Platform.outgoingPort(
+	'initDownload',
+	function (v) {
+		return v;
+	});
+var _user$project$Ports$LoadImageParams = F3(
+	function (a, b, c) {
+		return {url: a, authToken: b, fileId: c};
+	});
+var _user$project$Ports$LoadImageResult = F2(
+	function (a, b) {
+		return {fileId: a, imageData: b};
+	});
+var _user$project$Ports$CreateReceiptParams = F4(
+	function (a, b, c, d) {
+		return {receiptDetails: a, fileInputId: b, url: c, authToken: d};
+	});
+var _user$project$Ports$CreateReceiptResult = F2(
+	function (a, b) {
+		return {receiptId: a, error: b};
+	});
+
+var _user$project$AddReceiptForm$Model = F2(
+	function (a, b) {
+		return {receiptFormModel: a, uploading: b};
+	});
+var _user$project$AddReceiptForm$ReceiptFormMsg = function (a) {
+	return {ctor: 'ReceiptFormMsg', _0: a};
+};
+var _user$project$AddReceiptForm$init = function () {
+	var _p0 = _user$project$ReceiptForm$init;
+	var receiptFormModel = _p0._0;
+	var receiptFormCmd = _p0._1;
+	var model = {receiptFormModel: receiptFormModel, uploading: false};
+	var cmds = _elm_lang$core$Platform_Cmd$batch(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
+			]));
+	return {ctor: '_Tuple2', _0: model, _1: cmds};
+}();
+var _user$project$AddReceiptForm$update = F2(
+	function (msg, model) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'UploadReceipt':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{uploading: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ReceiptUploaded':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{uploading: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				var _p2 = A2(_user$project$ReceiptForm$update, _p1._0, model.receiptFormModel);
+				var receiptFormModel = _p2._0;
+				var receiptFormCmd = _p2._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{receiptFormModel: receiptFormModel}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
+				};
+		}
+	});
+var _user$project$AddReceiptForm$ReceiptUploaded = function (a) {
+	return {ctor: 'ReceiptUploaded', _0: a};
+};
+var _user$project$AddReceiptForm$subscriptions = _user$project$Ports$receiptCreated(_user$project$AddReceiptForm$ReceiptUploaded);
+var _user$project$AddReceiptForm$UploadReceipt = {ctor: 'UploadReceipt'};
+var _user$project$AddReceiptForm$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html_App$map,
+				_user$project$AddReceiptForm$ReceiptFormMsg,
+				_user$project$ReceiptForm$view(model.receiptFormModel)),
+				A2(
+				_elm_lang$html$Html$button,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Events$onClick(_user$project$AddReceiptForm$UploadReceipt)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Login')
+					]))
+			]));
+};
 
 var _user$project$Api$handleError = F3(
 	function (toError, toMsg, httpError) {
@@ -9527,82 +9751,6 @@ var _user$project$Api$fetchReceipts = F4(
 			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
 			fetchSucceed,
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
-	});
-
-var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
-	'loadImage',
-	function (v) {
-		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
-	});
-var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
-	'imageLoaded',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'fileId', _elm_lang$core$Json_Decode$string),
-		function (fileId) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				A2(_elm_lang$core$Json_Decode_ops[':='], 'imageData', _elm_lang$core$Json_Decode$string),
-				function (imageData) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{fileId: fileId, imageData: imageData});
-				});
-		}));
-var _user$project$Ports$createReceipt = _elm_lang$core$Native_Platform.outgoingPort(
-	'createReceipt',
-	function (v) {
-		return {
-			receiptDetails: {
-				total: (v.receiptDetails.total.ctor === 'Nothing') ? null : v.receiptDetails.total._0,
-				description: v.receiptDetails.description
-			},
-			fileInputId: v.fileInputId,
-			url: v.url,
-			authToken: v.authToken
-		};
-	});
-var _user$project$Ports$receiptCreated = _elm_lang$core$Native_Platform.incomingPort(
-	'receiptCreated',
-	A2(
-		_elm_lang$core$Json_Decode$andThen,
-		A2(_elm_lang$core$Json_Decode_ops[':='], 'receiptId', _elm_lang$core$Json_Decode$string),
-		function (receiptId) {
-			return A2(
-				_elm_lang$core$Json_Decode$andThen,
-				A2(
-					_elm_lang$core$Json_Decode_ops[':='],
-					'error',
-					_elm_lang$core$Json_Decode$oneOf(
-						_elm_lang$core$Native_List.fromArray(
-							[
-								_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
-								A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$string)
-							]))),
-				function (error) {
-					return _elm_lang$core$Json_Decode$succeed(
-						{receiptId: receiptId, error: error});
-				});
-		}));
-var _user$project$Ports$initDownload = _elm_lang$core$Native_Platform.outgoingPort(
-	'initDownload',
-	function (v) {
-		return v;
-	});
-var _user$project$Ports$LoadImageParams = F3(
-	function (a, b, c) {
-		return {url: a, authToken: b, fileId: c};
-	});
-var _user$project$Ports$LoadImageResult = F2(
-	function (a, b) {
-		return {fileId: a, imageData: b};
-	});
-var _user$project$Ports$CreateReceiptParams = F4(
-	function (a, b, c, d) {
-		return {receiptDetails: a, fileInputId: b, url: c, authToken: d};
-	});
-var _user$project$Ports$CreateReceiptResult = F2(
-	function (a, b) {
-		return {receiptId: a, error: b};
 	});
 
 var _user$project$Backup$emptyModel = {userId: '', token: ''};
@@ -10288,9 +10436,9 @@ var _user$project$Main$withSetStorage = function (_p1) {
 var _user$project$Main$PersistedModel = function (a) {
 	return {token: a};
 };
-var _user$project$Main$Model = F5(
-	function (a, b, c, d, e) {
-		return {activePage: a, loginForm: b, receiptList: c, userInfo: d, backupModel: e};
+var _user$project$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {activePage: a, loginForm: b, receiptList: c, userInfo: d, backupModel: e, addReceiptFormModel: f};
 	});
 var _user$project$Main$LoadingPage = {ctor: 'LoadingPage'};
 var _user$project$Main$ReceiptListPage = {ctor: 'ReceiptListPage'};
@@ -10302,6 +10450,9 @@ var _user$project$Main$authTokenToPage = function (maybeAuthToken) {
 	} else {
 		return _user$project$Main$LoginPage;
 	}
+};
+var _user$project$Main$AddReceiptFormMsg = function (a) {
+	return {ctor: 'AddReceiptFormMsg', _0: a};
 };
 var _user$project$Main$BackupMsg = function (a) {
 	return {ctor: 'BackupMsg', _0: a};
@@ -10323,17 +10474,20 @@ var _user$project$Main$LoginFormMsg = function (a) {
 };
 var _user$project$Main$init = F2(
 	function (maybePersistedModel, hash) {
+		var _p5 = _user$project$AddReceiptForm$init;
+		var addReceiptFormModel = _p5._0;
+		var addReceiptFormCmd = _p5._1;
 		var persistedModel = A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyPersistedModel, maybePersistedModel);
-		var _p5 = A2(
+		var _p6 = A2(
 			_user$project$LoginForm$init,
 			persistedModel.token,
 			A2(_elm_lang$core$Result$withDefault, '', hash));
-		var loginFormModel = _p5._0;
-		var loginFormCmd = _p5._1;
-		var _p6 = _user$project$UserInfo$init(persistedModel.token);
-		var userInfoModel = _p6._0;
-		var userInfoCmd = _p6._1;
-		var _p7 = _user$project$ReceiptList$init(
+		var loginFormModel = _p6._0;
+		var loginFormCmd = _p6._1;
+		var _p7 = _user$project$UserInfo$init(persistedModel.token);
+		var userInfoModel = _p7._0;
+		var userInfoCmd = _p7._1;
+		var _p8 = _user$project$ReceiptList$init(
 			A3(
 				_elm_lang$core$Maybe$map2,
 				F2(
@@ -10342,9 +10496,9 @@ var _user$project$Main$init = F2(
 					}),
 				persistedModel.token,
 				_user$project$UserInfo$userInfo(userInfoModel)));
-		var receiptListModel = _p7._0;
-		var receiptListCmd = _p7._1;
-		var _p8 = _user$project$Backup$init(
+		var receiptListModel = _p8._0;
+		var receiptListCmd = _p8._1;
+		var _p9 = _user$project$Backup$init(
 			A3(
 				_elm_lang$core$Maybe$map2,
 				F2(
@@ -10353,8 +10507,8 @@ var _user$project$Main$init = F2(
 					}),
 				persistedModel.token,
 				_user$project$UserInfo$userInfo(userInfoModel)));
-		var backupModel = _p8._0;
-		var backupCmd = _p8._1;
+		var backupModel = _p9._0;
+		var backupCmd = _p9._1;
 		return {
 			ctor: '_Tuple2',
 			_0: {
@@ -10362,7 +10516,8 @@ var _user$project$Main$init = F2(
 				loginForm: loginFormModel,
 				userInfo: userInfoModel,
 				receiptList: receiptListModel,
-				backupModel: backupModel
+				backupModel: backupModel,
+				addReceiptFormModel: addReceiptFormModel
 			},
 			_1: _elm_lang$core$Platform_Cmd$batch(
 				_elm_lang$core$Native_List.fromArray(
@@ -10370,28 +10525,29 @@ var _user$project$Main$init = F2(
 						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$LoginFormMsg, loginFormCmd),
 						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$UserInfoMsg, userInfoCmd),
 						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd),
-						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd)
+						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd),
+						A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$AddReceiptFormMsg, addReceiptFormCmd)
 					]))
 		};
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p9 = A2(_elm_lang$core$Debug$log, 'msg', msg);
-		switch (_p9.ctor) {
+		var _p10 = A2(_elm_lang$core$Debug$log, 'msg', msg);
+		switch (_p10.ctor) {
 			case 'LoginFormMsg':
-				var _p10 = A2(_user$project$LoginForm$update, _p9._0, model.loginForm);
-				var loginModel = _p10._0;
-				var loginCmd = _p10._1;
-				var _p11 = {
+				var _p11 = A2(_user$project$LoginForm$update, _p10._0, model.loginForm);
+				var loginModel = _p11._0;
+				var loginCmd = _p11._1;
+				var _p12 = {
 					ctor: '_Tuple2',
 					_0: _user$project$LoginForm$token(model.loginForm),
 					_1: _user$project$LoginForm$token(loginModel)
 				};
-				if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Nothing')) && (_p11._1.ctor === 'Just')) {
-					var _p12 = _user$project$UserInfo$init(
-						_elm_lang$core$Maybe$Just(_p11._1._0));
-					var userInfoModel = _p12._0;
-					var userInfoCmd = _p12._1;
+				if (((_p12.ctor === '_Tuple2') && (_p12._0.ctor === 'Nothing')) && (_p12._1.ctor === 'Just')) {
+					var _p13 = _user$project$UserInfo$init(
+						_elm_lang$core$Maybe$Just(_p12._1._0));
+					var userInfoModel = _p13._0;
+					var userInfoCmd = _p13._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -10423,9 +10579,9 @@ var _user$project$Main$update = F2(
 					};
 				}
 			case 'ReceiptListMsg':
-				var _p13 = A2(_user$project$ReceiptList$update, _p9._0, model.receiptList);
-				var receiptListModel = _p13._0;
-				var receiptListCmd = _p13._1;
+				var _p14 = A2(_user$project$ReceiptList$update, _p10._0, model.receiptList);
+				var receiptListModel = _p14._0;
+				var receiptListCmd = _p14._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10434,9 +10590,9 @@ var _user$project$Main$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$ReceiptListMsg, receiptListCmd)
 				};
 			case 'BackupMsg':
-				var _p14 = A2(_user$project$Backup$update, _p9._0, model.backupModel);
-				var backupModel = _p14._0;
-				var backupCmd = _p14._1;
+				var _p15 = A2(_user$project$Backup$update, _p10._0, model.backupModel);
+				var backupModel = _p15._0;
+				var backupCmd = _p15._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -10444,11 +10600,22 @@ var _user$project$Main$update = F2(
 						{backupModel: backupModel}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$BackupMsg, backupCmd)
 				};
+			case 'AddReceiptFormMsg':
+				var _p16 = A2(_user$project$AddReceiptForm$update, _p10._0, model.addReceiptFormModel);
+				var addReceiptFormModel = _p16._0;
+				var addReceiptFormCmd = _p16._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{addReceiptFormModel: addReceiptFormModel}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$Main$AddReceiptFormMsg, addReceiptFormCmd)
+				};
 			default:
-				var _p15 = A2(_user$project$UserInfo$update, _p9._0, model.userInfo);
-				var userInfoModel = _p15._0;
-				var userInfoCmd = _p15._1;
-				var _p16 = {
+				var _p17 = A2(_user$project$UserInfo$update, _p10._0, model.userInfo);
+				var userInfoModel = _p17._0;
+				var userInfoCmd = _p17._1;
+				var _p18 = {
 					ctor: '_Tuple3',
 					_0: _user$project$LoginForm$token(model.loginForm),
 					_1: A2(
@@ -10459,19 +10626,19 @@ var _user$project$Main$update = F2(
 						_user$project$UserInfo$userInfo(userInfoModel)),
 					_2: _user$project$UserInfo$userInfo(model.userInfo)
 				};
-				if ((((_p16.ctor === '_Tuple3') && (_p16._0.ctor === 'Just')) && (_p16._1.ctor === 'Just')) && (_p16._2.ctor === 'Nothing')) {
-					var _p20 = _p16._1._0;
-					var _p19 = _p16._0._0;
-					var _p17 = _user$project$Backup$init(
+				if ((((_p18.ctor === '_Tuple3') && (_p18._0.ctor === 'Just')) && (_p18._1.ctor === 'Just')) && (_p18._2.ctor === 'Nothing')) {
+					var _p22 = _p18._1._0;
+					var _p21 = _p18._0._0;
+					var _p19 = _user$project$Backup$init(
 						_elm_lang$core$Maybe$Just(
-							{userId: _p20, token: _p19}));
-					var backupModel = _p17._0;
-					var backupCmd = _p17._1;
-					var _p18 = _user$project$ReceiptList$init(
+							{userId: _p22, token: _p21}));
+					var backupModel = _p19._0;
+					var backupCmd = _p19._1;
+					var _p20 = _user$project$ReceiptList$init(
 						_elm_lang$core$Maybe$Just(
-							{userId: _p20, token: _p19}));
-					var receiptListModel = _p18._0;
-					var receiptListCmd = _p18._1;
+							{userId: _p22, token: _p21}));
+					var receiptListModel = _p20._0;
+					var receiptListCmd = _p20._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -10497,8 +10664,8 @@ var _user$project$Main$update = F2(
 		}
 	});
 var _user$project$Main$pageView = function (model) {
-	var _p21 = model.activePage;
-	switch (_p21.ctor) {
+	var _p23 = model.activePage;
+	switch (_p23.ctor) {
 		case 'LoginPage':
 			return A2(
 				_elm_lang$html$Html_App$map,
@@ -10551,6 +10718,10 @@ var _user$project$Main$view = function (model) {
 				_elm_lang$html$Html_App$map,
 				_user$project$Main$BackupMsg,
 				_user$project$Backup$view(model.backupModel)),
+				A2(
+				_elm_lang$html$Html_App$map,
+				_user$project$Main$AddReceiptFormMsg,
+				_user$project$AddReceiptForm$view(model.addReceiptFormModel)),
 				A2(
 				_elm_lang$html$Html$div,
 				_elm_lang$core$Native_List.fromArray(

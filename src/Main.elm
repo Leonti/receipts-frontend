@@ -4,6 +4,7 @@ import LoginForm
 import ReceiptList
 import UserInfo
 import Backup
+import AddReceiptForm
 import Html exposing (..)
 import Html.App as App
 import Navigation
@@ -72,6 +73,7 @@ type alias Model =
     , receiptList : ReceiptList.Model
     , userInfo : UserInfo.Model
     , backupModel : Backup.Model
+    , addReceiptFormModel : AddReceiptForm.Model
     }
 
 
@@ -119,18 +121,23 @@ init maybePersistedModel hash =
                     )
                     persistedModel.token
                     (UserInfo.userInfo userInfoModel)
+
+        ( addReceiptFormModel, addReceiptFormCmd ) =
+            AddReceiptForm.init
     in
         ( { activePage = authTokenToPage persistedModel.token
           , loginForm = loginFormModel
           , userInfo = userInfoModel
           , receiptList = receiptListModel
           , backupModel = backupModel
+          , addReceiptFormModel = addReceiptFormModel
           }
         , Cmd.batch
             [ Cmd.map LoginFormMsg loginFormCmd
             , Cmd.map UserInfoMsg userInfoCmd
             , Cmd.map ReceiptListMsg receiptListCmd
             , Cmd.map BackupMsg backupCmd
+            , Cmd.map AddReceiptFormMsg addReceiptFormCmd
             ]
         )
 
@@ -168,6 +175,7 @@ type Msg
     | ReceiptListMsg ReceiptList.Msg
     | UserInfoMsg UserInfo.Msg
     | BackupMsg Backup.Msg
+    | AddReceiptFormMsg AddReceiptForm.Msg
 
 
 
@@ -238,6 +246,17 @@ update msg model =
                 , Cmd.map BackupMsg backupCmd
                 )
 
+        AddReceiptFormMsg message ->
+            let
+                ( addReceiptFormModel, addReceiptFormCmd ) =
+                    AddReceiptForm.update message model.addReceiptFormModel
+            in
+                ( { model
+                    | addReceiptFormModel = addReceiptFormModel
+                  }
+                , Cmd.map AddReceiptFormMsg addReceiptFormCmd
+                )
+
         UserInfoMsg message ->
             let
                 ( userInfoModel, userInfoCmd ) =
@@ -298,6 +317,7 @@ view model =
           --        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
         , App.map UserInfoMsg (UserInfo.view model.userInfo)
         , App.map BackupMsg (Backup.view model.backupModel)
+        , App.map AddReceiptFormMsg (AddReceiptForm.view model.addReceiptFormModel)
         , div []
             [ span [] [ text <| toString model ]
             ]
