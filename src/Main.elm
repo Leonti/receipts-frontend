@@ -1,10 +1,8 @@
 port module Main exposing (..)
 
 import LoginForm
-import ReceiptList
 import UserInfo
-import Backup
-import AddReceiptForm
+import AuthenticatedUserView
 import Html exposing (..)
 import Html.App as App
 import Navigation
@@ -69,17 +67,15 @@ type alias PersistedModel =
 
 type alias Model =
     { activePage : Page
-    , loginForm : LoginForm.Model
-    , receiptList : ReceiptList.Model
-    , userInfo : UserInfo.Model
-    , backupModel : Backup.Model
-    , addReceiptFormModel : AddReceiptForm.Model
+    , loginFormModel : LoginForm.Model
+    , userInfoModel : UserInfo.Model
+    , maybeAuthenticatedUserViewModel : Maybe AuthenticatedUserView.Model
     }
 
 
 toPersistedModel : Model -> PersistedModel
 toPersistedModel model =
-    { token = LoginForm.token model.loginForm
+    { token = LoginForm.token model.loginFormModel
     }
 
 
@@ -99,61 +95,17 @@ init maybePersistedModel hash =
 
         ( userInfoModel, userInfoCmd ) =
             UserInfo.init persistedModel.token
-
-        ( receiptListModel, receiptListCmd ) =
-            ReceiptList.init <|
-                Maybe.map2
-                    (\token userInfo ->
-                        { userId = userInfo.id
-                        , token = token
-                        }
-                    )
-                    persistedModel.token
-                    (UserInfo.userInfo userInfoModel)
-
-        ( backupModel, backupCmd ) =
-            Backup.init <|
-                Maybe.map2
-                    (\token userInfo ->
-                        { userId = userInfo.id
-                        , token = token
-                        }
-                    )
-                    persistedModel.token
-                    (UserInfo.userInfo userInfoModel)
-
-        ( addReceiptFormModel, addReceiptFormCmd ) =
-            AddReceiptForm.init
     in
         ( { activePage = authTokenToPage persistedModel.token
-          , loginForm = loginFormModel
-          , userInfo = userInfoModel
-          , receiptList = receiptListModel
-          , backupModel = backupModel
-          , addReceiptFormModel = addReceiptFormModel
+          , loginFormModel = loginFormModel
+          , userInfoModel = userInfoModel
+          , maybeAuthenticatedUserViewModel = Nothing
           }
         , Cmd.batch
             [ Cmd.map LoginFormMsg loginFormCmd
             , Cmd.map UserInfoMsg userInfoCmd
-            , Cmd.map ReceiptListMsg receiptListCmd
-            , Cmd.map BackupMsg backupCmd
-            , Cmd.map AddReceiptFormMsg addReceiptFormCmd
             ]
         )
-
-
-
---initUserInfo : Model -> String -> ( Model, Cmd Msg )
---initUserInfo model authToken =
---    let
---        ( userInfoModel, userInfoCmd ) =
---            UserInfo.init authToken
---    in
---        ( { model
---            | userInfo = userInfoModel
---          }
---        , Cmd.map UserInfoMsg userInfoCmd
---        )
 
 
 authTokenToPage : Maybe String -> Page
@@ -172,19 +124,8 @@ authTokenToPage maybeAuthToken =
 
 type Msg
     = LoginFormMsg LoginForm.Msg
-    | ReceiptListMsg ReceiptList.Msg
     | UserInfoMsg UserInfo.Msg
-    | BackupMsg Backup.Msg
-    | AddReceiptFormMsg AddReceiptForm.Msg
-
-
-
---    | Init
---    | InitUserInfoSucceed UserInfo
---    | FetchUserInfo
---    | FetchUserInfoSucceed UserInfo
---    | FetchUserInfoFail Api.Error
--- https://github.com/afcastano/elm-nested-component-communication
+    | AuthenticatedUserViewMsg AuthenticatedUserView.Msg
 
 
 urlUpdate : Result String String -> Model -> ( Model, Cmd Msg )
@@ -197,11 +138,11 @@ update msg model =
     case (Debug.log "msg" msg) of
         LoginFormMsg message ->
             let
-                ( loginModel, loginCmd ) =
-                    LoginForm.update message model.loginForm
+                ( loginFormModel, loginFormCmd ) =
+                    LoginForm.update message model.loginFormModel
             in
                 case
-                    ( LoginForm.token model.loginForm, LoginForm.token loginModel )
+                    ( LoginForm.token model.loginFormModel, LoginForm.token loginFormModel )
                 of
                     ( Nothing, Just token ) ->
                         let
@@ -209,102 +150,71 @@ update msg model =
                                 UserInfo.init (Just token)
                         in
                             ( { model
-                                | loginForm = loginModel
-                                , userInfo = userInfoModel
-                                , activePage = authTokenToPage <| LoginForm.token loginModel
+                                | loginFormModel = loginFormModel
+                                , userInfoModel = userInfoModel
+                                , activePage = authTokenToPage <| LoginForm.token loginFormModel
                               }
-                            , Cmd.batch [ Cmd.map LoginFormMsg loginCmd, Cmd.map UserInfoMsg userInfoCmd ]
+                            , Cmd.batch [ Cmd.map LoginFormMsg loginFormCmd, Cmd.map UserInfoMsg userInfoCmd ]
                             )
 
                     _ ->
                         ( { model
-                            | loginForm = loginModel
-                            , activePage = authTokenToPage <| LoginForm.token loginModel
+                            | loginFormModel = loginFormModel
+                            , activePage = authTokenToPage <| LoginForm.token loginFormModel
                           }
-                        , Cmd.map LoginFormMsg loginCmd
+                        , Cmd.map LoginFormMsg loginFormCmd
                         )
-
-        ReceiptListMsg message ->
-            let
-                ( receiptListModel, receiptListCmd ) =
-                    ReceiptList.update message model.receiptList
-            in
-                ( { model
-                    | receiptList = receiptListModel
-                  }
-                , Cmd.map ReceiptListMsg receiptListCmd
-                )
-
-        BackupMsg message ->
-            let
-                ( backupModel, backupCmd ) =
-                    Backup.update message model.backupModel
-            in
-                ( { model
-                    | backupModel = backupModel
-                  }
-                , Cmd.map BackupMsg backupCmd
-                )
-
-        AddReceiptFormMsg message ->
-            let
-                ( addReceiptFormModel, addReceiptFormCmd ) =
-                    AddReceiptForm.update message model.addReceiptFormModel
-            in
-                ( { model
-                    | addReceiptFormModel = addReceiptFormModel
-                  }
-                , Cmd.map AddReceiptFormMsg addReceiptFormCmd
-                )
 
         UserInfoMsg message ->
             let
                 ( userInfoModel, userInfoCmd ) =
-                    UserInfo.update message model.userInfo
+                    UserInfo.update message model.userInfoModel
             in
                 case
-                    ( LoginForm.token model.loginForm
+                    ( LoginForm.token model.loginFormModel
                     , Maybe.map (\ui -> ui.id) <| UserInfo.userInfo userInfoModel
-                    , (UserInfo.userInfo model.userInfo)
+                    , (UserInfo.userInfo model.userInfoModel)
                     )
                 of
                     ( Just authToken, Just userId, Nothing ) ->
                         let
-                            ( receiptListModel, receiptListCmd ) =
-                                ReceiptList.init (Just { userId = userId, token = authToken })
-
-                            ( backupModel, backupCmd ) =
-                                Backup.init (Just { userId = userId, token = authToken })
+                            ( authenticatedUserViewModel, authenticatedUserViewCmd ) =
+                                AuthenticatedUserView.init { userId = userId, token = authToken }
                         in
                             ( { model
-                                | userInfo = userInfoModel
-                                , receiptList = receiptListModel
-                                , backupModel = backupModel
+                                | userInfoModel = userInfoModel
+                                , maybeAuthenticatedUserViewModel = Just authenticatedUserViewModel
                               }
                             , Cmd.batch
                                 [ Cmd.map UserInfoMsg userInfoCmd
-                                , Cmd.map ReceiptListMsg receiptListCmd
-                                , Cmd.map BackupMsg backupCmd
+                                , Cmd.map AuthenticatedUserViewMsg authenticatedUserViewCmd
                                 ]
                             )
 
                     _ ->
-                        ( { model | userInfo = userInfoModel }
+                        ( { model | userInfoModel = userInfoModel }
                         , Cmd.map UserInfoMsg userInfoCmd
                         )
 
+        -- Nothing
+        AuthenticatedUserViewMsg message ->
+            case model.maybeAuthenticatedUserViewModel of
+                Just oldAuthenticatedUserViewModel ->
+                    let
+                        ( authenticatedUserViewModel, authenticatedUserViewCmd ) =
+                            AuthenticatedUserView.update message oldAuthenticatedUserViewModel
+                    in
+                        ( { model
+                            | maybeAuthenticatedUserViewModel = Just authenticatedUserViewModel
+                          }
+                        , Cmd.map AuthenticatedUserViewMsg authenticatedUserViewCmd
+                        )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
---    Init ->
---        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail InitUserInfoSucceed)
---    InitUserInfoSucceed userInfo ->
---        update FetchReceipts (Debug.log "init fetch user into succeed" {model | userInfo = Just userInfo})
---    FetchUserInfo ->
---        (model, Api.fetchUserInfo (Maybe.withDefault "" (LoginForm.token model.loginForm)) FetchUserInfoFail FetchUserInfoSucceed)
---    FetchUserInfoSucceed userInfo ->
---        update FetchReceipts (Debug.log "fetch user into succeed" {model | userInfo = Just userInfo})
---    FetchUserInfoFail error ->
---        (model, Cmd.none)
+
 -- VIEW
 
 
@@ -314,10 +224,7 @@ view model =
         [ div []
             [ span [] [ text <| toAuthToken model ]
             ]
-          --        , button [ onClick FetchUserInfo] [ text "Fetch User Info" ]
-        , App.map UserInfoMsg (UserInfo.view model.userInfo)
-        , App.map BackupMsg (Backup.view model.backupModel)
-        , App.map AddReceiptFormMsg (AddReceiptForm.view model.addReceiptFormModel)
+        , App.map UserInfoMsg (UserInfo.view model.userInfoModel)
         , div []
             [ span [] [ text <| toString model ]
             ]
@@ -329,10 +236,15 @@ pageView : Model -> Html Msg
 pageView model =
     case (model.activePage) of
         LoginPage ->
-            App.map LoginFormMsg (LoginForm.view model.loginForm)
+            App.map LoginFormMsg (LoginForm.view model.loginFormModel)
 
         ReceiptListPage ->
-            App.map ReceiptListMsg (ReceiptList.view model.receiptList)
+            case model.maybeAuthenticatedUserViewModel of
+                Just authenticatedUserViewModel ->
+                    App.map AuthenticatedUserViewMsg (AuthenticatedUserView.view authenticatedUserViewModel)
+
+                Nothing ->
+                    div [] []
 
         LoadingPage ->
             span [] [ text "Loading page" ]
@@ -340,9 +252,14 @@ pageView model =
 
 toAuthToken : Model -> String
 toAuthToken model =
-    Maybe.withDefault "no token" (LoginForm.token model.loginForm)
+    Maybe.withDefault "no token" (LoginForm.token model.loginFormModel)
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map ReceiptListMsg (ReceiptList.subscriptions model.receiptList)
+    case model.maybeAuthenticatedUserViewModel of
+        Just authenticatedUserViewModel ->
+            Sub.map AuthenticatedUserViewMsg (AuthenticatedUserView.subscriptions authenticatedUserViewModel)
+
+        Nothing ->
+            Sub.none

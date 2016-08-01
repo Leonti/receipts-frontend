@@ -16,28 +16,14 @@ type alias Model =
     }
 
 
-init : Maybe Authentication -> ( Model, Cmd Msg )
-init maybeAuthentication =
-    case maybeAuthentication of
-        Just authentication ->
-            update Fetch
-                { userId = authentication.userId
-                , token = authentication.token
-                , receipts = []
-                , openedReceiptView = Nothing
-                }
-
-        Nothing ->
-            ( emptyModel, Cmd.none )
-
-
-emptyModel : Model
-emptyModel =
-    { userId = ""
-    , token = ""
-    , receipts = []
-    , openedReceiptView = Nothing
-    }
+init : Authentication -> ( Model, Cmd Msg )
+init authentication =
+    update Fetch
+        { userId = authentication.userId
+        , token = authentication.token
+        , receipts = []
+        , openedReceiptView = Nothing
+        }
 
 
 type Msg

@@ -2,6 +2,7 @@ module AddReceiptForm exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Models exposing (Authentication)
 import Html.Events exposing (..)
 import Html.App as App
 import ReceiptForm
@@ -14,8 +15,8 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Authentication -> ( Model, Cmd Msg )
+init authentication =
     let
         ( receiptFormModel, receiptFormCmd ) =
             ReceiptForm.init

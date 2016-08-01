@@ -13,26 +13,13 @@ type alias Model =
     }
 
 
-emptyModel : Model
-emptyModel =
-    { userId = ""
-    , token = ""
-    }
-
-
-init : Maybe Authentication -> ( Model, Cmd Msg )
-init maybeAuthentication =
-    case maybeAuthentication of
-        Just authentication ->
-            ( { emptyModel
-                | userId = authentication.userId
-                , token = authentication.token
-              }
-            , Cmd.none
-            )
-
-        Nothing ->
-            ( emptyModel, Cmd.none )
+init : Authentication -> ( Model, Cmd Msg )
+init authentication =
+    ( { userId = authentication.userId
+      , token = authentication.token
+      }
+    , Cmd.none
+    )
 
 
 type Msg
