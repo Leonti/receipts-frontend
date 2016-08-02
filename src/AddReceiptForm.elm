@@ -11,6 +11,8 @@ import Ports
 
 type alias Model =
     { receiptFormModel : ReceiptForm.Model
+    , fileSelected : Bool
+    , previewDataUrl : Maybe String
     , uploading : Bool
     }
 
@@ -23,6 +25,8 @@ init authentication =
 
         model =
             { receiptFormModel = receiptFormModel
+            , fileSelected = False
+            , previewDataUrl = Nothing
             , uploading = False
             }
 
@@ -34,6 +38,8 @@ init authentication =
 
 type Msg
     = UploadReceipt
+    | ReceiptFileInputStart
+    | ReceiptFileChange Ports.FileToUpload
     | ReceiptUploaded Ports.CreateReceiptResult
     | ReceiptFormMsg ReceiptForm.Msg
 
@@ -48,12 +54,27 @@ update msg model =
             , Cmd.none
             )
 
+        ReceiptFileChange fileToUpload ->
+            case fileToUpload.imageDataUrl of
+                Just imageDataUrl ->
+                    ( { model
+                        | previewDataUrl = Just imageDataUrl
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         ReceiptUploaded result ->
             ( { model
                 | uploading = False
               }
             , Cmd.none
             )
+
+        ReceiptFileInputStart ->
+            ( model, Ports.receiptFileMouseDown "receipt-file" )
 
         ReceiptFormMsg message ->
             let
@@ -69,12 +90,16 @@ update msg model =
 
 subscriptions : Sub Msg
 subscriptions =
-    Ports.receiptCreated ReceiptUploaded
+    Sub.batch
+        [ Ports.receiptFileSelected ReceiptFileChange
+        , Ports.receiptCreated ReceiptUploaded
+        ]
 
 
 view : Model -> Html Msg
 view model =
     div []
         [ App.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
-        , button [ onClick UploadReceipt ] [ text "Login" ]
+        , input [ type' "file", id "receipt-file", onMouseDown ReceiptFileInputStart ] []
+        , button [ onClick UploadReceipt ] [ text "Create receipt" ]
         ]

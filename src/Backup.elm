@@ -44,7 +44,5 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div []
-            [ text "Receipts:" ]
-        , button [ onClick DownloadBackup ] [ text "Download backup" ]
+        [ button [ onClick DownloadBackup ] [ text "Download backup" ]
         ]

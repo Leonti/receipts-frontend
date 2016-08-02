@@ -95,4 +95,7 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map ReceiptListMsg (ReceiptList.subscriptions model.receiptListModel)
+    Sub.batch
+        [ Sub.map ReceiptListMsg ReceiptList.subscriptions
+        , Sub.map AddReceiptFormMsg AddReceiptForm.subscriptions
+        ]

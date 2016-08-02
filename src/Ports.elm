@@ -30,6 +30,18 @@ type alias CreateReceiptResult =
     }
 
 
+type alias FileToUpload =
+    { isImage : Bool
+    , imageDataUrl : Maybe String
+    }
+
+
+port receiptFileMouseDown : String -> Cmd msg
+
+
+port receiptFileSelected : (FileToUpload -> msg) -> Sub msg
+
+
 port loadImage : LoadImageParams -> Cmd msg
 
 

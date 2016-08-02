@@ -45,3 +45,50 @@ main.ports.loadImage.subscribe(function(params) {
 main.ports.initDownload.subscribe(function(url) {
     window.location = url;
 });
+
+var fileListeners = {};
+
+main.ports.receiptFileMouseDown.subscribe(function(id) {
+    console.log('Subscribing to', id);
+
+    if (!fileListeners[id]) {
+        fileListeners[id] = true;
+        document.getElementById(id).onchange = function(event) {
+            var files = event.target.files;
+            console.log('file selected', files);
+
+            if (files.length > 0) {
+                var file = files[0]
+
+                var imageType = /^image\//;
+                if (imageType.test(file.type)) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        console.log('Image result');
+                        main.ports.receiptFileSelected.send({
+                            isImage: true,
+                            imageDataUrl: e.target.result
+                        });
+                    }
+                    reader.readAsDataURL(files[0]);
+                } else {
+                    main.ports.receiptFileSelected.send({
+                        isImage: false,
+                        imageDataUrl: null
+                    });
+                }
+
+            }
+        };
+    }
+
+
+});
+
+/*
+document.getElementById('receipt-file').onchange = function() {
+    console.log('file selected');
+    document.getElementById("test-button").disabled = false
+};
+
+*/

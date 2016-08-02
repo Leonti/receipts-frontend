@@ -74,8 +74,8 @@ update msg model =
                     ( model, Cmd.none )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions : Sub Msg
+subscriptions =
     Sub.map ReceiptViewMsg (ReceiptView.subscriptions)
 
 
