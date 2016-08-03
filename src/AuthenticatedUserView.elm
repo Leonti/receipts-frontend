@@ -1,6 +1,7 @@
 module AuthenticatedUserView exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
+import Html.Events exposing (..)
 import Html.App as App
 import Models exposing (Authentication)
 import ReceiptList
@@ -12,7 +13,7 @@ type alias Model =
     { authentication : Authentication
     , receiptListModel : ReceiptList.Model
     , backupModel : Backup.Model
-    , addReceiptFormModel : AddReceiptForm.Model
+    , maybeAddReceiptFormModel : Maybe AddReceiptForm.Model
     }
 
 
@@ -24,19 +25,15 @@ init authentication =
 
         ( backupModel, backupCmd ) =
             Backup.init authentication
-
-        ( addReceiptFormModel, addReceiptFormCmd ) =
-            AddReceiptForm.init authentication
     in
         ( { authentication = authentication
           , receiptListModel = receiptListModel
           , backupModel = backupModel
-          , addReceiptFormModel = addReceiptFormModel
+          , maybeAddReceiptFormModel = Nothing
           }
         , Cmd.batch
             [ Cmd.map ReceiptListMsg receiptListCmd
             , Cmd.map BackupMsg backupCmd
-            , Cmd.map AddReceiptFormMsg addReceiptFormCmd
             ]
         )
 
@@ -45,6 +42,8 @@ type Msg
     = ReceiptListMsg ReceiptList.Msg
     | BackupMsg Backup.Msg
     | AddReceiptFormMsg AddReceiptForm.Msg
+    | ShowNewReceiptForm
+    | HideNewReceiptForm
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -73,15 +72,34 @@ update msg model =
                 )
 
         AddReceiptFormMsg message ->
+            case model.maybeAddReceiptFormModel of
+                Just currentAddReceiptFormModel ->
+                    let
+                        ( addReceiptFormModel, addReceiptFormCmd ) =
+                            AddReceiptForm.update message currentAddReceiptFormModel
+                    in
+                        ( { model
+                            | maybeAddReceiptFormModel = Just addReceiptFormModel
+                          }
+                        , Cmd.map AddReceiptFormMsg addReceiptFormCmd
+                        )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        ShowNewReceiptForm ->
             let
                 ( addReceiptFormModel, addReceiptFormCmd ) =
-                    AddReceiptForm.update message model.addReceiptFormModel
+                    AddReceiptForm.init model.authentication
             in
                 ( { model
-                    | addReceiptFormModel = addReceiptFormModel
+                    | maybeAddReceiptFormModel = Just addReceiptFormModel
                   }
                 , Cmd.map AddReceiptFormMsg addReceiptFormCmd
                 )
+
+        HideNewReceiptForm ->
+            ( { model | maybeAddReceiptFormModel = Nothing }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -89,8 +107,21 @@ view model =
     div []
         [ App.map ReceiptListMsg (ReceiptList.view model.receiptListModel)
         , App.map BackupMsg (Backup.view model.backupModel)
-        , App.map AddReceiptFormMsg (AddReceiptForm.view model.addReceiptFormModel)
+        , addReceiptFormView model.maybeAddReceiptFormModel
         ]
+
+
+addReceiptFormView : Maybe AddReceiptForm.Model -> Html Msg
+addReceiptFormView maybeAddReceiptFormModel =
+    case maybeAddReceiptFormModel of
+        Just addReceiptFormModel ->
+            div []
+                [ button [ onClick HideNewReceiptForm ] [ text "Close new receipt form" ]
+                , App.map AddReceiptFormMsg (AddReceiptForm.view addReceiptFormModel)
+                ]
+
+        Nothing ->
+            button [ onClick ShowNewReceiptForm ] [ text "Add new receipt" ]
 
 
 subscriptions : Model -> Sub Msg

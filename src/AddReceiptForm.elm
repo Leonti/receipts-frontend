@@ -2,12 +2,17 @@ module AddReceiptForm exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Models exposing (Authentication)
 import Html.Events exposing (..)
+import Models exposing (Authentication)
 import Html.App as App
 import ReceiptForm
 import Ports
 import Api
+
+
+fileInputId : String
+fileInputId =
+    "receipt-file"
 
 
 type alias Model =
@@ -61,7 +66,8 @@ update msg model =
             case fileToUpload.imageDataUrl of
                 Just imageDataUrl ->
                     ( { model
-                        | maybePreviewDataUrl = Just imageDataUrl
+                        | fileSelected = True
+                        , maybePreviewDataUrl = Just imageDataUrl
                       }
                     , Cmd.none
                     )
@@ -77,7 +83,7 @@ update msg model =
             )
 
         ReceiptFileInputStart ->
-            ( model, Ports.receiptFileMouseDown "receipt-file" )
+            ( model, Ports.receiptFileMouseDown fileInputId )
 
         ReceiptFormMsg message ->
             let
@@ -94,7 +100,7 @@ update msg model =
 createReceiptParams : Model -> Ports.CreateReceiptParams
 createReceiptParams model =
     { receiptDetails = ReceiptForm.formData model.receiptFormModel
-    , fileInputId = "receipt-file"
+    , fileInputId = fileInputId
     , url = Api.createReceiptUrl model.authentication.userId
     , authToken = model.authentication.token
     }
@@ -113,8 +119,8 @@ view model =
     div []
         [ imagePreview model.maybePreviewDataUrl
         , App.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
-        , input [ type' "file", id "receipt-file", onMouseDown ReceiptFileInputStart ] []
-        , button [ onClick UploadReceipt ] [ text "Create receipt" ]
+        , input [ type' "file", id fileInputId, onMouseDown ReceiptFileInputStart ] []
+        , button [ onClick UploadReceipt, disabled <| not model.fileSelected ] [ text "Create receipt" ]
         ]
 
 
