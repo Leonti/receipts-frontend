@@ -1,8 +1,9 @@
-module ReceiptForm exposing (Model, Msg, init, update, view)
+module ReceiptForm exposing (Model, Msg, init, update, view, formData)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Models exposing (ReceiptFormData)
 
 
 type alias Model =
@@ -49,3 +50,10 @@ view model =
         [ input [ type' "text", placeholder "Total", value model.total, onInput TotalChange ] []
         , textarea [ placeholder "Notes", onInput DescriptionChange ] []
         ]
+
+
+formData : Model -> ReceiptFormData
+formData model =
+    { total = Just 1.38
+    , description = model.description
+    }

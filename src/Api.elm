@@ -8,6 +8,7 @@ module Api
         , fetchReceipts
         , baseUrl
         , fetchBackupUrl
+        , createReceiptUrl
         )
 
 import Http
@@ -191,3 +192,8 @@ transformHttpError httpError =
 
         Http.BadResponse code desc ->
             Error <| "BadResponse " ++ (toString code) ++ " " ++ desc
+
+
+createReceiptUrl : String -> String
+createReceiptUrl userId =
+    baseUrl ++ "/user/" ++ userId ++ "/receipt"

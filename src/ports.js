@@ -85,10 +85,43 @@ main.ports.receiptFileMouseDown.subscribe(function(id) {
 
 });
 
-/*
-document.getElementById('receipt-file').onchange = function() {
-    console.log('file selected');
-    document.getElementById("test-button").disabled = false
-};
 
-*/
+
+main.ports.createReceipt.subscribe(function(params) {
+
+    console.log('Creating receipt', params);
+
+    var file = document.getElementById(params.fileInputId).files[0];
+    var formData = new FormData();
+    formData.append('total', params.receiptDetails.total);
+    formData.append('description', params.receiptDetails.description);
+    formData.append('receipt', file);
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.upload.addEventListener('progress', function(event) {
+      var percentComplete = event.loaded / event.total;
+      console.log('LOADED: ', percentComplete);
+    });
+
+    xhr.upload.addEventListener("load", function(event) {
+        console.log('TRANSFER COMPLETE', event);
+        main.ports.receiptCreated.send({
+            receiptId: 'receiptId',
+            error: null
+        });
+    });
+
+    xhr.upload.addEventListener("error", function(event) {
+        console.log('TRANSFER ERROR');
+        main.ports.receiptCreated.send({
+            receiptId: null,
+            error: 'Error uploading'
+        });
+    });
+
+    xhr.open('POST', params.url);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + params.authToken);
+
+    xhr.send(formData);
+});

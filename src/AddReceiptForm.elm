@@ -7,12 +7,14 @@ import Html.Events exposing (..)
 import Html.App as App
 import ReceiptForm
 import Ports
+import Api
 
 
 type alias Model =
-    { receiptFormModel : ReceiptForm.Model
+    { authentication : Authentication
+    , receiptFormModel : ReceiptForm.Model
     , fileSelected : Bool
-    , previewDataUrl : Maybe String
+    , maybePreviewDataUrl : Maybe String
     , uploading : Bool
     }
 
@@ -24,9 +26,10 @@ init authentication =
             ReceiptForm.init
 
         model =
-            { receiptFormModel = receiptFormModel
+            { authentication = authentication
+            , receiptFormModel = receiptFormModel
             , fileSelected = False
-            , previewDataUrl = Nothing
+            , maybePreviewDataUrl = Nothing
             , uploading = False
             }
 
@@ -51,14 +54,14 @@ update msg model =
             ( { model
                 | uploading = True
               }
-            , Cmd.none
+            , Ports.createReceipt <| createReceiptParams model
             )
 
         ReceiptFileChange fileToUpload ->
             case fileToUpload.imageDataUrl of
                 Just imageDataUrl ->
                     ( { model
-                        | previewDataUrl = Just imageDataUrl
+                        | maybePreviewDataUrl = Just imageDataUrl
                       }
                     , Cmd.none
                     )
@@ -88,6 +91,15 @@ update msg model =
                 )
 
 
+createReceiptParams : Model -> Ports.CreateReceiptParams
+createReceiptParams model =
+    { receiptDetails = ReceiptForm.formData model.receiptFormModel
+    , fileInputId = "receipt-file"
+    , url = Api.createReceiptUrl model.authentication.userId
+    , authToken = model.authentication.token
+    }
+
+
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
@@ -99,7 +111,18 @@ subscriptions =
 view : Model -> Html Msg
 view model =
     div []
-        [ App.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
+        [ imagePreview model.maybePreviewDataUrl
+        , App.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
         , input [ type' "file", id "receipt-file", onMouseDown ReceiptFileInputStart ] []
         , button [ onClick UploadReceipt ] [ text "Create receipt" ]
         ]
+
+
+imagePreview : Maybe String -> Html Msg
+imagePreview maybePreviewDataUrl =
+    case maybePreviewDataUrl of
+        Just previewDataUrl ->
+            img [ src previewDataUrl ] []
+
+        Nothing ->
+            Html.text ""

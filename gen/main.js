@@ -9306,6 +9306,12 @@ var _user$project$Models$appConfigDecoder = A2(
 	_user$project$Models$AppConfig,
 	A2(_elm_lang$core$Json_Decode_ops[':='], 'googleClientId', _elm_lang$core$Json_Decode$string));
 
+var _user$project$ReceiptForm$formData = function (model) {
+	return {
+		total: _elm_lang$core$Maybe$Just(1.38),
+		description: model.description
+	};
+};
 var _user$project$ReceiptForm$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -9479,127 +9485,6 @@ var _user$project$Ports$FileToUpload = F2(
 		return {isImage: a, imageDataUrl: b};
 	});
 
-var _user$project$AddReceiptForm$Model = F4(
-	function (a, b, c, d) {
-		return {receiptFormModel: a, fileSelected: b, previewDataUrl: c, uploading: d};
-	});
-var _user$project$AddReceiptForm$ReceiptFormMsg = function (a) {
-	return {ctor: 'ReceiptFormMsg', _0: a};
-};
-var _user$project$AddReceiptForm$init = function (authentication) {
-	var _p0 = _user$project$ReceiptForm$init;
-	var receiptFormModel = _p0._0;
-	var receiptFormCmd = _p0._1;
-	var model = {receiptFormModel: receiptFormModel, fileSelected: false, previewDataUrl: _elm_lang$core$Maybe$Nothing, uploading: false};
-	var cmds = _elm_lang$core$Platform_Cmd$batch(
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
-			]));
-	return {ctor: '_Tuple2', _0: model, _1: cmds};
-};
-var _user$project$AddReceiptForm$update = F2(
-	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
-			case 'UploadReceipt':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{uploading: true}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ReceiptFileChange':
-				var _p2 = _p1._0.imageDataUrl;
-				if (_p2.ctor === 'Just') {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								previewDataUrl: _elm_lang$core$Maybe$Just(_p2._0)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
-			case 'ReceiptUploaded':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{uploading: false}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ReceiptFileInputStart':
-				return {
-					ctor: '_Tuple2',
-					_0: model,
-					_1: _user$project$Ports$receiptFileMouseDown('receipt-file')
-				};
-			default:
-				var _p3 = A2(_user$project$ReceiptForm$update, _p1._0, model.receiptFormModel);
-				var receiptFormModel = _p3._0;
-				var receiptFormCmd = _p3._1;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{receiptFormModel: receiptFormModel}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
-				};
-		}
-	});
-var _user$project$AddReceiptForm$ReceiptUploaded = function (a) {
-	return {ctor: 'ReceiptUploaded', _0: a};
-};
-var _user$project$AddReceiptForm$ReceiptFileChange = function (a) {
-	return {ctor: 'ReceiptFileChange', _0: a};
-};
-var _user$project$AddReceiptForm$subscriptions = _elm_lang$core$Platform_Sub$batch(
-	_elm_lang$core$Native_List.fromArray(
-		[
-			_user$project$Ports$receiptFileSelected(_user$project$AddReceiptForm$ReceiptFileChange),
-			_user$project$Ports$receiptCreated(_user$project$AddReceiptForm$ReceiptUploaded)
-		]));
-var _user$project$AddReceiptForm$ReceiptFileInputStart = {ctor: 'ReceiptFileInputStart'};
-var _user$project$AddReceiptForm$UploadReceipt = {ctor: 'UploadReceipt'};
-var _user$project$AddReceiptForm$view = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		_elm_lang$core$Native_List.fromArray(
-			[]),
-		_elm_lang$core$Native_List.fromArray(
-			[
-				A2(
-				_elm_lang$html$Html_App$map,
-				_user$project$AddReceiptForm$ReceiptFormMsg,
-				_user$project$ReceiptForm$view(model.receiptFormModel)),
-				A2(
-				_elm_lang$html$Html$input,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Attributes$type$('file'),
-						_elm_lang$html$Html_Attributes$id('receipt-file'),
-						_elm_lang$html$Html_Events$onMouseDown(_user$project$AddReceiptForm$ReceiptFileInputStart)
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[])),
-				A2(
-				_elm_lang$html$Html$button,
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html_Events$onClick(_user$project$AddReceiptForm$UploadReceipt)
-					]),
-				_elm_lang$core$Native_List.fromArray(
-					[
-						_elm_lang$html$Html$text('Create receipt')
-					]))
-			]));
-};
-
 var _user$project$Api$handleError = F3(
 	function (toError, toMsg, httpError) {
 		return toMsg(
@@ -9679,6 +9564,15 @@ var _user$project$Api$fetchReceiptsGet = F2(
 			_user$project$Models$receiptsDecoder,
 			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 	});
+var _user$project$Api$createReceiptUrl = function (userId) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_user$project$Api$baseUrl,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'/user/',
+			A2(_elm_lang$core$Basics_ops['++'], userId, '/receipt')));
+};
 var _user$project$Api$Error = function (a) {
 	return {ctor: 'Error', _0: a};
 };
@@ -9822,6 +9716,152 @@ var _user$project$Api$fetchReceipts = F4(
 			fetchSucceed,
 			A2(_user$project$Api$fetchReceiptsGet, token, userId));
 	});
+
+var _user$project$AddReceiptForm$imagePreview = function (maybePreviewDataUrl) {
+	var _p0 = maybePreviewDataUrl;
+	if (_p0.ctor === 'Just') {
+		return A2(
+			_elm_lang$html$Html$img,
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_elm_lang$html$Html_Attributes$src(_p0._0)
+				]),
+			_elm_lang$core$Native_List.fromArray(
+				[]));
+	} else {
+		return _elm_lang$html$Html$text('');
+	}
+};
+var _user$project$AddReceiptForm$createReceiptParams = function (model) {
+	return {
+		receiptDetails: _user$project$ReceiptForm$formData(model.receiptFormModel),
+		fileInputId: 'receipt-file',
+		url: _user$project$Api$createReceiptUrl(model.authentication.userId),
+		authToken: model.authentication.token
+	};
+};
+var _user$project$AddReceiptForm$Model = F5(
+	function (a, b, c, d, e) {
+		return {authentication: a, receiptFormModel: b, fileSelected: c, maybePreviewDataUrl: d, uploading: e};
+	});
+var _user$project$AddReceiptForm$ReceiptFormMsg = function (a) {
+	return {ctor: 'ReceiptFormMsg', _0: a};
+};
+var _user$project$AddReceiptForm$init = function (authentication) {
+	var _p1 = _user$project$ReceiptForm$init;
+	var receiptFormModel = _p1._0;
+	var receiptFormCmd = _p1._1;
+	var model = {authentication: authentication, receiptFormModel: receiptFormModel, fileSelected: false, maybePreviewDataUrl: _elm_lang$core$Maybe$Nothing, uploading: false};
+	var cmds = _elm_lang$core$Platform_Cmd$batch(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
+			]));
+	return {ctor: '_Tuple2', _0: model, _1: cmds};
+};
+var _user$project$AddReceiptForm$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
+			case 'UploadReceipt':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{uploading: true}),
+					_1: _user$project$Ports$createReceipt(
+						_user$project$AddReceiptForm$createReceiptParams(model))
+				};
+			case 'ReceiptFileChange':
+				var _p3 = _p2._0.imageDataUrl;
+				if (_p3.ctor === 'Just') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								maybePreviewDataUrl: _elm_lang$core$Maybe$Just(_p3._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
+			case 'ReceiptUploaded':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{uploading: false}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ReceiptFileInputStart':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Ports$receiptFileMouseDown('receipt-file')
+				};
+			default:
+				var _p4 = A2(_user$project$ReceiptForm$update, _p2._0, model.receiptFormModel);
+				var receiptFormModel = _p4._0;
+				var receiptFormCmd = _p4._1;
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{receiptFormModel: receiptFormModel}),
+					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
+				};
+		}
+	});
+var _user$project$AddReceiptForm$ReceiptUploaded = function (a) {
+	return {ctor: 'ReceiptUploaded', _0: a};
+};
+var _user$project$AddReceiptForm$ReceiptFileChange = function (a) {
+	return {ctor: 'ReceiptFileChange', _0: a};
+};
+var _user$project$AddReceiptForm$subscriptions = _elm_lang$core$Platform_Sub$batch(
+	_elm_lang$core$Native_List.fromArray(
+		[
+			_user$project$Ports$receiptFileSelected(_user$project$AddReceiptForm$ReceiptFileChange),
+			_user$project$Ports$receiptCreated(_user$project$AddReceiptForm$ReceiptUploaded)
+		]));
+var _user$project$AddReceiptForm$ReceiptFileInputStart = {ctor: 'ReceiptFileInputStart'};
+var _user$project$AddReceiptForm$UploadReceipt = {ctor: 'UploadReceipt'};
+var _user$project$AddReceiptForm$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_user$project$AddReceiptForm$imagePreview(model.maybePreviewDataUrl),
+				A2(
+				_elm_lang$html$Html_App$map,
+				_user$project$AddReceiptForm$ReceiptFormMsg,
+				_user$project$ReceiptForm$view(model.receiptFormModel)),
+				A2(
+				_elm_lang$html$Html$input,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$type$('file'),
+						_elm_lang$html$Html_Attributes$id('receipt-file'),
+						_elm_lang$html$Html_Events$onMouseDown(_user$project$AddReceiptForm$ReceiptFileInputStart)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[])),
+				A2(
+				_elm_lang$html$Html$button,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Events$onClick(_user$project$AddReceiptForm$UploadReceipt)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Create receipt')
+					]))
+			]));
+};
 
 var _user$project$ReceiptView$view = function (model) {
 	return A2(
