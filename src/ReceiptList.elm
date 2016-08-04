@@ -9,8 +9,7 @@ import ReceiptView
 
 
 type alias Model =
-    { userId : String
-    , token : String
+    { authentication : Authentication
     , receipts : List Receipt
     , openedReceiptView : Maybe ReceiptView.Model
     }
@@ -19,8 +18,7 @@ type alias Model =
 init : Authentication -> ( Model, Cmd Msg )
 init authentication =
     update Fetch
-        { userId = authentication.userId
-        , token = authentication.token
+        { authentication = authentication
         , receipts = []
         , openedReceiptView = Nothing
         }
@@ -38,7 +36,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Fetch ->
-            ( model, Api.fetchReceipts model.token model.userId FetchFail FetchSucceed )
+            ( model, Api.fetchReceipts model.authentication FetchFail FetchSucceed )
 
         FetchSucceed receipts ->
             ( { model | receipts = List.take 10 receipts }, Cmd.none )
@@ -49,7 +47,7 @@ update msg model =
         OpenReceiptView receipt ->
             let
                 ( receiptViewModel, receiptViewCmd ) =
-                    ReceiptView.init model.userId model.token receipt
+                    ReceiptView.init model.authentication receipt
             in
                 ( { model
                     | openedReceiptView = Just receiptViewModel
@@ -84,7 +82,7 @@ view model =
     div []
         [ div []
             [ text "Receipts:" ]
-        , div [] (List.map (\receipt -> receiptRow model.userId model.token receipt) model.receipts)
+        , div [] (List.map (\receipt -> receiptRow receipt) model.receipts)
         , receiptView model
         ]
 
@@ -99,8 +97,8 @@ receiptView model =
             div [] []
 
 
-receiptRow : String -> String -> Receipt -> Html Msg
-receiptRow userId authToken receipt =
+receiptRow : Receipt -> Html Msg
+receiptRow receipt =
     div []
         [ div []
             [ text receipt.id

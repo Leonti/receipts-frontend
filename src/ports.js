@@ -36,7 +36,7 @@ main.ports.loadImage.subscribe(function(params) {
             imageData: b64
         });
 
-        document.getElementById("image").src = dataURL;
+        document.getElementById(params.imageId).src = dataURL;
     };
 
     xhr.send();

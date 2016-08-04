@@ -8,15 +8,13 @@ import Ports exposing (initDownload)
 
 
 type alias Model =
-    { userId : String
-    , token : String
+    { authentication : Authentication
     }
 
 
 init : Authentication -> ( Model, Cmd Msg )
 init authentication =
-    ( { userId = authentication.userId
-      , token = authentication.token
+    ( { authentication = authentication
       }
     , Cmd.none
     )
@@ -32,7 +30,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DownloadBackup ->
-            ( model, Api.fetchBackupUrl model.token model.userId BackupUrlFail BackupUrlSucceed )
+            ( model, Api.fetchBackupUrl model.authentication BackupUrlFail BackupUrlSucceed )
 
         BackupUrlSucceed backupUrl ->
             ( model, initDownload backupUrl )

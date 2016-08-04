@@ -4,23 +4,28 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Ports
 import Api
-import Models exposing (Receipt, ReceiptFile)
+import Models exposing (Receipt, ReceiptFile, Authentication)
+
+
+imageId : String
+imageId =
+    "receipt-view-image"
 
 
 type alias Model =
-    { userId : String
-    , token : String
+    { authentication : Authentication
     , receipt : Receipt
+    , loadingImage : Bool
     }
 
 
-init : String -> String -> Receipt -> ( Model, Cmd Msg )
-init userId token receipt =
+init : Authentication -> Receipt -> ( Model, Cmd Msg )
+init authentication receipt =
     let
         model =
-            { userId = userId
-            , token = token
+            { authentication = authentication
             , receipt = receipt
+            , loadingImage = False
             }
     in
         case toImageParams model of
@@ -35,7 +40,11 @@ toImageParams : Model -> Maybe Ports.LoadImageParams
 toImageParams model =
     Maybe.map
         (\file ->
-            Ports.LoadImageParams (Api.baseUrl ++ "/user/" ++ model.userId ++ "/receipt/" ++ model.receipt.id ++ "/file/" ++ file.id ++ "." ++ file.ext) model.token file.id
+            { url = Api.receiptFileUrl model.authentication.userId model.receipt.id file.id file.ext
+            , authToken = model.authentication.token
+            , fileId = file.id
+            , imageId = imageId
+            }
         )
     <|
         toFile model.receipt
@@ -66,10 +75,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadImage loadImageParams ->
-            ( model, Ports.loadImage loadImageParams )
+            ( { model
+                | loadingImage = True
+              }
+            , Ports.loadImage loadImageParams
+            )
 
         LoadImageSucceed loadImageResult ->
-            ( model, Cmd.none )
+            ( { model
+                | loadingImage = False
+              }
+            , Cmd.none
+            )
 
 
 subscriptions : Sub Msg
@@ -83,5 +100,6 @@ view model =
         [ div []
             [ text "Receipt view:" ]
         , div [] [ text model.receipt.id ]
-        , img [ Html.Attributes.id "image" ] []
+        , span [] [ text <| toString model.loadingImage ]
+        , img [ Html.Attributes.id imageId ] []
         ]

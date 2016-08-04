@@ -9408,7 +9408,7 @@ var _user$project$Ports$receiptFileSelected = _elm_lang$core$Native_Platform.inc
 var _user$project$Ports$loadImage = _elm_lang$core$Native_Platform.outgoingPort(
 	'loadImage',
 	function (v) {
-		return {url: v.url, authToken: v.authToken, fileId: v.fileId};
+		return {url: v.url, authToken: v.authToken, fileId: v.fileId, imageId: v.imageId};
 	});
 var _user$project$Ports$imageLoaded = _elm_lang$core$Native_Platform.incomingPort(
 	'imageLoaded',
@@ -9464,9 +9464,9 @@ var _user$project$Ports$initDownload = _elm_lang$core$Native_Platform.outgoingPo
 	function (v) {
 		return v;
 	});
-var _user$project$Ports$LoadImageParams = F3(
-	function (a, b, c) {
-		return {url: a, authToken: b, fileId: c};
+var _user$project$Ports$LoadImageParams = F4(
+	function (a, b, c, d) {
+		return {url: a, authToken: b, fileId: c, imageId: d};
 	});
 var _user$project$Ports$LoadImageResult = F2(
 	function (a, b) {
@@ -9538,32 +9538,31 @@ var _user$project$Api$fetchUserInfoGet = function (token) {
 		_user$project$Models$userInfoDecoder,
 		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
 };
-var _user$project$Api$fetchReceiptsGet = F2(
-	function (token, userId) {
-		var request = {
-			verb: 'GET',
-			headers: _elm_lang$core$Native_List.fromArray(
-				[
-					{
-					ctor: '_Tuple2',
-					_0: 'Authorization',
-					_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', token)
-				}
-				]),
-			url: A2(
+var _user$project$Api$fetchReceiptsGet = function (authentication) {
+	var request = {
+		verb: 'GET',
+		headers: _elm_lang$core$Native_List.fromArray(
+			[
+				{
+				ctor: '_Tuple2',
+				_0: 'Authorization',
+				_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', authentication.token)
+			}
+			]),
+		url: A2(
+			_elm_lang$core$Basics_ops['++'],
+			_user$project$Api$baseUrl,
+			A2(
 				_elm_lang$core$Basics_ops['++'],
-				_user$project$Api$baseUrl,
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					'/user/',
-					A2(_elm_lang$core$Basics_ops['++'], userId, '/receipt'))),
-			body: _evancz$elm_http$Http$empty
-		};
-		return A2(
-			_evancz$elm_http$Http$fromJson,
-			_user$project$Models$receiptsDecoder,
-			A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
-	});
+				'/user/',
+				A2(_elm_lang$core$Basics_ops['++'], authentication.userId, '/receipt'))),
+		body: _evancz$elm_http$Http$empty
+	};
+	return A2(
+		_evancz$elm_http$Http$fromJson,
+		_user$project$Models$receiptsDecoder,
+		A2(_evancz$elm_http$Http$send, _evancz$elm_http$Http$defaultSettings, request));
+};
 var _user$project$Api$createReceiptUrl = function (userId) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
@@ -9573,6 +9572,31 @@ var _user$project$Api$createReceiptUrl = function (userId) {
 			'/user/',
 			A2(_elm_lang$core$Basics_ops['++'], userId, '/receipt')));
 };
+var _user$project$Api$receiptFileUrl = F4(
+	function (userId, receiptId, fileId, ext) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_user$project$Api$baseUrl,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'/user/',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					userId,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'/receipt/',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							receiptId,
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								'/file/',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									fileId,
+									A2(_elm_lang$core$Basics_ops['++'], '.', ext))))))));
+	});
 var _user$project$Api$Error = function (a) {
 	return {ctor: 'Error', _0: a};
 };
@@ -9608,8 +9632,8 @@ var _user$project$Api$fetchAppConfig = F2(
 				_user$project$Models$appConfigDecoder,
 				A2(_elm_lang$core$Basics_ops['++'], _user$project$Api$baseUrl, '/config')));
 	});
-var _user$project$Api$fetchBackupUrl = F4(
-	function (accessToken, userId, fetchFail, fetchSucceed) {
+var _user$project$Api$fetchBackupUrl = F3(
+	function (authentication, fetchFail, fetchSucceed) {
 		var request = {
 			verb: 'GET',
 			headers: _elm_lang$core$Native_List.fromArray(
@@ -9617,7 +9641,7 @@ var _user$project$Api$fetchBackupUrl = F4(
 					{
 					ctor: '_Tuple2',
 					_0: 'Authorization',
-					_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', accessToken)
+					_1: A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', authentication.token)
 				}
 				]),
 			url: A2(
@@ -9626,7 +9650,7 @@ var _user$project$Api$fetchBackupUrl = F4(
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					'/user/',
-					A2(_elm_lang$core$Basics_ops['++'], userId, '/backup/token'))),
+					A2(_elm_lang$core$Basics_ops['++'], authentication.userId, '/backup/token'))),
 			body: _evancz$elm_http$Http$empty
 		};
 		var accessTokenTask = A2(
@@ -9644,7 +9668,7 @@ var _user$project$Api$fetchBackupUrl = F4(
 						'/user/',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							userId,
+							authentication.userId,
 							A2(_elm_lang$core$Basics_ops['++'], '/backup/download?access_token=', token))));
 			},
 			accessTokenTask);
@@ -9708,13 +9732,13 @@ var _user$project$Api$fetchUserInfo = F3(
 			fetchSucceed,
 			_user$project$Api$fetchUserInfoGet(token));
 	});
-var _user$project$Api$fetchReceipts = F4(
-	function (token, userId, fetchFail, fetchSucceed) {
+var _user$project$Api$fetchReceipts = F3(
+	function (authentication, fetchFail, fetchSucceed) {
 		return A3(
 			_elm_lang$core$Task$perform,
 			A2(_user$project$Api$handleError, _user$project$Api$transformHttpError, fetchFail),
 			fetchSucceed,
-			A2(_user$project$Api$fetchReceiptsGet, token, userId));
+			_user$project$Api$fetchReceiptsGet(authentication));
 	});
 
 var _user$project$AddReceiptForm$imagePreview = function (maybePreviewDataUrl) {
@@ -9867,6 +9891,57 @@ var _user$project$AddReceiptForm$view = function (model) {
 			]));
 };
 
+var _user$project$ReceiptView$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'LoadImage') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{loadingImage: true}),
+				_1: _user$project$Ports$loadImage(_p0._0)
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{loadingImage: false}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		}
+	});
+var _user$project$ReceiptView$toFile = function (receipt) {
+	var _p1 = receipt.files;
+	if (_p1.ctor === '::') {
+		if (_p1._1.ctor === '[]') {
+			return _elm_lang$core$Maybe$Just(_p1._0);
+		} else {
+			if (_p1._1._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p1._1._0);
+			} else {
+				return _elm_lang$core$Maybe$Just(_p1._1._0);
+			}
+		}
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
+var _user$project$ReceiptView$imageId = 'receipt-view-image';
+var _user$project$ReceiptView$toImageParams = function (model) {
+	return A2(
+		_elm_lang$core$Maybe$map,
+		function (file) {
+			return {
+				url: A4(_user$project$Api$receiptFileUrl, model.authentication.userId, model.receipt.id, file.id, file.ext),
+				authToken: model.authentication.token,
+				fileId: file.id,
+				imageId: _user$project$ReceiptView$imageId
+			};
+		},
+		_user$project$ReceiptView$toFile(model.receipt));
+};
 var _user$project$ReceiptView$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9891,80 +9966,27 @@ var _user$project$ReceiptView$view = function (model) {
 						_elm_lang$html$Html$text(model.receipt.id)
 					])),
 				A2(
+				_elm_lang$html$Html$span,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(
+						_elm_lang$core$Basics$toString(model.loadingImage))
+					])),
+				A2(
 				_elm_lang$html$Html$img,
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html_Attributes$id('image')
+						_elm_lang$html$Html_Attributes$id(_user$project$ReceiptView$imageId)
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[]))
 			]));
 };
-var _user$project$ReceiptView$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'LoadImage') {
-			return {
-				ctor: '_Tuple2',
-				_0: model,
-				_1: _user$project$Ports$loadImage(_p0._0)
-			};
-		} else {
-			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		}
-	});
-var _user$project$ReceiptView$toFile = function (receipt) {
-	var _p1 = receipt.files;
-	if (_p1.ctor === '::') {
-		if (_p1._1.ctor === '[]') {
-			return _elm_lang$core$Maybe$Just(_p1._0);
-		} else {
-			if (_p1._1._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Just(_p1._1._0);
-			} else {
-				return _elm_lang$core$Maybe$Just(_p1._1._0);
-			}
-		}
-	} else {
-		return _elm_lang$core$Maybe$Nothing;
-	}
-};
-var _user$project$ReceiptView$toImageParams = function (model) {
-	return A2(
-		_elm_lang$core$Maybe$map,
-		function (file) {
-			return A3(
-				_user$project$Ports$LoadImageParams,
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					_user$project$Api$baseUrl,
-					A2(
-						_elm_lang$core$Basics_ops['++'],
-						'/user/',
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							model.userId,
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								'/receipt/',
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									model.receipt.id,
-									A2(
-										_elm_lang$core$Basics_ops['++'],
-										'/file/',
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											file.id,
-											A2(_elm_lang$core$Basics_ops['++'], '.', file.ext)))))))),
-				model.token,
-				file.id);
-		},
-		_user$project$ReceiptView$toFile(model.receipt));
-};
 var _user$project$ReceiptView$Model = F3(
 	function (a, b, c) {
-		return {userId: a, token: b, receipt: c};
+		return {authentication: a, receipt: b, loadingImage: c};
 	});
 var _user$project$ReceiptView$LoadImageSucceed = function (a) {
 	return {ctor: 'LoadImageSucceed', _0: a};
@@ -9973,9 +9995,9 @@ var _user$project$ReceiptView$subscriptions = _user$project$Ports$imageLoaded(_u
 var _user$project$ReceiptView$LoadImage = function (a) {
 	return {ctor: 'LoadImage', _0: a};
 };
-var _user$project$ReceiptView$init = F3(
-	function (userId, token, receipt) {
-		var model = {userId: userId, token: token, receipt: receipt};
+var _user$project$ReceiptView$init = F2(
+	function (authentication, receipt) {
+		var model = {authentication: authentication, receipt: receipt, loadingImage: false};
 		var _p2 = _user$project$ReceiptView$toImageParams(model);
 		if (_p2.ctor === 'Just') {
 			return A2(
@@ -9991,42 +10013,41 @@ var _user$project$ReceiptView$init = F3(
 		}
 	});
 
-var _user$project$ReceiptList$Model = F4(
-	function (a, b, c, d) {
-		return {userId: a, token: b, receipts: c, openedReceiptView: d};
+var _user$project$ReceiptList$Model = F3(
+	function (a, b, c) {
+		return {authentication: a, receipts: b, openedReceiptView: c};
 	});
 var _user$project$ReceiptList$OpenReceiptView = function (a) {
 	return {ctor: 'OpenReceiptView', _0: a};
 };
-var _user$project$ReceiptList$receiptRow = F3(
-	function (userId, authToken, receipt) {
-		return A2(
-			_elm_lang$html$Html$div,
-			_elm_lang$core$Native_List.fromArray(
-				[]),
-			_elm_lang$core$Native_List.fromArray(
-				[
-					A2(
-					_elm_lang$html$Html$div,
-					_elm_lang$core$Native_List.fromArray(
-						[]),
-					_elm_lang$core$Native_List.fromArray(
-						[
-							_elm_lang$html$Html$text(receipt.id),
-							A2(
-							_elm_lang$html$Html$button,
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html_Events$onClick(
-									_user$project$ReceiptList$OpenReceiptView(receipt))
-								]),
-							_elm_lang$core$Native_List.fromArray(
-								[
-									_elm_lang$html$Html$text('View Receipt')
-								]))
-						]))
-				]));
-	});
+var _user$project$ReceiptList$receiptRow = function (receipt) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(receipt.id),
+						A2(
+						_elm_lang$html$Html$button,
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html_Events$onClick(
+								_user$project$ReceiptList$OpenReceiptView(receipt))
+							]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('View Receipt')
+							]))
+					]))
+			]));
+};
 var _user$project$ReceiptList$ReceiptViewMsg = function (a) {
 	return {ctor: 'ReceiptViewMsg', _0: a};
 };
@@ -10069,7 +10090,7 @@ var _user$project$ReceiptList$view = function (model) {
 				A2(
 					_elm_lang$core$List$map,
 					function (receipt) {
-						return A3(_user$project$ReceiptList$receiptRow, model.userId, model.token, receipt);
+						return _user$project$ReceiptList$receiptRow(receipt);
 					},
 					model.receipts)),
 				_user$project$ReceiptList$receiptView(model)
@@ -10089,7 +10110,7 @@ var _user$project$ReceiptList$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A4(_user$project$Api$fetchReceipts, model.token, model.userId, _user$project$ReceiptList$FetchFail, _user$project$ReceiptList$FetchSucceed)
+					_1: A3(_user$project$Api$fetchReceipts, model.authentication, _user$project$ReceiptList$FetchFail, _user$project$ReceiptList$FetchSucceed)
 				};
 			case 'FetchSucceed':
 				return {
@@ -10104,7 +10125,7 @@ var _user$project$ReceiptList$update = F2(
 			case 'FetchFail':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'OpenReceiptView':
-				var _p2 = A3(_user$project$ReceiptView$init, model.userId, model.token, _p1._0);
+				var _p2 = A2(_user$project$ReceiptView$init, model.authentication, _p1._0);
 				var receiptViewModel = _p2._0;
 				var receiptViewCmd = _p2._1;
 				return {
@@ -10142,8 +10163,7 @@ var _user$project$ReceiptList$init = function (authentication) {
 		_user$project$ReceiptList$update,
 		_user$project$ReceiptList$Fetch,
 		{
-			userId: authentication.userId,
-			token: authentication.token,
+			authentication: authentication,
 			receipts: _elm_lang$core$Native_List.fromArray(
 				[]),
 			openedReceiptView: _elm_lang$core$Maybe$Nothing
@@ -10153,14 +10173,13 @@ var _user$project$ReceiptList$init = function (authentication) {
 var _user$project$Backup$init = function (authentication) {
 	return {
 		ctor: '_Tuple2',
-		_0: {userId: authentication.userId, token: authentication.token},
+		_0: {authentication: authentication},
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
 };
-var _user$project$Backup$Model = F2(
-	function (a, b) {
-		return {userId: a, token: b};
-	});
+var _user$project$Backup$Model = function (a) {
+	return {authentication: a};
+};
 var _user$project$Backup$BackupUrlFail = function (a) {
 	return {ctor: 'BackupUrlFail', _0: a};
 };
@@ -10175,7 +10194,7 @@ var _user$project$Backup$update = F2(
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: A4(_user$project$Api$fetchBackupUrl, model.token, model.userId, _user$project$Backup$BackupUrlFail, _user$project$Backup$BackupUrlSucceed)
+					_1: A3(_user$project$Api$fetchBackupUrl, model.authentication, _user$project$Backup$BackupUrlFail, _user$project$Backup$BackupUrlSucceed)
 				};
 			case 'BackupUrlSucceed':
 				return {

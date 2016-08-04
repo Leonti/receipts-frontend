@@ -6,9 +6,9 @@ module Api
         , fetchAppConfig
         , fetchUserInfo
         , fetchReceipts
-        , baseUrl
         , fetchBackupUrl
         , createReceiptUrl
+        , receiptFileUrl
         )
 
 import Http
@@ -43,13 +43,13 @@ fetchAppConfig fetchFail fetchSucceed =
         (Http.get Models.appConfigDecoder (baseUrl ++ "/config"))
 
 
-fetchBackupUrl : String -> String -> (Error -> msg) -> (String -> msg) -> Cmd msg
-fetchBackupUrl accessToken userId fetchFail fetchSucceed =
+fetchBackupUrl : Authentication -> (Error -> msg) -> (String -> msg) -> Cmd msg
+fetchBackupUrl authentication fetchFail fetchSucceed =
     let
         request =
             { verb = "GET"
-            , headers = [ ( "Authorization", "Bearer " ++ accessToken ) ]
-            , url = baseUrl ++ "/user/" ++ userId ++ "/backup/token"
+            , headers = [ ( "Authorization", "Bearer " ++ authentication.token ) ]
+            , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/backup/token"
             , body = Http.empty
             }
 
@@ -61,7 +61,7 @@ fetchBackupUrl accessToken userId fetchFail fetchSucceed =
                 (\token ->
                     baseUrl
                         ++ "/user/"
-                        ++ userId
+                        ++ authentication.userId
                         ++ "/backup/download?access_token="
                         ++ token
                 )
@@ -155,18 +155,18 @@ fetchUserInfoGet token =
 -- user receipts
 
 
-fetchReceipts : String -> String -> (Error -> msg) -> (List Receipt -> msg) -> Cmd msg
-fetchReceipts token userId fetchFail fetchSucceed =
-    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchReceiptsGet token userId)
+fetchReceipts : Authentication -> (Error -> msg) -> (List Receipt -> msg) -> Cmd msg
+fetchReceipts authentication fetchFail fetchSucceed =
+    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchReceiptsGet authentication)
 
 
-fetchReceiptsGet : String -> String -> Task.Task Http.Error (List Receipt)
-fetchReceiptsGet token userId =
+fetchReceiptsGet : Authentication -> Task.Task Http.Error (List Receipt)
+fetchReceiptsGet authentication =
     let
         request =
             { verb = "GET"
-            , headers = [ ( "Authorization", "Bearer " ++ token ) ]
-            , url = baseUrl ++ "/user/" ++ userId ++ "/receipt"
+            , headers = [ ( "Authorization", "Bearer " ++ authentication.token ) ]
+            , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt"
             , body = Http.empty
             }
     in
@@ -197,3 +197,8 @@ transformHttpError httpError =
 createReceiptUrl : String -> String
 createReceiptUrl userId =
     baseUrl ++ "/user/" ++ userId ++ "/receipt"
+
+
+receiptFileUrl : String -> String -> String -> String -> String
+receiptFileUrl userId receiptId fileId ext =
+    baseUrl ++ "/user/" ++ userId ++ "/receipt/" ++ receiptId ++ "/file/" ++ fileId ++ "." ++ ext
