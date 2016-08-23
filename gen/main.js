@@ -9503,7 +9503,7 @@ var _user$project$Api$basicAuthHeader = F2(
 					username,
 					A2(_elm_lang$core$Basics_ops['++'], ':', password))));
 	});
-var _user$project$Api$baseUrl = 'http://localhost:9000';
+var _user$project$Api$baseUrl = 'https://api.receipts.leonti.me';
 var _user$project$Api$authenticationGet = function (basicAuthHeader) {
 	var request = {
 		verb: 'GET',
