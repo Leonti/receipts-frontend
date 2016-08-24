@@ -10,4 +10,4 @@ git tag -a v$version -m 'new version $version'
 
 git push --quiet "https://${TAG_TOKEN}@github.com/Leonti/receipts-frontend" --follow-tags > /dev/null 2>&1
 
-echo "Released version $version"
+echo "Released version "$version

@@ -8,4 +8,4 @@ branches:
   only:
     - master
 
-script: bash publish.sh
+script: git config --global user.email "travis@example.com" && git config --global user.name "Travis Git" && bash publish.sh
