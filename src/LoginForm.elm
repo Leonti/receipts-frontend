@@ -11,6 +11,7 @@ import AccessTokenParser
 type alias Model =
     { username : String
     , password : String
+    , host : String
     , token : Maybe String
     , basicHeader : String
     , googleClientId : String
@@ -21,6 +22,7 @@ emptyModel : Model
 emptyModel =
     { username = ""
     , password = ""
+    , host = ""
     , token = Nothing
     , basicHeader = ""
     , googleClientId = ""
@@ -32,12 +34,13 @@ token model =
     model.token
 
 
-init : Maybe String -> String -> ( Model, Cmd Msg )
-init maybeToken hash =
+init : Maybe String -> String -> String -> ( Model, Cmd Msg )
+init maybeToken host hash =
     let
         initModel =
             { emptyModel
                 | token = maybeToken
+                , host = host
             }
 
         ( modelWithClientId, appConfigCmd ) =
@@ -108,12 +111,14 @@ view model =
         [ input [ type' "text", placeholder "Name", value model.username, onInput Name ] []
         , input [ type' "password", placeholder "Password", onInput Password ] []
         , button [ onClick Login ] [ text "Login" ]
-        , a [ href (googleOauthUrl model.googleClientId) ] [ text "Google Login" ]
+        , a [ href (googleOauthUrl model.host model.googleClientId) ] [ text "Google Login" ]
         ]
 
 
-googleOauthUrl : String -> String
-googleOauthUrl googleClientId =
+googleOauthUrl : String -> String -> String
+googleOauthUrl host googleClientId =
     "https://accounts.google.com/o/oauth2/v2/auth?response_type=token&client_id="
         ++ googleClientId
-        ++ "&redirect_uri=http://localhost:8000&state=some_state&scope=email profile"
+        ++ "&redirect_uri="
+        ++ host
+        ++ "&state=some_state&scope=email profile"

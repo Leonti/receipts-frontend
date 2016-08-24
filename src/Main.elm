@@ -6,7 +6,6 @@ import AuthenticatedUserView
 import Html exposing (..)
 import Html.App as App
 import Navigation
-import Result
 
 
 --import Html.Events exposing (..)
@@ -15,6 +14,12 @@ import Result
 --import Models exposing (Authentication)
 
 import Debug
+
+
+type alias ParsedLocation =
+    { host : String
+    , hash : String
+    }
 
 
 main : Program (Maybe PersistedModel)
@@ -32,14 +37,16 @@ main =
 port setStorage : PersistedModel -> Cmd msg
 
 
-fromUrl : String -> Result String String
-fromUrl url =
-    Result.fromMaybe "impossible" (Just url)
+fromLocation : Navigation.Location -> ParsedLocation
+fromLocation location =
+    { host = location.protocol ++ "//" ++ location.host
+    , hash = location.hash
+    }
 
 
-urlParser : Navigation.Parser (Result String String)
+urlParser : Navigation.Parser ParsedLocation
 urlParser =
-    Navigation.makeParser (fromUrl << .hash)
+    Navigation.makeParser fromLocation
 
 
 withSetStorage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -84,14 +91,14 @@ emptyPersistedModel =
     { token = Nothing }
 
 
-init : Maybe PersistedModel -> Result String String -> ( Model, Cmd Msg )
-init maybePersistedModel hash =
+init : Maybe PersistedModel -> ParsedLocation -> ( Model, Cmd Msg )
+init maybePersistedModel parsedLocation =
     let
         persistedModel =
             Maybe.withDefault emptyPersistedModel maybePersistedModel
 
         ( loginFormModel, loginFormCmd ) =
-            LoginForm.init persistedModel.token (Result.withDefault "" hash)
+            LoginForm.init persistedModel.token parsedLocation.host parsedLocation.hash
 
         ( userInfoModel, userInfoCmd ) =
             UserInfo.init persistedModel.token
@@ -128,7 +135,7 @@ type Msg
     | AuthenticatedUserViewMsg AuthenticatedUserView.Msg
 
 
-urlUpdate : Result String String -> Model -> ( Model, Cmd Msg )
+urlUpdate : ParsedLocation -> Model -> ( Model, Cmd Msg )
 urlUpdate url model =
     ( model, Cmd.none )
 
