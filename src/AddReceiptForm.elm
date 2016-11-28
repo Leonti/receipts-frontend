@@ -119,7 +119,7 @@ view model =
     div []
         [ imagePreview model.maybePreviewDataUrl
         , App.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
-        , input [ type' "file", id fileInputId, onMouseDown ReceiptFileInputStart ] []
+        , input [ type_ "file", id fileInputId, onMouseDown ReceiptFileInputStart ] []
         , button [ onClick UploadReceipt, disabled <| not model.fileSelected ] [ text "Create receipt" ]
         ]
 

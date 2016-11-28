@@ -108,8 +108,8 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ type' "text", placeholder "Name", value model.username, onInput Name ] []
-        , input [ type' "password", placeholder "Password", onInput Password ] []
+        [ input [ type_ "text", placeholder "Name", value model.username, onInput Name ] []
+        , input [ type_ "password", placeholder "Password", onInput Password ] []
         , button [ onClick Login ] [ text "Login" ]
         , a [ href (googleOauthUrl model.host model.googleClientId) ] [ text "Google Login" ]
         ]

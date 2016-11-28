@@ -47,7 +47,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ type' "text", placeholder "Total", value model.total, onInput TotalChange ] []
+        [ input [ type_ "text", placeholder "Total", value model.total, onInput TotalChange ] []
         , textarea [ placeholder "Notes", onInput DescriptionChange ] []
         ]
 
