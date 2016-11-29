@@ -1,6 +1,6 @@
 module Models exposing (..)
 
-import Json.Decode exposing ((:=))
+import Json.Decode exposing (field)
 import Json.Decode as Json
 
 
@@ -59,20 +59,20 @@ accessTokenDecoder =
 
 userInfoDecoder : Json.Decoder UserInfo
 userInfoDecoder =
-    Json.object2 UserInfo
-        ("id" := Json.string)
-        ("userName" := Json.string)
+    Json.map2 UserInfo
+        (field "id" Json.string)
+        (field "userName" Json.string)
 
 
 receiptDecoder : Json.Decoder Receipt
 receiptDecoder =
-    Json.object6 Receipt
-        ("id" := Json.string)
-        ("userId" := Json.string)
-        ("files" := Json.list receiptFileDecoder)
-        ("timestamp" := Json.int)
-        ("total" := nullOr Json.float)
-        ("description" := Json.string)
+    Json.map6 Receipt
+        (field "id" Json.string)
+        (field "userId" Json.string)
+        (field "files" (Json.list receiptFileDecoder))
+        (field "timestamp" Json.int)
+        (field "total" (nullOr Json.float))
+        (field "description" Json.string)
 
 
 receiptsDecoder : Json.Decoder (List Receipt)
@@ -82,26 +82,26 @@ receiptsDecoder =
 
 receiptFileDecoder : Json.Decoder ReceiptFile
 receiptFileDecoder =
-    Json.object4 ReceiptFile
-        ("id" := Json.string)
-        ("ext" := Json.string)
-        ("metaData" := fileMetadataDecoder)
-        ("timestamp" := Json.int)
+    Json.map4 ReceiptFile
+        (field "id" Json.string)
+        (field "ext" Json.string)
+        (field "metaData" fileMetadataDecoder)
+        (field "timestamp" Json.int)
 
 
 fileMetadataDecoder : Json.Decoder FileMetadata
 fileMetadataDecoder =
-    Json.object4 FileMetadata
-        ("fileType" := Json.string)
-        ("length" := Json.int)
-        ("width" := Json.int)
-        ("height" := Json.int)
+    Json.map4 FileMetadata
+        (field "fileType" Json.string)
+        (field "length" Json.int)
+        (field "width" Json.int)
+        (field "height" Json.int)
 
 
 appConfigDecoder : Json.Decoder AppConfig
 appConfigDecoder =
-    Json.object1 AppConfig
-        ("googleClientId" := Json.string)
+    Json.map AppConfig
+        (field "googleClientId" Json.string)
 
 
 nullOr : Json.Decoder a -> Json.Decoder (Maybe a)

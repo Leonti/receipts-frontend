@@ -38,26 +38,33 @@ type Error
 -- App config
 
 
-fetchAppConfig : (Error -> msg) -> (AppConfig -> msg) -> Cmd msg
-fetchAppConfig fetchFail fetchSucceed =
-    Task.perform
-        (handleError transformHttpError fetchFail)
-        fetchSucceed
-        (Http.get Models.appConfigDecoder (baseUrl ++ "/config"))
+fetchAppConfig : (Result Error AppConfig -> msg) -> Cmd msg
+fetchAppConfig handler =
+    Http.send (transformResultHandler handler)
+        (Http.get (baseUrl ++ "/config") Models.appConfigDecoder)
 
 
-fetchBackupUrl : Authentication -> (Error -> msg) -> (String -> msg) -> Cmd msg
-fetchBackupUrl authentication fetchFail fetchSucceed =
+authorizationHeaders : String -> Http.Header
+authorizationHeaders token =
+    Http.header "Authorization" ("Bearer " ++ token)
+
+
+fetchBackupUrl : Authentication -> (Result Error String -> msg) -> Cmd msg
+fetchBackupUrl authentication handler =
     let
         request =
-            { verb = "GET"
-            , headers = [ ( "Authorization", "Bearer " ++ authentication.token ) ]
-            , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/backup/token"
-            , body = Http.empty
-            }
+            Http.request
+                { method = "GET"
+                , headers = [ authorizationHeaders authentication.token ]
+                , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/backup/token"
+                , body = Http.emptyBody
+                , expect = Http.expectJson Models.accessTokenDecoder
+                , timeout = Nothing
+                , withCredentials = False
+                }
 
         accessTokenTask =
-            Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
+            Http.toTask request
 
         backupUrlTask =
             Task.map
@@ -70,22 +77,22 @@ fetchBackupUrl authentication fetchFail fetchSucceed =
                 )
                 accessTokenTask
     in
-        Task.perform (handleError transformHttpError fetchFail) fetchSucceed backupUrlTask
+        Task.attempt (transformResultHandler handler) backupUrlTask
 
 
 
 -- Authentication
 
 
-authenticate : String -> String -> (Error -> msg) -> (String -> msg) -> Cmd msg
-authenticate username password loginFail loginSucceed =
+authenticate : String -> String -> (Result Error String -> msg) -> Cmd msg
+authenticate username password handler =
     let
         basicAuthHeaderResult =
             basicAuthHeader username password
     in
         case basicAuthHeaderResult of
             Result.Ok header ->
-                Task.perform (handleError transformHttpError loginFail) loginSucceed (authenticationGet header)
+                authenticationGet header handler
 
             Result.Err error ->
                 Cmd.none
@@ -96,89 +103,80 @@ basicAuthHeader username password =
     Result.map (\s -> "Basic " ++ s) (Base64.encode (username ++ ":" ++ password))
 
 
-authenticationGet : String -> Task.Task Http.Error String
-authenticationGet basicAuthHeader =
-    let
-        request =
-            { verb = "GET"
-            , headers = [ ( "Authorization", basicAuthHeader ) ]
+authenticationGet : String -> (Result Error String -> msg) -> Cmd msg
+authenticationGet basicAuthHeader handler =
+    Http.send (transformResultHandler handler) <|
+        Http.request
+            { method = "GET"
+            , headers = [ Http.header "Authorization" basicAuthHeader ]
             , url = baseUrl ++ "/token/create"
-            , body = Http.empty
+            , body = Http.emptyBody
+            , expect = Http.expectJson Models.accessTokenDecoder
+            , timeout = Nothing
+            , withCredentials = False
             }
-    in
-        Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
 
 
-authenticateWithGoogle : String -> (Error -> msg) -> (String -> msg) -> Cmd msg
-authenticateWithGoogle accessToken loginFail loginSucceed =
+authenticateWithGoogle : String -> (Result Error String -> msg) -> Cmd msg
+authenticateWithGoogle accessToken handler =
     let
         accessTokenValue =
             Json.Encode.object
                 [ ( "token", Json.Encode.string accessToken ) ]
 
-        accessTokenBody =
-            Http.string <| Json.Encode.encode 0 accessTokenValue
-
         request =
-            { verb = "POST"
-            , headers = [ ( "Content-Type", "application/json" ) ]
-            , url = baseUrl ++ "/oauth/google-access-token"
-            , body = accessTokenBody
-            }
-
-        task =
-            Http.fromJson Models.accessTokenDecoder (Http.send Http.defaultSettings request)
+            Http.request
+                { method = "POST"
+                , headers = [ Http.header "Content-Type" "application/json" ]
+                , url = baseUrl ++ "/oauth/google-access-token"
+                , body = Http.jsonBody accessTokenValue
+                , expect = Http.expectJson Models.accessTokenDecoder
+                , timeout = Nothing
+                , withCredentials = False
+                }
     in
-        Task.perform (handleError transformHttpError loginFail) loginSucceed task
+        Http.send (transformResultHandler handler) request
 
 
 
 -- user info
 
 
-fetchUserInfo : String -> (Error -> msg) -> (UserInfo -> msg) -> Cmd msg
-fetchUserInfo token fetchFail fetchSucceed =
-    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchUserInfoGet token)
-
-
-fetchUserInfoGet : String -> Task.Task Http.Error UserInfo
-fetchUserInfoGet token =
-    let
-        request =
-            { verb = "GET"
-            , headers = [ ( "Authorization", "Bearer " ++ token ) ]
+fetchUserInfo : String -> (Result Error UserInfo -> msg) -> Cmd msg
+fetchUserInfo token handler =
+    Http.send (transformResultHandler handler) <|
+        Http.request
+            { method = "GET"
+            , headers = [ (authorizationHeaders token) ]
             , url = baseUrl ++ "/user/info"
-            , body = Http.empty
+            , body = Http.emptyBody
+            , expect = Http.expectJson Models.userInfoDecoder
+            , timeout = Nothing
+            , withCredentials = False
             }
-    in
-        Http.fromJson Models.userInfoDecoder <| Http.send Http.defaultSettings request
 
 
 
 -- user receipts
 
 
-fetchReceipts : Authentication -> (Error -> msg) -> (List Receipt -> msg) -> Cmd msg
-fetchReceipts authentication fetchFail fetchSucceed =
-    Task.perform (handleError transformHttpError fetchFail) fetchSucceed (fetchReceiptsGet authentication)
-
-
-fetchReceiptsGet : Authentication -> Task.Task Http.Error (List Receipt)
-fetchReceiptsGet authentication =
-    let
-        request =
-            { verb = "GET"
-            , headers = [ ( "Authorization", "Bearer " ++ authentication.token ) ]
+fetchReceipts : Authentication -> (Result Error (List Receipt) -> msg) -> Cmd msg
+fetchReceipts authentication handler =
+    Http.send (transformResultHandler handler) <|
+        Http.request
+            { method = "GET"
+            , headers = [ (authorizationHeaders authentication.token) ]
             , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt"
-            , body = Http.empty
+            , body = Http.emptyBody
+            , expect = Http.expectJson Models.receiptsDecoder
+            , timeout = Nothing
+            , withCredentials = False
             }
-    in
-        Http.fromJson (Models.receiptsDecoder) (Http.send Http.defaultSettings request)
 
 
-handleError : (Http.Error -> Error) -> (Error -> msg) -> Http.Error -> msg
-handleError toError toMsg httpError =
-    toMsg <| toError httpError
+transformResultHandler : (Result Error a -> msg) -> Result Http.Error a -> msg
+transformResultHandler toMsg result =
+    toMsg <| Result.mapError transformHttpError result
 
 
 transformHttpError : Http.Error -> Error
@@ -190,11 +188,14 @@ transformHttpError httpError =
         Http.NetworkError ->
             Error "NetworkError"
 
-        Http.UnexpectedPayload desc ->
-            Error <| "UnexpectedPayload " ++ desc
+        Http.BadPayload desc response ->
+            Error <| "BadPayload " ++ desc ++ " " ++ response.body
 
-        Http.BadResponse code desc ->
-            Error <| "BadResponse " ++ (toString code) ++ " " ++ desc
+        Http.BadStatus response ->
+            Error <| "BadStatus " ++ " " ++ response.body
+
+        Http.BadUrl desc ->
+            Error <| "BadUrl " ++ " " ++ desc
 
 
 createReceiptUrl : String -> String

@@ -2,7 +2,6 @@ module ReceiptList exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Events exposing (..)
-import Html.App as App
 import Api
 import Models exposing (UserInfo, Receipt, Authentication)
 import ReceiptView
@@ -26,8 +25,7 @@ init authentication =
 
 type Msg
     = Fetch
-    | FetchSucceed (List Receipt)
-    | FetchFail Api.Error
+    | FetchResult (Result Api.Error (List Receipt))
     | ReceiptViewMsg ReceiptView.Msg
     | OpenReceiptView Receipt
 
@@ -36,12 +34,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Fetch ->
-            ( model, Api.fetchReceipts model.authentication FetchFail FetchSucceed )
+            ( model, Api.fetchReceipts model.authentication FetchResult )
 
-        FetchSucceed receipts ->
+        FetchResult (Ok receipts) ->
             ( { model | receipts = List.take 10 receipts }, Cmd.none )
 
-        FetchFail error ->
+        FetchResult (Err error) ->
             ( model, Cmd.none )
 
         OpenReceiptView receipt ->
@@ -91,7 +89,7 @@ receiptView : Model -> Html Msg
 receiptView model =
     case model.openedReceiptView of
         Just openedReceiptView ->
-            App.map ReceiptViewMsg (ReceiptView.view openedReceiptView)
+            Html.map ReceiptViewMsg (ReceiptView.view openedReceiptView)
 
         Nothing ->
             div [] []

@@ -62,12 +62,10 @@ type Msg
     = Name String
     | Password String
     | AppConfigFetch
-    | AppConfigFetchSucceed AppConfig
-    | AppConfigFetchFail Api.Error
+    | AppConfigFetchResult (Result Api.Error AppConfig)
     | Login
     | LoginWithGoogle String
-    | LoginSucceed String
-    | LoginFail Api.Error
+    | LoginResult (Result Api.Error String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -80,24 +78,24 @@ update msg model =
             ( { model | password = password }, Cmd.none )
 
         AppConfigFetch ->
-            ( model, (Api.fetchAppConfig AppConfigFetchFail AppConfigFetchSucceed) )
+            ( model, (Api.fetchAppConfig AppConfigFetchResult) )
 
-        AppConfigFetchSucceed appConfig ->
+        AppConfigFetchResult (Ok appConfig) ->
             ( { model | googleClientId = appConfig.googleClientId }, Cmd.none )
 
-        AppConfigFetchFail error ->
+        AppConfigFetchResult (Err error) ->
             ( model, Cmd.none )
 
         Login ->
-            ( model, (Api.authenticate model.username model.password LoginFail LoginSucceed) )
+            ( model, (Api.authenticate model.username model.password LoginResult) )
 
         LoginWithGoogle accessToken ->
-            ( model, (Api.authenticateWithGoogle accessToken LoginFail LoginSucceed) )
+            ( model, (Api.authenticateWithGoogle accessToken LoginResult) )
 
-        LoginSucceed token ->
+        LoginResult (Ok token) ->
             ( { model | token = Just token }, Cmd.none )
 
-        LoginFail error ->
+        LoginResult (Err error) ->
             ( model, Cmd.none )
 
 

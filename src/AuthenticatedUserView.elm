@@ -2,7 +2,6 @@ module AuthenticatedUserView exposing (Model, Msg, init, update, view, subscript
 
 import Html exposing (..)
 import Html.Events exposing (..)
-import Html.App as App
 import Models exposing (Authentication)
 import ReceiptList
 import Backup
@@ -105,8 +104,8 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ App.map ReceiptListMsg (ReceiptList.view model.receiptListModel)
-        , App.map BackupMsg (Backup.view model.backupModel)
+        [ Html.map ReceiptListMsg (ReceiptList.view model.receiptListModel)
+        , Html.map BackupMsg (Backup.view model.backupModel)
         , addReceiptFormView model.maybeAddReceiptFormModel
         ]
 
@@ -117,7 +116,7 @@ addReceiptFormView maybeAddReceiptFormModel =
         Just addReceiptFormModel ->
             div []
                 [ button [ onClick HideNewReceiptForm ] [ text "Close new receipt form" ]
-                , App.map AddReceiptFormMsg (AddReceiptForm.view addReceiptFormModel)
+                , Html.map AddReceiptFormMsg (AddReceiptForm.view addReceiptFormModel)
                 ]
 
         Nothing ->

@@ -4,7 +4,6 @@ import LoginForm
 import UserInfo
 import AuthenticatedUserView
 import Html exposing (..)
-import Html.App as App
 import Navigation
 
 
@@ -22,14 +21,12 @@ type alias ParsedLocation =
     }
 
 
-main : Program (Maybe PersistedModel)
+main : Program (Maybe PersistedModel) Model Msg
 main =
-    Navigation.programWithFlags
-        urlParser
+    Navigation.programWithFlags UrlChange
         { init = init
         , view = view
         , update = (\msg model -> withSetStorage (Debug.log "model" (update msg model)))
-        , urlUpdate = urlUpdate
         , subscriptions = subscriptions
         }
 
@@ -42,11 +39,6 @@ fromLocation location =
     { host = location.protocol ++ "//" ++ location.host
     , hash = location.hash
     }
-
-
-urlParser : Navigation.Parser ParsedLocation
-urlParser =
-    Navigation.makeParser fromLocation
 
 
 withSetStorage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -91,7 +83,7 @@ emptyPersistedModel =
     { token = Nothing }
 
 
-init : Maybe PersistedModel -> ParsedLocation -> ( Model, Cmd Msg )
+init : Maybe PersistedModel -> Navigation.Location -> ( Model, Cmd Msg )
 init maybePersistedModel parsedLocation =
     let
         persistedModel =
@@ -130,7 +122,8 @@ authTokenToPage maybeAuthToken =
 
 
 type Msg
-    = LoginFormMsg LoginForm.Msg
+    = UrlChange Navigation.Location
+    | LoginFormMsg LoginForm.Msg
     | UserInfoMsg UserInfo.Msg
     | AuthenticatedUserViewMsg AuthenticatedUserView.Msg
 
@@ -143,6 +136,10 @@ urlUpdate url model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case (Debug.log "msg" msg) of
+        UrlChange location ->
+            ( model, Cmd.none )
+
+        -- insert page changing logic here
         LoginFormMsg message ->
             let
                 ( loginFormModel, loginFormCmd ) =
@@ -231,7 +228,7 @@ view model =
         [ div []
             [ span [] [ text <| toAuthToken model ]
             ]
-        , App.map UserInfoMsg (UserInfo.view model.userInfoModel)
+        , Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
         , div []
             [ span [] [ text <| toString model ]
             ]
@@ -243,12 +240,12 @@ pageView : Model -> Html Msg
 pageView model =
     case (model.activePage) of
         LoginPage ->
-            App.map LoginFormMsg (LoginForm.view model.loginFormModel)
+            Html.map LoginFormMsg (LoginForm.view model.loginFormModel)
 
         ReceiptListPage ->
             case model.maybeAuthenticatedUserViewModel of
                 Just authenticatedUserViewModel ->
-                    App.map AuthenticatedUserViewMsg (AuthenticatedUserView.view authenticatedUserViewModel)
+                    Html.map AuthenticatedUserViewMsg (AuthenticatedUserView.view authenticatedUserViewModel)
 
                 Nothing ->
                     div [] []

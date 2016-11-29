@@ -22,20 +22,19 @@ init authentication =
 
 type Msg
     = DownloadBackup
-    | BackupUrlSucceed String
-    | BackupUrlFail Api.Error
+    | BackupUrlResult (Result Api.Error String)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         DownloadBackup ->
-            ( model, Api.fetchBackupUrl model.authentication BackupUrlFail BackupUrlSucceed )
+            ( model, Api.fetchBackupUrl model.authentication BackupUrlResult )
 
-        BackupUrlSucceed backupUrl ->
+        BackupUrlResult (Ok backupUrl) ->
             ( model, initDownload backupUrl )
 
-        BackupUrlFail error ->
+        BackupUrlResult (Err error) ->
             ( model, Cmd.none )
 
 

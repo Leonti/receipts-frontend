@@ -46,20 +46,19 @@ init maybeToken =
 
 type Msg
     = Fetch
-    | FetchSucceed UserInfo
-    | FetchFail Api.Error
+    | FetchResult (Result Api.Error UserInfo)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Fetch ->
-            ( model, Api.fetchUserInfo model.token FetchFail FetchSucceed )
+            ( model, Api.fetchUserInfo model.token FetchResult )
 
-        FetchSucceed userInfo ->
+        FetchResult (Ok userInfo) ->
             ( { model | userInfo = Just userInfo }, Cmd.none )
 
-        FetchFail error ->
+        FetchResult (Err error) ->
             ( model, Cmd.none )
 
 
