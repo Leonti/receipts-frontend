@@ -12,8 +12,6 @@ import Navigation
 --import Api
 --import Models exposing (Authentication)
 
-import Debug
-
 
 type alias ParsedLocation =
     { host : String
@@ -26,7 +24,7 @@ main =
     Navigation.programWithFlags UrlChange
         { init = init
         , view = view
-        , update = (\msg model -> withSetStorage (Debug.log "model" (update msg model)))
+        , update = (\msg model -> withSetStorage (update msg model))
         , subscriptions = subscriptions
         }
 
@@ -84,10 +82,13 @@ emptyPersistedModel =
 
 
 init : Maybe PersistedModel -> Navigation.Location -> ( Model, Cmd Msg )
-init maybePersistedModel parsedLocation =
+init maybePersistedModel location =
     let
         persistedModel =
             Maybe.withDefault emptyPersistedModel maybePersistedModel
+
+        parsedLocation =
+            fromLocation location
 
         ( loginFormModel, loginFormCmd ) =
             LoginForm.init persistedModel.token parsedLocation.host parsedLocation.hash
@@ -135,7 +136,7 @@ urlUpdate url model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case (Debug.log "msg" msg) of
+    case msg of
         UrlChange location ->
             ( model, Cmd.none )
 
@@ -225,13 +226,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ div []
-            [ span [] [ text <| toAuthToken model ]
-            ]
-        , Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
-        , div []
-            [ span [] [ text <| toString model ]
-            ]
+        [ Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
         , pageView model
         ]
 

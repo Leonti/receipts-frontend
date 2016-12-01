@@ -9,13 +9,17 @@ import Models exposing (ReceiptFormData)
 type alias Model =
     { total : String
     , description : String
+    , timestamp : Int
+    , tags : List String
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : ReceiptFormData -> ( Model, Cmd Msg )
+init receiptFormData =
     ({ total = ""
      , description = ""
+     , timestamp = receiptFormData.timestamp
+     , tags = []
      }
         ! []
     )
@@ -49,6 +53,7 @@ view model =
     div []
         [ input [ type_ "text", placeholder "Total", value model.total, onInput TotalChange ] []
         , textarea [ placeholder "Notes", onInput DescriptionChange ] []
+        , span [] [ text <| toString model.timestamp ]
         ]
 
 
@@ -56,4 +61,6 @@ formData : Model -> ReceiptFormData
 formData model =
     { total = Just 1.38
     , description = model.description
+    , timestamp = model.timestamp
+    , tags = model.tags
     }

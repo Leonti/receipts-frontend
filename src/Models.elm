@@ -29,6 +29,8 @@ type alias Receipt =
 type alias ReceiptFormData =
     { total : Maybe Float
     , description : String
+    , timestamp : Int
+    , tags : List String
     }
 
 
