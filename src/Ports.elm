@@ -7,7 +7,6 @@ type alias LoadImageParams =
     { url : String
     , authToken : String
     , fileId : String
-    , imageId : String
     }
 
 

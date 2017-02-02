@@ -5,12 +5,17 @@ import Html.Events exposing (..)
 import Api
 import Models exposing (UserInfo, Receipt, Authentication)
 import ReceiptView
+import Material.List as Lists
+import Material.Options as Options exposing (when, css)
+import Material.Spinner as Spinner
+import Material.Grid as Grid
 
 
 type alias Model =
     { authentication : Authentication
     , receipts : List Receipt
     , openedReceiptView : Maybe ReceiptView.Model
+    , loadingReceipts : Bool
     }
 
 
@@ -20,6 +25,7 @@ init authentication =
         { authentication = authentication
         , receipts = []
         , openedReceiptView = Nothing
+        , loadingReceipts = False
         }
 
 
@@ -34,13 +40,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Fetch ->
-            ( model, Api.fetchReceipts model.authentication FetchResult )
+            ( { model | loadingReceipts = True }, Api.fetchReceipts model.authentication FetchResult )
 
         FetchResult (Ok receipts) ->
-            ( { model | receipts = List.take 10 receipts }, Cmd.none )
+            ( { model
+                | receipts = List.take 10 receipts
+                , loadingReceipts = False
+              }
+            , Cmd.none
+            )
 
         FetchResult (Err error) ->
-            ( model, Cmd.none )
+            ( { model | loadingReceipts = False }, Cmd.none )
 
         OpenReceiptView receipt ->
             let
@@ -77,12 +88,22 @@ subscriptions =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div []
-            [ text "Receipts:" ]
-        , div [] (List.map (\receipt -> receiptRow receipt) model.receipts)
-        , receiptView model
+    Grid.grid []
+        [ Grid.cell [ Grid.size Grid.All 6 ] [ receiptList model ]
+        , Grid.cell [ Grid.size Grid.All 6 ] [ receiptView model ]
         ]
+
+
+receiptList : Model -> Html Msg
+receiptList model =
+    if model.loadingReceipts then
+        Spinner.spinner
+            [ Spinner.active True
+            , Spinner.singleColor True
+            ]
+    else
+        Lists.ul []
+            (List.map (\receipt -> receiptRow receipt) model.receipts)
 
 
 receiptView : Model -> Html Msg
@@ -97,9 +118,8 @@ receiptView model =
 
 receiptRow : Receipt -> Html Msg
 receiptRow receipt =
-    div []
-        [ div []
-            [ text receipt.id
-            , button [ onClick <| OpenReceiptView receipt ] [ text "View Receipt" ]
-            ]
+    Lists.li []
+        [ Lists.content
+            [ Options.attribute <| Html.Events.onClick (OpenReceiptView receipt) ]
+            [ text receipt.id ]
         ]

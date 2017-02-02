@@ -16,10 +16,10 @@ type alias Model =
 
 init : ReceiptFormData -> ( Model, Cmd Msg )
 init receiptFormData =
-    ({ total = ""
-     , description = ""
+    ({ total = Maybe.withDefault "" <| Maybe.map toString receiptFormData.total
+     , description = receiptFormData.description
      , timestamp = receiptFormData.timestamp
-     , tags = []
+     , tags = receiptFormData.tags
      }
         ! []
     )
@@ -52,7 +52,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ input [ type_ "text", placeholder "Total", value model.total, onInput TotalChange ] []
-        , textarea [ placeholder "Notes", onInput DescriptionChange ] []
+        , textarea [ placeholder "Notes", value model.description, onInput DescriptionChange ] []
         , span [] [ text <| toString model.timestamp ]
         ]
 

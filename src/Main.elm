@@ -5,6 +5,10 @@ import UserInfo
 import AuthenticatedUserView
 import Html exposing (..)
 import Navigation
+import Material
+import Material.Layout as Layout
+import Material.Typography as Typography
+import Material.Options as Options exposing (css, when)
 
 
 --import Html.Events exposing (..)
@@ -67,6 +71,7 @@ type alias Model =
     , loginFormModel : LoginForm.Model
     , userInfoModel : UserInfo.Model
     , maybeAuthenticatedUserViewModel : Maybe AuthenticatedUserView.Model
+    , mdl : Material.Model
     }
 
 
@@ -100,6 +105,7 @@ init maybePersistedModel location =
           , loginFormModel = loginFormModel
           , userInfoModel = userInfoModel
           , maybeAuthenticatedUserViewModel = Nothing
+          , mdl = Material.model
           }
         , Cmd.batch
             [ Cmd.map LoginFormMsg loginFormCmd
@@ -127,6 +133,7 @@ type Msg
     | LoginFormMsg LoginForm.Msg
     | UserInfoMsg UserInfo.Msg
     | AuthenticatedUserViewMsg AuthenticatedUserView.Msg
+    | Mdl (Material.Msg Msg)
 
 
 urlUpdate : ParsedLocation -> Model -> ( Model, Cmd Msg )
@@ -139,6 +146,9 @@ update msg model =
     case msg of
         UrlChange location ->
             ( model, Cmd.none )
+
+        Mdl message ->
+            Material.update Mdl message model
 
         -- insert page changing logic here
         LoginFormMsg message ->
@@ -226,9 +236,52 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
-        , pageView model
+        [ Layout.render Mdl
+            model.mdl
+            []
+            { header = header model
+            , drawer = drawer
+            , tabs = ( [], [] )
+            , main = [ (pageView model) ]
+            }
+          --Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
+          --, pageView model
         ]
+
+
+e404 : Model -> Html Msg
+e404 _ =
+    div
+        []
+        [ Options.styled Html.h1
+            [ Options.cs "mdl-typography--display-4"
+            , Typography.center
+            ]
+            [ text "404" ]
+        ]
+
+
+drawer : List (Html Msg)
+drawer =
+    [ Layout.title [] [ text "Receipts" ]
+    , Layout.navigation
+        []
+        []
+    ]
+
+
+header : Model -> List (Html Msg)
+header model =
+    [ Layout.row
+        [ Options.nop
+        , css "transition" "height 333ms ease-in-out 0s"
+        ]
+        [ Layout.title [] [ text "Receipts" ]
+        , Layout.spacer
+        , Layout.navigation []
+            []
+        ]
+    ]
 
 
 pageView : Model -> Html Msg

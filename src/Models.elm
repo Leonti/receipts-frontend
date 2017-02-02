@@ -23,6 +23,7 @@ type alias Receipt =
     , timestamp : Int
     , total : Maybe Float
     , description : String
+    , tags : List String
     }
 
 
@@ -68,13 +69,14 @@ userInfoDecoder =
 
 receiptDecoder : Json.Decoder Receipt
 receiptDecoder =
-    Json.map6 Receipt
+    Json.map7 Receipt
         (field "id" Json.string)
         (field "userId" Json.string)
         (field "files" (Json.list receiptFileDecoder))
         (field "timestamp" Json.int)
         (field "total" (nullOr Json.float))
         (field "description" Json.string)
+        (field "tags" (Json.list Json.string))
 
 
 receiptsDecoder : Json.Decoder (List Receipt)
