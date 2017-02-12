@@ -3,3 +3,24 @@ html {
 //    font-family: "Comic Sans MS", cursive;
 //    color: magenta;
 }
+
+.receipt-image-wrapper {
+    position: relative;
+
+    .region-selector {
+        position: absolute;
+        background-color: rgba(14, 113, 234, .5);
+        border: 1px solid rgb(14, 113, 234);
+    }
+}
+
+.zoom-window {
+    position: relative;
+    overflow: hidden;
+
+    background: yellow;
+
+    .zoomed-image {
+        position: absolute;
+    }
+}

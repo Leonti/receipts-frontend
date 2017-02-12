@@ -1,5 +1,5 @@
 main.ports.setStorage.subscribe(function(state) {
-    console.log('setting state', state);
+//    console.log('setting state', state);
     localStorage.setItem('elm-main-state', JSON.stringify(state));
 });
 

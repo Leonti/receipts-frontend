@@ -1,9 +1,10 @@
 module ReceiptForm exposing (Model, Msg, init, update, view, formData)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Models exposing (ReceiptFormData)
+import Material.Textfield as Textfield
+import Material
+import Material.Options as Options
 
 
 type alias Model =
@@ -11,6 +12,7 @@ type alias Model =
     , description : String
     , timestamp : Int
     , tags : List String
+    , mdl : Material.Model
     }
 
 
@@ -20,6 +22,7 @@ init receiptFormData =
      , description = receiptFormData.description
      , timestamp = receiptFormData.timestamp
      , tags = receiptFormData.tags
+     , mdl = Material.model
      }
         ! []
     )
@@ -28,6 +31,7 @@ init receiptFormData =
 type Msg
     = TotalChange String
     | DescriptionChange String
+    | Mdl (Material.Msg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -47,12 +51,39 @@ update msg model =
             , Cmd.none
             )
 
+        Mdl msg_ ->
+            Material.update Mdl msg_ model
+
 
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ type_ "text", placeholder "Total", value model.total, onInput TotalChange ] []
-        , textarea [ placeholder "Notes", value model.description, onInput DescriptionChange ] []
+        [ div []
+            [ Textfield.render Mdl
+                [ 0 ]
+                model.mdl
+                [ Textfield.label "Total"
+                , Textfield.floatingLabel
+                , Options.css "width" "20%"
+                , Textfield.value model.total
+                , Options.onInput TotalChange
+                ]
+                []
+            ]
+        , div []
+            [ Textfield.render Mdl
+                [ 1 ]
+                model.mdl
+                [ Textfield.label "Notes"
+                , Textfield.floatingLabel
+                , Options.css "width" "100%"
+                , Textfield.textarea
+                , Textfield.rows 6
+                , Options.onInput DescriptionChange
+                , Textfield.value model.description
+                ]
+                []
+            ]
         , span [] [ text <| toString model.timestamp ]
         ]
 
