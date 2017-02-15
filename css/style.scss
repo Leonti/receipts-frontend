@@ -7,6 +7,26 @@ html {
 .receipt-image-wrapper {
     position: relative;
 
+    .loading-spinner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: -1;
+
+        display: flex;
+        justify-content: center
+    }
+
+    // prevents image dragging
+    .selection-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
     .region-selector {
         position: absolute;
         background-color: rgba(14, 113, 234, .5);
@@ -17,8 +37,6 @@ html {
 .zoom-window {
     position: relative;
     overflow: hidden;
-
-    background: yellow;
 
     .zoomed-image {
         position: absolute;

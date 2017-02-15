@@ -1,13 +1,15 @@
-module ReceiptView exposing (Model, Msg, init, update, view, subscriptions)
+module ReceiptView exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Ports
 import Api
+import Task
 import Models exposing (Receipt, ReceiptFile, Authentication)
 import ReceiptForm
 import Material.Spinner as Spinner
 import MousePosition exposing (Offset, onMouseMove, onMouseDown, onMouseUp)
+import Time
+import Process
 
 
 type alias SelectionBox =
@@ -32,8 +34,7 @@ type alias ZoomBox =
 type alias Model =
     { authentication : Authentication
     , receipt : Receipt
-    , loadingImage : Bool
-    , imageData : String
+    , imageUrl : Maybe String
     , receiptFormModel : ReceiptForm.Model
     , selectionBox : Maybe SelectionBox
     , zoomBox : Maybe ZoomBox
@@ -54,32 +55,21 @@ init authentication receipt =
         model =
             { authentication = authentication
             , receipt = receipt
-            , loadingImage = False
-            , imageData = ""
+            , imageUrl = Nothing
             , receiptFormModel = receiptFormModel
             , selectionBox = Nothing
             , zoomBox = Nothing
             }
     in
-        case toImageParams model of
-            Just imageParams ->
-                update (LoadImage imageParams) model
-
-            Nothing ->
-                (model ! [])
+        ( model, delay 10 SetImageUrl )
 
 
-toImageParams : Model -> Maybe Ports.LoadImageParams
-toImageParams model =
+toImageUrl : Authentication -> Receipt -> Maybe String
+toImageUrl authentication receipt =
     Maybe.map
-        (\file ->
-            { url = Api.receiptFileUrl model.authentication.userId model.receipt.id file.id file.ext
-            , authToken = model.authentication.token
-            , fileId = file.id
-            }
-        )
+        (\file -> Api.receiptFileUrl authentication.userId receipt.id file.id file.ext)
     <|
-        toFile model.receipt
+        toFile receipt
 
 
 toFile : Receipt -> Maybe ReceiptFile
@@ -99,32 +89,16 @@ toFile receipt =
 
 
 type Msg
-    = LoadImage Ports.LoadImageParams
-    | LoadImageSucceed Ports.LoadImageResult
-    | ReceiptFormMsg ReceiptForm.Msg
+    = ReceiptFormMsg ReceiptForm.Msg
     | MouseDown Offset
     | MouseMove Offset
     | MouseUp Offset
+    | SetImageUrl
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        LoadImage loadImageParams ->
-            ( { model
-                | loadingImage = True
-              }
-            , Ports.loadImage loadImageParams
-            )
-
-        LoadImageSucceed loadImageResult ->
-            ( { model
-                | loadingImage = False
-                , imageData = loadImageResult.imageData
-              }
-            , Cmd.none
-            )
-
         ReceiptFormMsg message ->
             let
                 ( receiptFormModel, receiptFormCmd ) =
@@ -143,20 +117,34 @@ update msg model =
             in
                 ( { model | selectionBox = selectionBox }, Cmd.none )
 
+        SetImageUrl ->
+            ( { model
+                | imageUrl = toImageUrl model.authentication model.receipt
+              }
+            , Cmd.none
+            )
+
         MouseMove offset ->
-            let
-                selectionBox =
-                    Maybe.map (updateSelectionBox offset) model.selectionBox
-            in
-                ( { model | selectionBox = selectionBox }, Cmd.none )
+            ( { model
+                | selectionBox = Maybe.map (updateSelectionBox offset) model.selectionBox
+              }
+            , Cmd.none
+            )
 
         MouseUp _ ->
             ( { model
                 | selectionBox = Nothing
-                , zoomBox = Maybe.map toZoomBox model.selectionBox
+                , zoomBox = Debug.log "zoombox" <| Maybe.map toZoomBox model.selectionBox
               }
             , Cmd.none
             )
+
+
+delay : Time.Time -> msg -> Cmd msg
+delay time msg =
+    Process.sleep time
+        |> Task.andThen (always <| Task.succeed msg)
+        |> Task.perform identity
 
 
 toZoomBox : SelectionBox -> ZoomBox
@@ -195,29 +183,17 @@ updateSelectionBox offset selectionBox =
         }
 
 
-subscriptions : Sub Msg
-subscriptions =
-    Ports.imageLoaded LoadImageSucceed
-
-
 view : Model -> Html Msg
 view model =
     let
         maybeZoomedView =
-            Maybe.map2 (zoomWindowView model.imageData) (toFile model.receipt) model.zoomBox
+            Maybe.map2 (zoomWindowView model.imageUrl) (toFile model.receipt) model.zoomBox
 
         zoomedView =
             Maybe.withDefault (div [] []) maybeZoomedView
     in
         div []
-            [ div []
-                [ text "Receipt view:" ]
-            , div [] [ text model.receipt.id ]
-            , Spinner.spinner
-                [ Spinner.active model.loadingImage
-                , Spinner.singleColor True
-                ]
-            , Html.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
+            [ Html.map ReceiptFormMsg (ReceiptForm.view model.receiptFormModel)
             , zoomedView
             , receiptImageView model
             ]
@@ -226,17 +202,11 @@ view model =
 receiptImageView : Model -> Html Msg
 receiptImageView model =
     let
-        imageDataUrl =
-            "data:image/jpeg;base64," ++ model.imageData
-
-        imageBaseStyle =
-            [ ( "width", "100%" ) ]
+        imageUrl =
+            Debug.log "url" <| Maybe.withDefault "" model.imageUrl
 
         imageStyle =
-            if model.loadingImage then
-                imageBaseStyle ++ [ ( "display", "none" ) ]
-            else
-                imageBaseStyle
+            [ ( "width", "100%" ) ]
 
         selectorStyle =
             case model.selectionBox of
@@ -256,11 +226,18 @@ receiptImageView model =
             , onMouseDown MouseDown
             , onMouseUp MouseUp
             ]
-            [ img
-                [ Html.Attributes.src imageDataUrl
+            [ div [ Html.Attributes.class "loading-spinner" ]
+                [ Spinner.spinner
+                    [ Spinner.active True
+                    , Spinner.singleColor True
+                    ]
+                ]
+            , img
+                [ Html.Attributes.src imageUrl
                 , Html.Attributes.style imageStyle
                 ]
                 []
+            , div [ Html.Attributes.class "selection-area" ] []
             , div
                 [ Html.Attributes.class "region-selector"
                 , Html.Attributes.style selectorStyle
@@ -269,11 +246,11 @@ receiptImageView model =
             ]
 
 
-zoomWindowView : String -> ReceiptFile -> ZoomBox -> Html Msg
-zoomWindowView imageData receiptFile zoomBox =
+zoomWindowView : Maybe String -> ReceiptFile -> ZoomBox -> Html Msg
+zoomWindowView maybeImageUrl receiptFile zoomBox =
     let
-        imageDataUrl =
-            "data:image/jpeg;base64," ++ imageData
+        imageUrl =
+            Maybe.withDefault "" maybeImageUrl
 
         ratio =
             toFloat zoomBox.w / toFloat zoomBox.h
@@ -317,7 +294,7 @@ zoomWindowView imageData receiptFile zoomBox =
             ]
             [ img
                 [ Html.Attributes.class "zoomed-image"
-                , Html.Attributes.src imageDataUrl
+                , Html.Attributes.src imageUrl
                 , Html.Attributes.style imageStyle
                 ]
                 []

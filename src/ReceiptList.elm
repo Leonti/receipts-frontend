@@ -83,7 +83,7 @@ update msg model =
 
 subscriptions : Sub Msg
 subscriptions =
-    Sub.map ReceiptViewMsg (ReceiptView.subscriptions)
+    Sub.none
 
 
 view : Model -> Html Msg

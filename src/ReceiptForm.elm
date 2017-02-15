@@ -5,6 +5,9 @@ import Models exposing (ReceiptFormData)
 import Material.Textfield as Textfield
 import Material
 import Material.Options as Options
+import Date exposing (Date)
+import Date.Extra.Format as DateFormat
+import Date.Extra.Config.Config_en_au exposing (config)
 
 
 type alias Model =
@@ -57,35 +60,39 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ div []
-            [ Textfield.render Mdl
-                [ 0 ]
-                model.mdl
-                [ Textfield.label "Total"
-                , Textfield.floatingLabel
-                , Options.css "width" "20%"
-                , Textfield.value model.total
-                , Options.onInput TotalChange
+    let
+        formattedDate =
+            (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.timestamp)
+    in
+        div []
+            [ div []
+                [ Textfield.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Textfield.label "Total"
+                    , Textfield.floatingLabel
+                    , Options.css "width" "20%"
+                    , Textfield.value model.total
+                    , Options.onInput TotalChange
+                    ]
+                    []
                 ]
-                []
-            ]
-        , div []
-            [ Textfield.render Mdl
-                [ 1 ]
-                model.mdl
-                [ Textfield.label "Notes"
-                , Textfield.floatingLabel
-                , Options.css "width" "100%"
-                , Textfield.textarea
-                , Textfield.rows 6
-                , Options.onInput DescriptionChange
-                , Textfield.value model.description
+            , div []
+                [ Textfield.render Mdl
+                    [ 1 ]
+                    model.mdl
+                    [ Textfield.label "Notes"
+                    , Textfield.floatingLabel
+                    , Options.css "width" "100%"
+                    , Textfield.textarea
+                    , Textfield.rows 6
+                    , Options.onInput DescriptionChange
+                    , Textfield.value model.description
+                    ]
+                    []
                 ]
-                []
+            , span [] [ text formattedDate ]
             ]
-        , span [] [ text <| toString model.timestamp ]
-        ]
 
 
 formData : Model -> ReceiptFormData

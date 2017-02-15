@@ -3,19 +3,6 @@ port module Ports exposing (..)
 import Models exposing (ReceiptFormData)
 
 
-type alias LoadImageParams =
-    { url : String
-    , authToken : String
-    , fileId : String
-    }
-
-
-type alias LoadImageResult =
-    { fileId : String
-    , imageData : String
-    }
-
-
 type alias CreateReceiptParams =
     { receiptDetails : ReceiptFormData
     , fileInputId : String
@@ -40,12 +27,6 @@ port receiptFileMouseDown : String -> Cmd msg
 
 
 port receiptFileSelected : (FileToUpload -> msg) -> Sub msg
-
-
-port loadImage : LoadImageParams -> Cmd msg
-
-
-port imageLoaded : (LoadImageResult -> msg) -> Sub msg
 
 
 port createReceipt : CreateReceiptParams -> Cmd msg

@@ -58,7 +58,7 @@ fetchBackupUrl authentication handler =
                 , body = Http.emptyBody
                 , expect = Http.expectJson Models.accessTokenDecoder
                 , timeout = Nothing
-                , withCredentials = False
+                , withCredentials = True
                 }
 
         accessTokenTask =
@@ -111,7 +111,7 @@ authenticationGet basicAuthHeader handler =
             , body = Http.emptyBody
             , expect = Http.expectJson Models.accessTokenDecoder
             , timeout = Nothing
-            , withCredentials = False
+            , withCredentials = True
             }
 
 
@@ -130,7 +130,7 @@ authenticateWithGoogle accessToken handler =
                 , body = Http.jsonBody accessTokenValue
                 , expect = Http.expectJson Models.accessTokenDecoder
                 , timeout = Nothing
-                , withCredentials = False
+                , withCredentials = True
                 }
     in
         Http.send (transformResultHandler handler) request
@@ -145,12 +145,12 @@ fetchUserInfo token handler =
     Http.send (transformResultHandler handler) <|
         Http.request
             { method = "GET"
-            , headers = [ (authorizationHeaders token) ]
+            , headers = [ authorizationHeaders token ]
             , url = baseUrl ++ "/user/info"
             , body = Http.emptyBody
             , expect = Http.expectJson Models.userInfoDecoder
             , timeout = Nothing
-            , withCredentials = False
+            , withCredentials = True
             }
 
 
@@ -168,7 +168,7 @@ fetchReceipts authentication handler =
             , body = Http.emptyBody
             , expect = Http.expectJson Models.receiptsDecoder
             , timeout = Nothing
-            , withCredentials = False
+            , withCredentials = True
             }
 
 
