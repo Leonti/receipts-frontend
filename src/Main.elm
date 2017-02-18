@@ -240,7 +240,7 @@ view model =
             model.mdl
             []
             { header = header model
-            , drawer = drawer
+            , drawer = drawer model
             , tabs = ( [], [] )
             , main = [ (pageView model) ]
             }
@@ -261,13 +261,18 @@ e404 _ =
         ]
 
 
-drawer : List (Html Msg)
-drawer =
-    [ Layout.title [] [ text "Receipts" ]
-    , Layout.navigation
-        []
-        []
-    ]
+drawer : Model -> List (Html Msg)
+drawer model =
+    case model.maybeAuthenticatedUserViewModel of
+        Just authenticatedUserViewModel ->
+            [ Layout.title [] [ text "Receipts" ]
+            , Layout.navigation
+                []
+                [ Html.map AuthenticatedUserViewMsg (AuthenticatedUserView.drawerView authenticatedUserViewModel) ]
+            ]
+
+        Nothing ->
+            []
 
 
 header : Model -> List (Html Msg)

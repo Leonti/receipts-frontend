@@ -21607,180 +21607,6 @@ var _user$project$Models$appConfigDecoder = A2(
 	_user$project$Models$AppConfig,
 	A2(_elm_lang$core$Json_Decode$field, 'googleClientId', _elm_lang$core$Json_Decode$string));
 
-var _user$project$ReceiptForm$formData = function (model) {
-	return {
-		total: _elm_lang$core$Maybe$Just(1.38),
-		description: model.description,
-		timestamp: model.timestamp,
-		tags: model.tags
-	};
-};
-var _user$project$ReceiptForm$init = function (receiptFormData) {
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		{
-			total: A2(
-				_elm_lang$core$Maybe$withDefault,
-				'',
-				A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$toString, receiptFormData.total)),
-			description: receiptFormData.description,
-			timestamp: receiptFormData.timestamp,
-			tags: receiptFormData.tags,
-			mdl: _debois$elm_mdl$Material$model
-		},
-		{ctor: '[]'});
-};
-var _user$project$ReceiptForm$Model = F5(
-	function (a, b, c, d, e) {
-		return {total: a, description: b, timestamp: c, tags: d, mdl: e};
-	});
-var _user$project$ReceiptForm$Mdl = function (a) {
-	return {ctor: 'Mdl', _0: a};
-};
-var _user$project$ReceiptForm$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
-			case 'TotalChange':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{total: _p0._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'DescriptionChange':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{description: _p0._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptForm$Mdl, _p0._0, model);
-		}
-	});
-var _user$project$ReceiptForm$DescriptionChange = function (a) {
-	return {ctor: 'DescriptionChange', _0: a};
-};
-var _user$project$ReceiptForm$TotalChange = function (a) {
-	return {ctor: 'TotalChange', _0: a};
-};
-var _user$project$ReceiptForm$view = function (model) {
-	var formattedDate = A3(
-		_rluiten$elm_date_extra$Date_Extra_Format$format,
-		_rluiten$elm_date_extra$Date_Extra_Config_Config_en_au$config,
-		'%Y-%m-%d %H:%M',
-		_elm_lang$core$Date$fromTime(
-			_elm_lang$core$Basics$toFloat(model.timestamp)));
-	return A2(
-		_elm_lang$html$Html$div,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$div,
-				{ctor: '[]'},
-				{
-					ctor: '::',
-					_0: A5(
-						_debois$elm_mdl$Material_Textfield$render,
-						_user$project$ReceiptForm$Mdl,
-						{
-							ctor: '::',
-							_0: 0,
-							_1: {ctor: '[]'}
-						},
-						model.mdl,
-						{
-							ctor: '::',
-							_0: _debois$elm_mdl$Material_Textfield$label('Total'),
-							_1: {
-								ctor: '::',
-								_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
-								_1: {
-									ctor: '::',
-									_0: A2(_debois$elm_mdl$Material_Options$css, 'width', '20%'),
-									_1: {
-										ctor: '::',
-										_0: _debois$elm_mdl$Material_Textfield$value(model.total),
-										_1: {
-											ctor: '::',
-											_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptForm$TotalChange),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
-							}
-						},
-						{ctor: '[]'}),
-					_1: {ctor: '[]'}
-				}),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: A5(
-							_debois$elm_mdl$Material_Textfield$render,
-							_user$project$ReceiptForm$Mdl,
-							{
-								ctor: '::',
-								_0: 1,
-								_1: {ctor: '[]'}
-							},
-							model.mdl,
-							{
-								ctor: '::',
-								_0: _debois$elm_mdl$Material_Textfield$label('Notes'),
-								_1: {
-									ctor: '::',
-									_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
-									_1: {
-										ctor: '::',
-										_0: A2(_debois$elm_mdl$Material_Options$css, 'width', '100%'),
-										_1: {
-											ctor: '::',
-											_0: _debois$elm_mdl$Material_Textfield$textarea,
-											_1: {
-												ctor: '::',
-												_0: _debois$elm_mdl$Material_Textfield$rows(6),
-												_1: {
-													ctor: '::',
-													_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptForm$DescriptionChange),
-													_1: {
-														ctor: '::',
-														_0: _debois$elm_mdl$Material_Textfield$value(model.description),
-														_1: {ctor: '[]'}
-													}
-												}
-											}
-										}
-									}
-								}
-							},
-							{ctor: '[]'}),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$span,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(formattedDate),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			}
-		});
-};
-
 var _user$project$Ports$receiptFileMouseDown = _elm_lang$core$Native_Platform.outgoingPort(
 	'receiptFileMouseDown',
 	function (v) {
@@ -22126,95 +21952,55 @@ var _user$project$Api$fetchReceipts = F2(
 				}));
 	});
 
-var _user$project$AddReceiptForm$imagePreview = function (maybePreviewDataUrl) {
-	var _p0 = maybePreviewDataUrl;
-	if (_p0.ctor === 'Just') {
-		return A2(
-			_elm_lang$html$Html$img,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$src(_p0._0),
-				_1: {ctor: '[]'}
-			},
-			{ctor: '[]'});
-	} else {
-		return _elm_lang$html$Html$text('');
-	}
+var _user$project$AddReceiptForm$receiptFormData = function (time) {
+	return {
+		total: _elm_lang$core$Maybe$Nothing,
+		description: '',
+		timestamp: _elm_lang$core$Basics$round(
+			_elm_lang$core$Time$inMilliseconds(time)),
+		tags: {ctor: '[]'}
+	};
 };
 var _user$project$AddReceiptForm$fileInputId = 'receipt-file';
-var _user$project$AddReceiptForm$createReceiptParams = F2(
-	function (model, receiptFormModel) {
-		return {
-			receiptDetails: _user$project$ReceiptForm$formData(receiptFormModel),
-			fileInputId: _user$project$AddReceiptForm$fileInputId,
-			url: _user$project$Api$createReceiptUrl(model.authentication.userId),
-			authToken: model.authentication.token
-		};
-	});
-var _user$project$AddReceiptForm$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {authentication: a, maybeReceiptFormModel: b, fileSelected: c, currentTime: d, maybePreviewDataUrl: e, uploading: f};
-	});
-var _user$project$AddReceiptForm$ReceiptFormMsg = function (a) {
-	return {ctor: 'ReceiptFormMsg', _0: a};
+var _user$project$AddReceiptForm$createReceiptParams = function (model) {
+	return {
+		receiptDetails: _user$project$AddReceiptForm$receiptFormData(model.currentTime),
+		fileInputId: _user$project$AddReceiptForm$fileInputId,
+		url: _user$project$Api$createReceiptUrl(model.authentication.userId),
+		authToken: model.authentication.token
+	};
 };
 var _user$project$AddReceiptForm$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
 			case 'CurrentTime':
-				var _p3 = _p1._0;
-				var receiptFormData = {
-					total: _elm_lang$core$Maybe$Just(1.38),
-					description: '',
-					timestamp: _elm_lang$core$Basics$round(
-						_elm_lang$core$Time$inMilliseconds(_p3)),
-					tags: {ctor: '[]'}
-				};
-				var _p2 = _user$project$ReceiptForm$init(receiptFormData);
-				var receiptFormModel = _p2._0;
-				var receiptFormCmd = _p2._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							currentTime: _elm_lang$core$Maybe$Just(
-								_elm_lang$core$Time$inMilliseconds(_p3)),
-							maybeReceiptFormModel: _elm_lang$core$Maybe$Just(receiptFormModel)
+							currentTime: _elm_lang$core$Time$inMilliseconds(_p0._0)
 						}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
+					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'UploadReceipt':
-				var _p4 = model.maybeReceiptFormModel;
-				if (_p4.ctor === 'Just') {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{uploading: true}),
-						_1: _user$project$Ports$createReceipt(
-							A2(_user$project$AddReceiptForm$createReceiptParams, model, _p4._0))
-					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{uploading: true}),
+					_1: _user$project$Ports$createReceipt(
+						_user$project$AddReceiptForm$createReceiptParams(model))
+				};
 			case 'ReceiptFileChange':
-				var _p5 = _p1._0.imageDataUrl;
-				if (_p5.ctor === 'Just') {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								fileSelected: true,
-								maybePreviewDataUrl: _elm_lang$core$Maybe$Just(_p5._0)
-							}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{fileSelected: true}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'ReceiptUploaded':
 				return {
 					ctor: '_Tuple2',
@@ -22223,46 +22009,18 @@ var _user$project$AddReceiptForm$update = F2(
 						{uploading: false}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'ReceiptFileInputStart':
+			default:
 				return {
 					ctor: '_Tuple2',
 					_0: model,
 					_1: _user$project$Ports$receiptFileMouseDown(_user$project$AddReceiptForm$fileInputId)
 				};
-			default:
-				var _p6 = model.maybeReceiptFormModel;
-				if (_p6.ctor === 'Just') {
-					var _p7 = A2(_user$project$ReceiptForm$update, _p1._0, _p6._0);
-					var receiptFormModel = _p7._0;
-					var receiptFormCmd = _p7._1;
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{
-								maybeReceiptFormModel: _elm_lang$core$Maybe$Just(receiptFormModel)
-							}),
-						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AddReceiptForm$ReceiptFormMsg, receiptFormCmd)
-					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
 		}
 	});
-var _user$project$AddReceiptForm$receiptFormView = function (maybeReceiptFormModel) {
-	var _p8 = maybeReceiptFormModel;
-	if (_p8.ctor === 'Just') {
-		return A2(
-			_elm_lang$html$Html$map,
-			_user$project$AddReceiptForm$ReceiptFormMsg,
-			_user$project$ReceiptForm$view(_p8._0));
-	} else {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{ctor: '[]'});
-	}
-};
+var _user$project$AddReceiptForm$Model = F4(
+	function (a, b, c, d) {
+		return {authentication: a, fileSelected: b, currentTime: c, uploading: d};
+	});
 var _user$project$AddReceiptForm$ReceiptUploaded = function (a) {
 	return {ctor: 'ReceiptUploaded', _0: a};
 };
@@ -22287,49 +22045,41 @@ var _user$project$AddReceiptForm$view = function (model) {
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _user$project$AddReceiptForm$imagePreview(model.maybePreviewDataUrl),
-			_1: {
-				ctor: '::',
-				_0: _user$project$AddReceiptForm$receiptFormView(model.maybeReceiptFormModel),
-				_1: {
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$input,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$type_('file'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$id(_user$project$AddReceiptForm$fileInputId),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onMouseDown(_user$project$AddReceiptForm$ReceiptFileInputStart),
-									_1: {ctor: '[]'}
-								}
-							}
-						},
-						{ctor: '[]'}),
+					_0: _elm_lang$html$Html_Attributes$type_('file'),
 					_1: {
 						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$button,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_user$project$AddReceiptForm$UploadReceipt),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$disabled(!model.fileSelected),
-									_1: {ctor: '[]'}
-								}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Create receipt'),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
+						_0: _elm_lang$html$Html_Attributes$id(_user$project$AddReceiptForm$fileInputId),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onMouseDown(_user$project$AddReceiptForm$ReceiptFileInputStart),
+							_1: {ctor: '[]'}
+						}
 					}
-				}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_user$project$AddReceiptForm$UploadReceipt),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$disabled(!model.fileSelected),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Create receipt'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
 			}
 		});
 };
@@ -22344,8 +22094,208 @@ var _user$project$AddReceiptForm$init = function (authentication) {
 			_0: timeCmd,
 			_1: {ctor: '[]'}
 		});
-	var model = {authentication: authentication, maybeReceiptFormModel: _elm_lang$core$Maybe$Nothing, fileSelected: false, currentTime: _elm_lang$core$Maybe$Nothing, maybePreviewDataUrl: _elm_lang$core$Maybe$Nothing, uploading: false};
+	var model = {authentication: authentication, fileSelected: false, currentTime: 0, uploading: false};
 	return {ctor: '_Tuple2', _0: model, _1: cmds};
+};
+
+var _user$project$ReceiptForm$formData = function (model) {
+	return {
+		total: _elm_lang$core$Maybe$Just(1.38),
+		description: model.description,
+		timestamp: model.timestamp,
+		tags: model.tags
+	};
+};
+var _user$project$ReceiptForm$init = function (receiptFormData) {
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		{
+			total: A2(
+				_elm_lang$core$Maybe$withDefault,
+				'',
+				A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$toString, receiptFormData.total)),
+			description: receiptFormData.description,
+			timestamp: receiptFormData.timestamp,
+			tags: receiptFormData.tags,
+			mdl: _debois$elm_mdl$Material$model
+		},
+		{ctor: '[]'});
+};
+var _user$project$ReceiptForm$Model = F5(
+	function (a, b, c, d, e) {
+		return {total: a, description: b, timestamp: c, tags: d, mdl: e};
+	});
+var _user$project$ReceiptForm$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
+};
+var _user$project$ReceiptForm$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'TotalChange':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{total: _p0._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'DescriptionChange':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{description: _p0._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptForm$Mdl, _p0._0, model);
+		}
+	});
+var _user$project$ReceiptForm$DescriptionChange = function (a) {
+	return {ctor: 'DescriptionChange', _0: a};
+};
+var _user$project$ReceiptForm$TotalChange = function (a) {
+	return {ctor: 'TotalChange', _0: a};
+};
+var _user$project$ReceiptForm$view = function (model) {
+	var formattedDate = A3(
+		_rluiten$elm_date_extra$Date_Extra_Format$format,
+		_rluiten$elm_date_extra$Date_Extra_Config_Config_en_au$config,
+		'%Y-%m-%d %H:%M',
+		_elm_lang$core$Date$fromTime(
+			_elm_lang$core$Basics$toFloat(model.timestamp)));
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('price-wrapper'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A5(
+						_debois$elm_mdl$Material_Textfield$render,
+						_user$project$ReceiptForm$Mdl,
+						{
+							ctor: '::',
+							_0: 0,
+							_1: {ctor: '[]'}
+						},
+						model.mdl,
+						{
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Textfield$label('Total'),
+							_1: {
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
+								_1: {
+									ctor: '::',
+									_0: A2(_debois$elm_mdl$Material_Options$css, 'width', '20%'),
+									_1: {
+										ctor: '::',
+										_0: _debois$elm_mdl$Material_Textfield$value(model.total),
+										_1: {
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptForm$TotalChange),
+											_1: {ctor: '[]'}
+										}
+									}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
+						_0: A5(
+							_debois$elm_mdl$Material_Button$render,
+							_user$project$ReceiptForm$Mdl,
+							{
+								ctor: '::',
+								_0: 0,
+								_1: {ctor: '[]'}
+							},
+							model.mdl,
+							{
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Button$minifab,
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Icon$i('photo_size_select_large'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A5(
+							_debois$elm_mdl$Material_Textfield$render,
+							_user$project$ReceiptForm$Mdl,
+							{
+								ctor: '::',
+								_0: 1,
+								_1: {ctor: '[]'}
+							},
+							model.mdl,
+							{
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Textfield$label('Notes'),
+								_1: {
+									ctor: '::',
+									_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
+									_1: {
+										ctor: '::',
+										_0: A2(_debois$elm_mdl$Material_Options$css, 'width', '100%'),
+										_1: {
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Textfield$textarea,
+											_1: {
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Textfield$rows(6),
+												_1: {
+													ctor: '::',
+													_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptForm$DescriptionChange),
+													_1: {
+														ctor: '::',
+														_0: _debois$elm_mdl$Material_Textfield$value(model.description),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$span,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(formattedDate),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
 };
 
 var _user$project$MousePosition$target = function (decoder) {
@@ -23052,12 +23002,16 @@ var _user$project$ReceiptList$init = function (authentication) {
 var _user$project$Backup$init = function (authentication) {
 	return {
 		ctor: '_Tuple2',
-		_0: {authentication: authentication},
+		_0: {authentication: authentication, mdl: _debois$elm_mdl$Material$model},
 		_1: _elm_lang$core$Platform_Cmd$none
 	};
 };
-var _user$project$Backup$Model = function (a) {
-	return {authentication: a};
+var _user$project$Backup$Model = F2(
+	function (a, b) {
+		return {authentication: a, mdl: b};
+	});
+var _user$project$Backup$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
 };
 var _user$project$Backup$BackupUrlResult = function (a) {
 	return {ctor: 'BackupUrlResult', _0: a};
@@ -23065,22 +23019,25 @@ var _user$project$Backup$BackupUrlResult = function (a) {
 var _user$project$Backup$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		if (_p0.ctor === 'DownloadBackup') {
-			return {
-				ctor: '_Tuple2',
-				_0: model,
-				_1: A2(_user$project$Api$fetchBackupUrl, model.authentication, _user$project$Backup$BackupUrlResult)
-			};
-		} else {
-			if (_p0._0.ctor === 'Ok') {
+		switch (_p0.ctor) {
+			case 'DownloadBackup':
 				return {
 					ctor: '_Tuple2',
 					_0: model,
-					_1: _user$project$Ports$initDownload(_p0._0._0)
+					_1: A2(_user$project$Api$fetchBackupUrl, model.authentication, _user$project$Backup$BackupUrlResult)
 				};
-			} else {
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			}
+			case 'BackupUrlResult':
+				if (_p0._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: model,
+						_1: _user$project$Ports$initDownload(_p0._0._0)
+					};
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
+			default:
+				return A3(_debois$elm_mdl$Material$update, _user$project$Backup$Mdl, _p0._0, model);
 		}
 	});
 var _user$project$Backup$DownloadBackup = {ctor: 'DownloadBackup'};
@@ -23090,77 +23047,117 @@ var _user$project$Backup$view = function (model) {
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$button,
+			_0: A5(
+				_debois$elm_mdl$Material_Button$render,
+				_user$project$Backup$Mdl,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_user$project$Backup$DownloadBackup),
+					_0: 0,
 					_1: {ctor: '[]'}
+				},
+				model.mdl,
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Button$raised,
+					_1: {
+						ctor: '::',
+						_0: _debois$elm_mdl$Material_Button$ripple,
+						_1: {
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Options$onClick(_user$project$Backup$DownloadBackup),
+							_1: {ctor: '[]'}
+						}
+					}
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('Download backup'),
+					_0: _elm_lang$html$Html$text('Download Backup'),
 					_1: {ctor: '[]'}
 				}),
 			_1: {ctor: '[]'}
 		});
 };
 
-var _user$project$AuthenticatedUserView$Model = F4(
-	function (a, b, c, d) {
-		return {authentication: a, receiptListModel: b, backupModel: c, maybeAddReceiptFormModel: d};
+var _user$project$AuthenticatedUserView$Model = F5(
+	function (a, b, c, d, e) {
+		return {authentication: a, receiptListModel: b, backupModel: c, maybeAddReceiptFormModel: d, mdl: e};
 	});
+var _user$project$AuthenticatedUserView$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
+};
 var _user$project$AuthenticatedUserView$HideNewReceiptForm = {ctor: 'HideNewReceiptForm'};
 var _user$project$AuthenticatedUserView$ShowNewReceiptForm = {ctor: 'ShowNewReceiptForm'};
 var _user$project$AuthenticatedUserView$AddReceiptFormMsg = function (a) {
 	return {ctor: 'AddReceiptFormMsg', _0: a};
 };
-var _user$project$AuthenticatedUserView$addReceiptFormView = function (maybeAddReceiptFormModel) {
-	var _p0 = maybeAddReceiptFormModel;
-	if (_p0.ctor === 'Just') {
-		return A2(
-			_elm_lang$html$Html$div,
-			{ctor: '[]'},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$button,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(_user$project$AuthenticatedUserView$HideNewReceiptForm),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Close new receipt form'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
+var _user$project$AuthenticatedUserView$addReceiptFormView = F2(
+	function (model, maybeAddReceiptFormModel) {
+		var _p0 = maybeAddReceiptFormModel;
+		if (_p0.ctor === 'Just') {
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$map,
-						_user$project$AuthenticatedUserView$AddReceiptFormMsg,
-						_user$project$AddReceiptForm$view(_p0._0)),
+						_elm_lang$html$Html$button,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$AuthenticatedUserView$HideNewReceiptForm),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Close new receipt form'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$map,
+							_user$project$AuthenticatedUserView$AddReceiptFormMsg,
+							_user$project$AddReceiptForm$view(_p0._0)),
+						_1: {ctor: '[]'}
+					}
+				});
+		} else {
+			return A5(
+				_debois$elm_mdl$Material_Button$render,
+				_user$project$AuthenticatedUserView$Mdl,
+				{
+					ctor: '::',
+					_0: 0,
 					_1: {ctor: '[]'}
-				}
-			});
-	} else {
-		return A2(
-			_elm_lang$html$Html$button,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Events$onClick(_user$project$AuthenticatedUserView$ShowNewReceiptForm),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html$text('Add new receipt'),
-				_1: {ctor: '[]'}
-			});
-	}
-};
+				},
+				model.mdl,
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Button$fab,
+					_1: {
+						ctor: '::',
+						_0: _debois$elm_mdl$Material_Button$colored,
+						_1: {
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Options$onClick(_user$project$AuthenticatedUserView$ShowNewReceiptForm),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Icon$i('add'),
+					_1: {ctor: '[]'}
+				});
+		}
+	});
 var _user$project$AuthenticatedUserView$BackupMsg = function (a) {
 	return {ctor: 'BackupMsg', _0: a};
+};
+var _user$project$AuthenticatedUserView$drawerView = function (model) {
+	return A2(
+		_elm_lang$html$Html$map,
+		_user$project$AuthenticatedUserView$BackupMsg,
+		_user$project$Backup$view(model.backupModel));
 };
 var _user$project$AuthenticatedUserView$ReceiptListMsg = function (a) {
 	return {ctor: 'ReceiptListMsg', _0: a};
@@ -23174,7 +23171,7 @@ var _user$project$AuthenticatedUserView$init = function (authentication) {
 	var receiptListCmd = _p2._1;
 	return {
 		ctor: '_Tuple2',
-		_0: {authentication: authentication, receiptListModel: receiptListModel, backupModel: backupModel, maybeAddReceiptFormModel: _elm_lang$core$Maybe$Nothing},
+		_0: {authentication: authentication, receiptListModel: receiptListModel, backupModel: backupModel, maybeAddReceiptFormModel: _elm_lang$core$Maybe$Nothing, mdl: _debois$elm_mdl$Material$model},
 		_1: _elm_lang$core$Platform_Cmd$batch(
 			{
 				ctor: '::',
@@ -23244,7 +23241,7 @@ var _user$project$AuthenticatedUserView$update = F2(
 						}),
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$AuthenticatedUserView$AddReceiptFormMsg, addReceiptFormCmd)
 				};
-			default:
+			case 'HideNewReceiptForm':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -23252,6 +23249,8 @@ var _user$project$AuthenticatedUserView$update = F2(
 						{maybeAddReceiptFormModel: _elm_lang$core$Maybe$Nothing}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			default:
+				return A3(_debois$elm_mdl$Material$update, _user$project$AuthenticatedUserView$Mdl, _p3._0, model);
 		}
 	});
 var _user$project$AuthenticatedUserView$view = function (model) {
@@ -23266,15 +23265,8 @@ var _user$project$AuthenticatedUserView$view = function (model) {
 				_user$project$ReceiptList$view(model.receiptListModel)),
 			_1: {
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$map,
-					_user$project$AuthenticatedUserView$BackupMsg,
-					_user$project$Backup$view(model.backupModel)),
-				_1: {
-					ctor: '::',
-					_0: _user$project$AuthenticatedUserView$addReceiptFormView(model.maybeAddReceiptFormModel),
-					_1: {ctor: '[]'}
-				}
+				_0: A2(_user$project$AuthenticatedUserView$addReceiptFormView, model, model.maybeAddReceiptFormModel),
+				_1: {ctor: '[]'}
 			}
 		});
 };
@@ -23631,25 +23623,6 @@ var _user$project$Main$header = function (model) {
 		_1: {ctor: '[]'}
 	};
 };
-var _user$project$Main$drawer = {
-	ctor: '::',
-	_0: A2(
-		_debois$elm_mdl$Material_Layout$title,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html$text('Receipts'),
-			_1: {ctor: '[]'}
-		}),
-	_1: {
-		ctor: '::',
-		_0: A2(
-			_debois$elm_mdl$Material_Layout$navigation,
-			{ctor: '[]'},
-			{ctor: '[]'}),
-		_1: {ctor: '[]'}
-	}
-};
 var _user$project$Main$e404 = function (_p0) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -23749,13 +23722,46 @@ var _user$project$Main$Mdl = function (a) {
 var _user$project$Main$AuthenticatedUserViewMsg = function (a) {
 	return {ctor: 'AuthenticatedUserViewMsg', _0: a};
 };
-var _user$project$Main$subscriptions = function (model) {
+var _user$project$Main$drawer = function (model) {
 	var _p5 = model.maybeAuthenticatedUserViewModel;
 	if (_p5.ctor === 'Just') {
+		return {
+			ctor: '::',
+			_0: A2(
+				_debois$elm_mdl$Material_Layout$title,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Receipts'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_debois$elm_mdl$Material_Layout$navigation,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$map,
+							_user$project$Main$AuthenticatedUserViewMsg,
+							_user$project$AuthenticatedUserView$drawerView(_p5._0)),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		};
+	} else {
+		return {ctor: '[]'};
+	}
+};
+var _user$project$Main$subscriptions = function (model) {
+	var _p6 = model.maybeAuthenticatedUserViewModel;
+	if (_p6.ctor === 'Just') {
 		return A2(
 			_elm_lang$core$Platform_Sub$map,
 			_user$project$Main$AuthenticatedUserViewMsg,
-			_user$project$AuthenticatedUserView$subscriptions(_p5._0));
+			_user$project$AuthenticatedUserView$subscriptions(_p6._0));
 	} else {
 		return _elm_lang$core$Platform_Sub$none;
 	}
@@ -23770,12 +23776,12 @@ var _user$project$Main$init = F2(
 	function (maybePersistedModel, location) {
 		var parsedLocation = _user$project$Main$fromLocation(location);
 		var persistedModel = A2(_elm_lang$core$Maybe$withDefault, _user$project$Main$emptyPersistedModel, maybePersistedModel);
-		var _p6 = A3(_user$project$LoginForm$init, persistedModel.token, parsedLocation.host, parsedLocation.hash);
-		var loginFormModel = _p6._0;
-		var loginFormCmd = _p6._1;
-		var _p7 = _user$project$UserInfo$init(persistedModel.token);
-		var userInfoModel = _p7._0;
-		var userInfoCmd = _p7._1;
+		var _p7 = A3(_user$project$LoginForm$init, persistedModel.token, parsedLocation.host, parsedLocation.hash);
+		var loginFormModel = _p7._0;
+		var loginFormCmd = _p7._1;
+		var _p8 = _user$project$UserInfo$init(persistedModel.token);
+		var userInfoModel = _p8._0;
+		var userInfoCmd = _p8._1;
 		return {
 			ctor: '_Tuple2',
 			_0: {
@@ -23799,26 +23805,26 @@ var _user$project$Main$init = F2(
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p8 = msg;
-		switch (_p8.ctor) {
+		var _p9 = msg;
+		switch (_p9.ctor) {
 			case 'UrlChange':
 				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			case 'Mdl':
-				return A3(_debois$elm_mdl$Material$update, _user$project$Main$Mdl, _p8._0, model);
+				return A3(_debois$elm_mdl$Material$update, _user$project$Main$Mdl, _p9._0, model);
 			case 'LoginFormMsg':
-				var _p9 = A2(_user$project$LoginForm$update, _p8._0, model.loginFormModel);
-				var loginFormModel = _p9._0;
-				var loginFormCmd = _p9._1;
-				var _p10 = {
+				var _p10 = A2(_user$project$LoginForm$update, _p9._0, model.loginFormModel);
+				var loginFormModel = _p10._0;
+				var loginFormCmd = _p10._1;
+				var _p11 = {
 					ctor: '_Tuple2',
 					_0: _user$project$LoginForm$token(model.loginFormModel),
 					_1: _user$project$LoginForm$token(loginFormModel)
 				};
-				if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Nothing')) && (_p10._1.ctor === 'Just')) {
-					var _p11 = _user$project$UserInfo$init(
-						_elm_lang$core$Maybe$Just(_p10._1._0));
-					var userInfoModel = _p11._0;
-					var userInfoCmd = _p11._1;
+				if (((_p11.ctor === '_Tuple2') && (_p11._0.ctor === 'Nothing')) && (_p11._1.ctor === 'Just')) {
+					var _p12 = _user$project$UserInfo$init(
+						_elm_lang$core$Maybe$Just(_p11._1._0));
+					var userInfoModel = _p12._0;
+					var userInfoCmd = _p12._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -23854,10 +23860,10 @@ var _user$project$Main$update = F2(
 					};
 				}
 			case 'UserInfoMsg':
-				var _p12 = A2(_user$project$UserInfo$update, _p8._0, model.userInfoModel);
-				var userInfoModel = _p12._0;
-				var userInfoCmd = _p12._1;
-				var _p13 = {
+				var _p13 = A2(_user$project$UserInfo$update, _p9._0, model.userInfoModel);
+				var userInfoModel = _p13._0;
+				var userInfoCmd = _p13._1;
+				var _p14 = {
 					ctor: '_Tuple3',
 					_0: _user$project$LoginForm$token(model.loginFormModel),
 					_1: A2(
@@ -23868,11 +23874,11 @@ var _user$project$Main$update = F2(
 						_user$project$UserInfo$userInfo(userInfoModel)),
 					_2: _user$project$UserInfo$userInfo(model.userInfoModel)
 				};
-				if ((((_p13.ctor === '_Tuple3') && (_p13._0.ctor === 'Just')) && (_p13._1.ctor === 'Just')) && (_p13._2.ctor === 'Nothing')) {
-					var _p14 = _user$project$AuthenticatedUserView$init(
-						{userId: _p13._1._0, token: _p13._0._0});
-					var authenticatedUserViewModel = _p14._0;
-					var authenticatedUserViewCmd = _p14._1;
+				if ((((_p14.ctor === '_Tuple3') && (_p14._0.ctor === 'Just')) && (_p14._1.ctor === 'Just')) && (_p14._2.ctor === 'Nothing')) {
+					var _p15 = _user$project$AuthenticatedUserView$init(
+						{userId: _p14._1._0, token: _p14._0._0});
+					var authenticatedUserViewModel = _p15._0;
+					var authenticatedUserViewCmd = _p15._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -23902,11 +23908,11 @@ var _user$project$Main$update = F2(
 					};
 				}
 			default:
-				var _p15 = model.maybeAuthenticatedUserViewModel;
-				if (_p15.ctor === 'Just') {
-					var _p16 = A2(_user$project$AuthenticatedUserView$update, _p8._0, _p15._0);
-					var authenticatedUserViewModel = _p16._0;
-					var authenticatedUserViewCmd = _p16._1;
+				var _p16 = model.maybeAuthenticatedUserViewModel;
+				if (_p16.ctor === 'Just') {
+					var _p17 = A2(_user$project$AuthenticatedUserView$update, _p9._0, _p16._0);
+					var authenticatedUserViewModel = _p17._0;
+					var authenticatedUserViewCmd = _p17._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -23922,20 +23928,20 @@ var _user$project$Main$update = F2(
 		}
 	});
 var _user$project$Main$pageView = function (model) {
-	var _p17 = model.activePage;
-	switch (_p17.ctor) {
+	var _p18 = model.activePage;
+	switch (_p18.ctor) {
 		case 'LoginPage':
 			return A2(
 				_elm_lang$html$Html$map,
 				_user$project$Main$LoginFormMsg,
 				_user$project$LoginForm$view(model.loginFormModel));
 		case 'ReceiptListPage':
-			var _p18 = model.maybeAuthenticatedUserViewModel;
-			if (_p18.ctor === 'Just') {
+			var _p19 = model.maybeAuthenticatedUserViewModel;
+			if (_p19.ctor === 'Just') {
 				return A2(
 					_elm_lang$html$Html$map,
 					_user$project$Main$AuthenticatedUserViewMsg,
-					_user$project$AuthenticatedUserView$view(_p18._0));
+					_user$project$AuthenticatedUserView$view(_p19._0));
 			} else {
 				return A2(
 					_elm_lang$html$Html$div,
@@ -23966,7 +23972,7 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					header: _user$project$Main$header(model),
-					drawer: _user$project$Main$drawer,
+					drawer: _user$project$Main$drawer(model),
 					tabs: {
 						ctor: '_Tuple2',
 						_0: {ctor: '[]'},
@@ -24032,7 +24038,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFormMsg":["ReceiptForm.Msg"],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"ReceiptForm.Msg":{"args":[],"tags":{"TotalChange":["String"],"Mdl":["Material.Msg ReceiptForm.Msg"],"DescriptionChange":["String"]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"ReceiptFormMsg":["ReceiptForm.Msg"],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"MouseMove":["MousePosition.Offset"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ offsetX : Int , offsetY : Int , pageX : Int , pageY : Int , target : MousePosition.Target }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"],"Mdl":["Material.Msg Backup.Msg"]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"],"Mdl":["Material.Msg AuthenticatedUserView.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"ReceiptForm.Msg":{"args":[],"tags":{"TotalChange":["String"],"Mdl":["Material.Msg ReceiptForm.Msg"],"DescriptionChange":["String"]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"ReceiptFormMsg":["ReceiptForm.Msg"],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"MouseMove":["MousePosition.Offset"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ offsetX : Int , offsetY : Int , pageX : Int , pageY : Int , target : MousePosition.Target }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

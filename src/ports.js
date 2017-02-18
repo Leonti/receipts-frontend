@@ -56,6 +56,8 @@ main.ports.createReceipt.subscribe(function(params) {
     var formData = new FormData();
     formData.append('total', params.receiptDetails.total);
     formData.append('description', params.receiptDetails.description);
+    formData.append('transactionTime', params.receiptDetails.timestamp);
+    formData.append('tags', null);
     formData.append('receipt', file);
 
     var xhr = new XMLHttpRequest();

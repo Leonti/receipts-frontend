@@ -1,6 +1,7 @@
 module ReceiptForm exposing (Model, Msg, init, update, view, formData)
 
 import Html exposing (..)
+import Html.Attributes
 import Models exposing (ReceiptFormData)
 import Material.Textfield as Textfield
 import Material
@@ -8,6 +9,8 @@ import Material.Options as Options
 import Date exposing (Date)
 import Date.Extra.Format as DateFormat
 import Date.Extra.Config.Config_en_au exposing (config)
+import Material.Icon as Icon
+import Material.Button as Button
 
 
 type alias Model =
@@ -65,7 +68,7 @@ view model =
             (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.timestamp)
     in
         div []
-            [ div []
+            [ div [ Html.Attributes.class "price-wrapper" ]
                 [ Textfield.render Mdl
                     [ 0 ]
                     model.mdl
@@ -76,6 +79,16 @@ view model =
                     , Options.onInput TotalChange
                     ]
                     []
+                , Button.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Button.minifab
+                      --, Button.onClick MyClickMsg
+                    ]
+                    [ Icon.i "photo_size_select_large" ]
+                  --                Icon.view "photo_size_select_large"
+                  --                    [ Icon.size24
+                  --                    ]
                 ]
             , div []
                 [ Textfield.render Mdl

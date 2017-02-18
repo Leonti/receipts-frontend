@@ -1,4 +1,4 @@
-module AuthenticatedUserView exposing (Model, Msg, init, update, view, subscriptions)
+module AuthenticatedUserView exposing (Model, Msg, init, update, view, drawerView, subscriptions)
 
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -6,6 +6,10 @@ import Models exposing (Authentication)
 import ReceiptList
 import Backup
 import AddReceiptForm
+import Material
+import Material.Icon as Icon
+import Material.Button as Button
+import Material.Options as Options
 
 
 type alias Model =
@@ -13,6 +17,7 @@ type alias Model =
     , receiptListModel : ReceiptList.Model
     , backupModel : Backup.Model
     , maybeAddReceiptFormModel : Maybe AddReceiptForm.Model
+    , mdl : Material.Model
     }
 
 
@@ -29,6 +34,7 @@ init authentication =
           , receiptListModel = receiptListModel
           , backupModel = backupModel
           , maybeAddReceiptFormModel = Nothing
+          , mdl = Material.model
           }
         , Cmd.batch
             [ Cmd.map ReceiptListMsg receiptListCmd
@@ -43,6 +49,7 @@ type Msg
     | AddReceiptFormMsg AddReceiptForm.Msg
     | ShowNewReceiptForm
     | HideNewReceiptForm
+    | Mdl (Material.Msg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -100,18 +107,25 @@ update msg model =
         HideNewReceiptForm ->
             ( { model | maybeAddReceiptFormModel = Nothing }, Cmd.none )
 
+        Mdl msg_ ->
+            Material.update Mdl msg_ model
+
 
 view : Model -> Html Msg
 view model =
     div []
         [ Html.map ReceiptListMsg (ReceiptList.view model.receiptListModel)
-        , Html.map BackupMsg (Backup.view model.backupModel)
-        , addReceiptFormView model.maybeAddReceiptFormModel
+        , addReceiptFormView model model.maybeAddReceiptFormModel
         ]
 
 
-addReceiptFormView : Maybe AddReceiptForm.Model -> Html Msg
-addReceiptFormView maybeAddReceiptFormModel =
+drawerView : Model -> Html Msg
+drawerView model =
+    Html.map BackupMsg (Backup.view model.backupModel)
+
+
+addReceiptFormView : Model -> Maybe AddReceiptForm.Model -> Html Msg
+addReceiptFormView model maybeAddReceiptFormModel =
     case maybeAddReceiptFormModel of
         Just addReceiptFormModel ->
             div []
@@ -120,7 +134,14 @@ addReceiptFormView maybeAddReceiptFormModel =
                 ]
 
         Nothing ->
-            button [ onClick ShowNewReceiptForm ] [ text "Add new receipt" ]
+            Button.render Mdl
+                [ 0 ]
+                model.mdl
+                [ Button.fab
+                , Button.colored
+                , Options.onClick ShowNewReceiptForm
+                ]
+                [ Icon.i "add" ]
 
 
 subscriptions : Model -> Sub Msg
