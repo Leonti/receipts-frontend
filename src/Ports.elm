@@ -36,3 +36,6 @@ port receiptCreated : (CreateReceiptResult -> msg) -> Sub msg
 
 
 port initDownload : String -> Cmd msg
+
+
+port showDialog : String -> Cmd msg

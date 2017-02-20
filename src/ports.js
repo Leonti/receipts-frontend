@@ -7,6 +7,13 @@ main.ports.initDownload.subscribe(function(url) {
     window.location = url;
 });
 
+main.ports.showDialog.subscribe(function() {
+    var dialog = document.querySelector('dialog');
+    console.log("showing dialog");
+    dialogPolyfill.registerDialog(dialog);
+    dialog.showModal();
+});
+
 var fileListeners = {};
 
 main.ports.receiptFileMouseDown.subscribe(function(id) {
