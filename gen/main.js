@@ -23987,6 +23987,131 @@ var _user$project$Models$nullOr = function (decoder) {
 			}
 		});
 };
+var _user$project$Models$receiptFormDataToPatch = function (receiptFormData) {
+	var tagsUpdate = _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'op',
+				_1: _elm_lang$core$Json_Encode$string('replace')
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'path',
+					_1: _elm_lang$core$Json_Encode$string('/tags')
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'value',
+						_1: _elm_lang$core$Json_Encode$list(
+							A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$string, receiptFormData.tags))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+	var transactionTimeUpdate = _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'op',
+				_1: _elm_lang$core$Json_Encode$string('replace')
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'path',
+					_1: _elm_lang$core$Json_Encode$string('/transactionTime')
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'value',
+						_1: _elm_lang$core$Json_Encode$int(receiptFormData.timestamp)
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+	var descriptionUpdate = _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'op',
+				_1: _elm_lang$core$Json_Encode$string('replace')
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'path',
+					_1: _elm_lang$core$Json_Encode$string('/description')
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'value',
+						_1: _elm_lang$core$Json_Encode$string(receiptFormData.description)
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+	var totalValue = A2(
+		_elm_lang$core$Maybe$withDefault,
+		_elm_lang$core$Json_Encode$null,
+		A2(_elm_lang$core$Maybe$map, _elm_lang$core$Json_Encode$float, receiptFormData.total));
+	var totalUpdate = _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'op',
+				_1: _elm_lang$core$Json_Encode$string('replace')
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'path',
+					_1: _elm_lang$core$Json_Encode$string('/total')
+				},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'value', _1: totalValue},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+	return _elm_lang$core$Json_Encode$list(
+		{
+			ctor: '::',
+			_0: totalUpdate,
+			_1: {
+				ctor: '::',
+				_0: descriptionUpdate,
+				_1: {
+					ctor: '::',
+					_0: transactionTimeUpdate,
+					_1: {
+						ctor: '::',
+						_0: tagsUpdate,
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
 var _user$project$Models$accessTokenDecoder = A2(
 	_elm_lang$core$Json_Decode$at,
 	{
@@ -24355,7 +24480,7 @@ var _user$project$Api$authenticateWithGoogle = F2(
 				method: 'POST',
 				headers: {
 					ctor: '::',
-					_0: A2(_elm_lang$http$Http$header, 'Content-Type', 'application/json'),
+					_0: A2(_elm_lang$http$Http$header, 'Accept', 'application/json'),
 					_1: {ctor: '[]'}
 				},
 				url: A2(_elm_lang$core$Basics_ops['++'], _user$project$Api$baseUrl, '/oauth/google-access-token'),
@@ -24414,6 +24539,37 @@ var _user$project$Api$fetchReceipts = F2(
 					timeout: _elm_lang$core$Maybe$Nothing,
 					withCredentials: true
 				}));
+	});
+var _user$project$Api$updateReceipt = F4(
+	function (authentication, receiptId, receiptFormData, handler) {
+		var request = _elm_lang$http$Http$request(
+			{
+				method: 'PATCH',
+				headers: {
+					ctor: '::',
+					_0: _user$project$Api$authorizationHeaders(authentication.token),
+					_1: {ctor: '[]'}
+				},
+				url: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_user$project$Api$baseUrl,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						'/user/',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							authentication.userId,
+							A2(_elm_lang$core$Basics_ops['++'], '/receipt/', receiptId)))),
+				body: _elm_lang$http$Http$jsonBody(
+					_user$project$Models$receiptFormDataToPatch(receiptFormData)),
+				expect: _elm_lang$http$Http$expectJson(_user$project$Models$receiptDecoder),
+				timeout: _elm_lang$core$Maybe$Nothing,
+				withCredentials: true
+			});
+		return A2(
+			_elm_lang$http$Http$send,
+			_user$project$Api$transformResultHandler(handler),
+			request);
 	});
 
 var _user$project$AddReceiptForm$receiptFormData = function (time) {
@@ -24902,7 +25058,9 @@ var _user$project$ReceiptView$Model = function (a) {
 							return function (h) {
 								return function (i) {
 									return function (j) {
-										return {authentication: a, receipt: b, imageUrl: c, selectionBox: d, zoomBox: e, receiptFormData: f, total: g, editMode: h, dateTimePickerModel: i, mdl: j};
+										return function (k) {
+											return {authentication: a, receipt: b, imageUrl: c, selectionBox: d, zoomBox: e, receiptFormData: f, total: g, editMode: h, updatingReceipt: i, dateTimePickerModel: j, mdl: k};
+										};
 									};
 								};
 							};
@@ -24936,6 +25094,12 @@ var _user$project$ReceiptView$toEditMode = function (selectionBox) {
 };
 var _user$project$ReceiptView$Mdl = function (a) {
 	return {ctor: 'Mdl', _0: a};
+};
+var _user$project$ReceiptView$DateTimePickerMsg = function (a) {
+	return {ctor: 'DateTimePickerMsg', _0: a};
+};
+var _user$project$ReceiptView$UpdateReceiptResult = function (a) {
+	return {ctor: 'UpdateReceiptResult', _0: a};
 };
 var _user$project$ReceiptView$update = F2(
 	function (msg, model) {
@@ -25025,6 +25189,34 @@ var _user$project$ReceiptView$update = F2(
 				};
 			case 'Mdl':
 				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptView$Mdl, _p3._0, model);
+			case 'UpdateReceipt':
+				var receiptFormData = model.receiptFormData;
+				var updated = _elm_lang$core$Native_Utils.update(
+					receiptFormData,
+					{
+						total: _elm_lang$core$Result$toMaybe(
+							_elm_lang$core$String$toFloat(model.total))
+					});
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{updatingReceipt: true}),
+					_1: A4(_user$project$Api$updateReceipt, model.authentication, model.receipt.id, updated, _user$project$ReceiptView$UpdateReceiptResult)
+				};
+			case 'UpdateReceiptResult':
+				if (_p3._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{updatingReceipt: false}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					var some = A2(_elm_lang$core$Debug$log, 'error', _p3._0._0);
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
 			default:
 				var receiptFormData = model.receiptFormData;
 				var dateTimePickerModel = A2(_user$project$DateTimePicker$update, _p3._0, model.dateTimePickerModel);
@@ -25042,9 +25234,7 @@ var _user$project$ReceiptView$update = F2(
 				};
 		}
 	});
-var _user$project$ReceiptView$DateTimePickerMsg = function (a) {
-	return {ctor: 'DateTimePickerMsg', _0: a};
-};
+var _user$project$ReceiptView$UpdateReceipt = {ctor: 'UpdateReceipt'};
 var _user$project$ReceiptView$EditModeSwitch = {ctor: 'EditModeSwitch'};
 var _user$project$ReceiptView$SetImageUrl = {ctor: 'SetImageUrl'};
 var _user$project$ReceiptView$init = F2(
@@ -25065,6 +25255,7 @@ var _user$project$ReceiptView$init = F2(
 				'',
 				A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$toString, receipt.total)),
 			editMode: _user$project$ReceiptView$None,
+			updatingReceipt: false,
 			dateTimePickerModel: dateTimePickerModel,
 			mdl: _debois$elm_mdl$Material$model
 		};
@@ -25531,7 +25722,29 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 							_0: _elm_lang$html$Html$text(formattedDate),
 							_1: {ctor: '[]'}
 						}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A5(
+							_debois$elm_mdl$Material_Button$render,
+							_user$project$ReceiptView$Mdl,
+							{
+								ctor: '::',
+								_0: 4,
+								_1: {ctor: '[]'}
+							},
+							model.mdl,
+							{
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Options$onClick(_user$project$ReceiptView$UpdateReceipt),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Save receipt'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
@@ -26780,7 +26993,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"DatePicker.Msg":{"args":[],"tags":{"SelectDay":["Int"],"DaySelection":[],"NextMonth":[],"SelectYear":["Int"],"YearSelection":[],"Noop":[],"PrevMonth":[]}},"DateTimePicker.Msg":{"args":[],"tags":{"TimePickerMsg":["TimePicker.Msg"],"DatePickerMsg":["DatePicker.Msg"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"TimeTypes.TimePeriod":{"args":[],"tags":{"PM":[],"AM":[]}},"TimeTypes.Mode":{"args":[],"tags":{"Hours":[],"Minutes":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"],"Mdl":["Material.Msg Backup.Msg"]}},"TimePicker.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"TimePeriodSwitch":["TimeTypes.TimePeriod"],"MouseDown":["MousePosition.Offset"],"ModeSwitch":["TimeTypes.Mode"],"MouseMove":["MousePosition.Offset"],"Noop":[]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"],"Mdl":["Material.Msg AuthenticatedUserView.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"TotalChange":["String"],"EditModeSwitch":[],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"Mdl":["Material.Msg ReceiptView.Msg"],"MouseMove":["MousePosition.Offset"],"DescriptionChange":["String"],"DateTimePickerMsg":["DateTimePicker.Msg"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ x : Int, y : Int }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"DatePicker.Msg":{"args":[],"tags":{"SelectDay":["Int"],"DaySelection":[],"NextMonth":[],"SelectYear":["Int"],"YearSelection":[],"Noop":[],"PrevMonth":[]}},"DateTimePicker.Msg":{"args":[],"tags":{"TimePickerMsg":["TimePicker.Msg"],"DatePickerMsg":["DatePicker.Msg"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"TimeTypes.TimePeriod":{"args":[],"tags":{"PM":[],"AM":[]}},"TimeTypes.Mode":{"args":[],"tags":{"Hours":[],"Minutes":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"],"Mdl":["Material.Msg Backup.Msg"]}},"TimePicker.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"TimePeriodSwitch":["TimeTypes.TimePeriod"],"MouseDown":["MousePosition.Offset"],"ModeSwitch":["TimeTypes.Mode"],"MouseMove":["MousePosition.Offset"],"Noop":[]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"],"Mdl":["Material.Msg AuthenticatedUserView.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"UpdateReceiptResult":["Result.Result Api.Error Models.Receipt"],"TotalChange":["String"],"UpdateReceipt":[],"EditModeSwitch":[],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"Mdl":["Material.Msg ReceiptView.Msg"],"MouseMove":["MousePosition.Offset"],"DescriptionChange":["String"],"DateTimePickerMsg":["DateTimePicker.Msg"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ x : Int, y : Int }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

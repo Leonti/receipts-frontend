@@ -50,6 +50,7 @@ type alias Model =
     , receiptFormData : ReceiptFormData
     , total : String
     , editMode : EditMode
+    , updatingReceipt : Bool
     , dateTimePickerModel : DateTimePicker.Model
     , mdl : Material.Model
     }
@@ -77,6 +78,7 @@ init authentication receipt =
             , receiptFormData = receiptFormData
             , total = Maybe.withDefault "" <| Maybe.map toString receipt.total
             , editMode = None
+            , updatingReceipt = False
             , dateTimePickerModel = dateTimePickerModel
             , mdl = Material.model
             }
@@ -122,6 +124,8 @@ type Msg
     | MouseUp Offset
     | SetImageUrl
     | EditModeSwitch
+    | UpdateReceipt
+    | UpdateReceiptResult (Result Api.Error Receipt)
     | DateTimePickerMsg DateTimePicker.Msg
     | Mdl (Material.Msg Msg)
 
@@ -196,6 +200,33 @@ update msg model =
 
         Mdl msg_ ->
             Material.update Mdl msg_ model
+
+        UpdateReceipt ->
+            let
+                receiptFormData =
+                    model.receiptFormData
+
+                updated =
+                    { receiptFormData | total = Result.toMaybe <| String.toFloat model.total }
+            in
+                ( { model | updatingReceipt = True }
+                , (Api.updateReceipt
+                    model.authentication
+                    model.receipt.id
+                    updated
+                    UpdateReceiptResult
+                  )
+                )
+
+        UpdateReceiptResult (Ok receipt) ->
+            ( { model | updatingReceipt = False }, Cmd.none )
+
+        UpdateReceiptResult (Err error) ->
+            let
+                some =
+                    Debug.log "error" error
+            in
+                ( model, Cmd.none )
 
         DateTimePickerMsg message ->
             let
@@ -411,6 +442,11 @@ receiptFormView model =
                     []
                 ]
             , span [] [ text formattedDate ]
+            , Button.render Mdl
+                [ 4 ]
+                model.mdl
+                [ Options.onClick UpdateReceipt ]
+                [ text "Save receipt" ]
             ]
 
 

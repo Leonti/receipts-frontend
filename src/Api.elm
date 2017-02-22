@@ -6,6 +6,7 @@ module Api
         , fetchAppConfig
         , fetchUserInfo
         , fetchReceipts
+        , updateReceipt
         , fetchBackupUrl
         , createReceiptUrl
         , receiptFileUrl
@@ -125,7 +126,8 @@ authenticateWithGoogle accessToken handler =
         request =
             Http.request
                 { method = "POST"
-                , headers = [ Http.header "Content-Type" "application/json" ]
+                , headers =
+                    [ Http.header "Accept" "application/json" ]
                 , url = baseUrl ++ "/oauth/google-access-token"
                 , body = Http.jsonBody accessTokenValue
                 , expect = Http.expectJson Models.accessTokenDecoder
@@ -170,6 +172,27 @@ fetchReceipts authentication handler =
             , timeout = Nothing
             , withCredentials = True
             }
+
+
+updateReceipt : Authentication -> String -> ReceiptFormData -> (Result Error Receipt -> msg) -> Cmd msg
+updateReceipt authentication receiptId receiptFormData handler =
+    let
+        request =
+            Http.request
+                { method = "PATCH"
+                , headers =
+                    [ (authorizationHeaders authentication.token)
+                      --        , Http.header "Content-Type" "application/json"
+                      --        , Http.header "Accept" "application/json"
+                    ]
+                , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt/" ++ receiptId
+                , body = Http.jsonBody <| receiptFormDataToPatch receiptFormData
+                , expect = Http.expectJson Models.receiptDecoder
+                , timeout = Nothing
+                , withCredentials = True
+                }
+    in
+        Http.send (transformResultHandler handler) request
 
 
 transformResultHandler : (Result Error a -> msg) -> Result Http.Error a -> msg

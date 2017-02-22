@@ -2,6 +2,7 @@ module Models exposing (..)
 
 import Json.Decode exposing (field)
 import Json.Decode as Json
+import Json.Encode as Encode
 
 
 type alias UserInfo =
@@ -106,6 +107,48 @@ appConfigDecoder : Json.Decoder AppConfig
 appConfigDecoder =
     Json.map AppConfig
         (field "googleClientId" Json.string)
+
+
+receiptFormDataToPatch : ReceiptFormData -> Encode.Value
+receiptFormDataToPatch receiptFormData =
+    let
+        totalValue =
+            Maybe.withDefault Encode.null <| Maybe.map Encode.float receiptFormData.total
+
+        totalUpdate =
+            Encode.object
+                [ ( "op", Encode.string "replace" )
+                , ( "path", Encode.string "/total" )
+                , ( "value", totalValue )
+                ]
+
+        descriptionUpdate =
+            Encode.object
+                [ ( "op", Encode.string "replace" )
+                , ( "path", Encode.string "/description" )
+                , ( "value", Encode.string receiptFormData.description )
+                ]
+
+        transactionTimeUpdate =
+            Encode.object
+                [ ( "op", Encode.string "replace" )
+                , ( "path", Encode.string "/transactionTime" )
+                , ( "value", Encode.int receiptFormData.timestamp )
+                ]
+
+        tagsUpdate =
+            Encode.object
+                [ ( "op", Encode.string "replace" )
+                , ( "path", Encode.string "/tags" )
+                , ( "value", Encode.list <| List.map Encode.string receiptFormData.tags )
+                ]
+    in
+        Encode.list
+            [ totalUpdate
+            , descriptionUpdate
+            , transactionTimeUpdate
+            , tagsUpdate
+            ]
 
 
 nullOr : Json.Decoder a -> Json.Decoder (Maybe a)
