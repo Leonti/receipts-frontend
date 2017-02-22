@@ -22,6 +22,7 @@ type alias Receipt =
     , userId : String
     , files : List ReceiptFile
     , timestamp : Int
+    , transactionTime : Int
     , total : Maybe Float
     , description : String
     , tags : List String
@@ -31,7 +32,7 @@ type alias Receipt =
 type alias ReceiptFormData =
     { total : Maybe Float
     , description : String
-    , timestamp : Int
+    , transactionTime : Int
     , tags : List String
     }
 
@@ -70,11 +71,12 @@ userInfoDecoder =
 
 receiptDecoder : Json.Decoder Receipt
 receiptDecoder =
-    Json.map7 Receipt
+    Json.map8 Receipt
         (field "id" Json.string)
         (field "userId" Json.string)
         (field "files" (Json.list receiptFileDecoder))
         (field "timestamp" Json.int)
+        (field "transactionTime" Json.int)
         (field "total" (nullOr Json.float))
         (field "description" Json.string)
         (field "tags" (Json.list Json.string))
@@ -133,7 +135,7 @@ receiptFormDataToPatch receiptFormData =
             Encode.object
                 [ ( "op", Encode.string "replace" )
                 , ( "path", Encode.string "/transactionTime" )
-                , ( "value", Encode.int receiptFormData.timestamp )
+                , ( "value", Encode.int receiptFormData.transactionTime )
                 ]
 
         tagsUpdate =

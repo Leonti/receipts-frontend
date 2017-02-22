@@ -106,7 +106,7 @@ receiptFormData : Time.Time -> ReceiptFormData
 receiptFormData time =
     { total = Nothing
     , description = ""
-    , timestamp = round <| Time.inMilliseconds time
+    , transactionTime = round <| Time.inMilliseconds time
     , tags = []
     }
 

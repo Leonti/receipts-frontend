@@ -62,12 +62,12 @@ init authentication receipt =
         receiptFormData =
             { total = receipt.total
             , description = receipt.description
-            , timestamp = receipt.timestamp
+            , transactionTime = receipt.transactionTime
             , tags = receipt.tags
             }
 
         dateTimePickerModel =
-            DateTimePicker.init <| Date.fromTime (toFloat receiptFormData.timestamp)
+            DateTimePicker.init <| Date.fromTime (toFloat receiptFormData.transactionTime)
 
         model =
             { authentication = authentication
@@ -237,7 +237,7 @@ update msg model =
                     model.receiptFormData
 
                 updated =
-                    { receiptFormData | timestamp = DateTimePicker.timestamp dateTimePickerModel }
+                    { receiptFormData | transactionTime = DateTimePicker.timestamp dateTimePickerModel }
             in
                 ( { model
                     | dateTimePickerModel = dateTimePickerModel
@@ -412,7 +412,7 @@ receiptFormView : Model -> Html Msg
 receiptFormView model =
     let
         formattedDate =
-            (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.receiptFormData.timestamp)
+            (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.receiptFormData.transactionTime)
     in
         div []
             [ div [ Html.Attributes.class "price-wrapper" ]
