@@ -4,9 +4,21 @@ html {
 //    color: magenta;
 }
 
-.price-wrapper {
-    display: flex;
+.receipt-form {
+    .price-wrapper {
+        display: flex;
+    }
+
+    padding-bottom: 20px;
+
+    .receipt-update-spinner {
+        display: inline-block;
+        float: right;
+        margin-right: 55px;
+    }
 }
+
+
 
 .date-time-picker {
     display: flex;
@@ -54,6 +66,10 @@ html {
     .zoomed-image {
         position: absolute;
     }
+}
+
+.elm-overlay {
+    z-index: 10000000;
 }
 
 dialog {

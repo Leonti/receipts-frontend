@@ -25016,16 +25016,24 @@ var _user$project$ReceiptView$delay = F2(
 					_elm_lang$core$Task$succeed(msg)),
 				_elm_lang$core$Process$sleep(time)));
 	});
+var _user$project$ReceiptView$updatedReceipt = function (msg) {
+	var _p1 = msg;
+	if ((_p1.ctor === 'UpdateReceiptResult') && (_p1._0.ctor === 'Ok')) {
+		return _elm_lang$core$Maybe$Just(_p1._0._0);
+	} else {
+		return _elm_lang$core$Maybe$Nothing;
+	}
+};
 var _user$project$ReceiptView$toFile = function (receipt) {
-	var _p1 = receipt.files;
-	if (_p1.ctor === '::') {
-		if (_p1._1.ctor === '[]') {
-			return _elm_lang$core$Maybe$Just(_p1._0);
+	var _p2 = receipt.files;
+	if (_p2.ctor === '::') {
+		if (_p2._1.ctor === '[]') {
+			return _elm_lang$core$Maybe$Just(_p2._0);
 		} else {
-			if (_p1._1._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Just(_p1._1._0);
+			if (_p2._1._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p2._1._0);
 			} else {
-				return _elm_lang$core$Maybe$Just(_p1._1._0);
+				return _elm_lang$core$Maybe$Just(_p2._1._0);
 			}
 		}
 	} else {
@@ -25076,8 +25084,8 @@ var _user$project$ReceiptView$None = {ctor: 'None'};
 var _user$project$ReceiptView$EditTransactionTime = {ctor: 'EditTransactionTime'};
 var _user$project$ReceiptView$EditTotal = {ctor: 'EditTotal'};
 var _user$project$ReceiptView$switchMode = function (editMode) {
-	var _p2 = editMode;
-	switch (_p2.ctor) {
+	var _p3 = editMode;
+	switch (_p3.ctor) {
 		case 'EditTotal':
 			return _user$project$ReceiptView$EditTransactionTime;
 		case 'EditTransactionTime':
@@ -25087,10 +25095,7 @@ var _user$project$ReceiptView$switchMode = function (editMode) {
 	}
 };
 var _user$project$ReceiptView$toEditMode = function (selectionBox) {
-	var ratio = A2(
-		_elm_lang$core$Debug$log,
-		'ratio',
-		_elm_lang$core$Basics$toFloat(selectionBox.w) / _elm_lang$core$Basics$toFloat(selectionBox.h));
+	var ratio = _elm_lang$core$Basics$toFloat(selectionBox.w) / _elm_lang$core$Basics$toFloat(selectionBox.h);
 	return (_elm_lang$core$Native_Utils.cmp(ratio, 5.5) > 0) ? _user$project$ReceiptView$EditTransactionTime : _user$project$ReceiptView$EditTotal;
 };
 var _user$project$ReceiptView$Mdl = function (a) {
@@ -25104,21 +25109,21 @@ var _user$project$ReceiptView$UpdateReceiptResult = function (a) {
 };
 var _user$project$ReceiptView$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p4 = msg;
+		switch (_p4.ctor) {
 			case 'TotalChange':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{total: _p3._0}),
+						{total: _p4._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'DescriptionChange':
 				var receiptFormData = model.receiptFormData;
 				var updated = _elm_lang$core$Native_Utils.update(
 					receiptFormData,
-					{description: _p3._0});
+					{description: _p4._0});
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -25129,7 +25134,7 @@ var _user$project$ReceiptView$update = F2(
 			case 'MouseDown':
 				var selectionBox = A2(
 					_elm_lang$core$Maybe$map,
-					_user$project$ReceiptView$initialScalingBox(_p3._0),
+					_user$project$ReceiptView$initialScalingBox(_p4._0),
 					_user$project$ReceiptView$toFile(model.receipt));
 				return {
 					ctor: '_Tuple2',
@@ -25165,7 +25170,7 @@ var _user$project$ReceiptView$update = F2(
 					A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toEditMode, model.selectionBox));
 				var selectionBox = A2(
 					_elm_lang$core$Maybe$map,
-					_user$project$ReceiptView$updateSelectionBox(_p3._0),
+					_user$project$ReceiptView$updateSelectionBox(_p4._0),
 					model.selectionBox);
 				return {
 					ctor: '_Tuple2',
@@ -25175,21 +25180,20 @@ var _user$project$ReceiptView$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseUp':
+				var cmd = _elm_lang$core$Native_Utils.eq(model.editMode, _user$project$ReceiptView$None) ? _elm_lang$core$Platform_Cmd$none : _user$project$Ports$showDialog(
+					_elm_lang$core$Basics$toString(model.editMode));
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
 							selectionBox: _elm_lang$core$Maybe$Nothing,
-							zoomBox: A2(
-								_elm_lang$core$Debug$log,
-								'zoombox',
-								A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toZoomBox, model.selectionBox))
+							zoomBox: A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toZoomBox, model.selectionBox)
 						}),
-					_1: _user$project$Ports$showDialog('')
+					_1: cmd
 				};
 			case 'Mdl':
-				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptView$Mdl, _p3._0, model);
+				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptView$Mdl, _p4._0, model);
 			case 'UpdateReceipt':
 				var receiptFormData = model.receiptFormData;
 				var updated = _elm_lang$core$Native_Utils.update(
@@ -25206,7 +25210,7 @@ var _user$project$ReceiptView$update = F2(
 					_1: A4(_user$project$Api$updateReceipt, model.authentication, model.receipt.id, updated, _user$project$ReceiptView$UpdateReceiptResult)
 				};
 			case 'UpdateReceiptResult':
-				if (_p3._0.ctor === 'Ok') {
+				if (_p4._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -25215,12 +25219,11 @@ var _user$project$ReceiptView$update = F2(
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
-					var some = A2(_elm_lang$core$Debug$log, 'error', _p3._0._0);
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
 			default:
 				var receiptFormData = model.receiptFormData;
-				var dateTimePickerModel = A2(_user$project$DateTimePicker$update, _p3._0, model.dateTimePickerModel);
+				var dateTimePickerModel = A2(_user$project$DateTimePicker$update, _p4._0, model.dateTimePickerModel);
 				var updated = _elm_lang$core$Native_Utils.update(
 					receiptFormData,
 					{
@@ -25277,9 +25280,9 @@ var _user$project$ReceiptView$MouseDown = function (a) {
 };
 var _user$project$ReceiptView$receiptImageView = function (model) {
 	var selectorStyle = function () {
-		var _p4 = model.selectionBox;
-		if (_p4.ctor === 'Just') {
-			var _p5 = _p4._0;
+		var _p5 = model.selectionBox;
+		if (_p5.ctor === 'Just') {
+			var _p6 = _p5._0;
 			return {
 				ctor: '::',
 				_0: {
@@ -25287,7 +25290,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 					_0: 'top',
 					_1: A2(
 						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_p5.y),
+						_elm_lang$core$Basics$toString(_p6.y),
 						'px')
 				},
 				_1: {
@@ -25297,7 +25300,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 						_0: 'left',
 						_1: A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p5.x),
+							_elm_lang$core$Basics$toString(_p6.x),
 							'px')
 					},
 					_1: {
@@ -25307,7 +25310,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 							_0: 'width',
 							_1: A2(
 								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(_p5.w),
+								_elm_lang$core$Basics$toString(_p6.w),
 								'px')
 						},
 						_1: {
@@ -25317,7 +25320,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 								_0: 'height',
 								_1: A2(
 									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(_p5.h),
+									_elm_lang$core$Basics$toString(_p6.h),
 									'px')
 							},
 							_1: {ctor: '[]'}
@@ -25338,10 +25341,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 		_0: {ctor: '_Tuple2', _0: 'width', _1: '100%'},
 		_1: {ctor: '[]'}
 	};
-	var imageUrl = A2(
-		_elm_lang$core$Debug$log,
-		'url',
-		A2(_elm_lang$core$Maybe$withDefault, '', model.imageUrl));
+	var imageUrl = A2(_elm_lang$core$Maybe$withDefault, '', model.imageUrl);
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -25447,8 +25447,8 @@ var _user$project$ReceiptView$dialogContent = function (model) {
 			{ctor: '[]'},
 			{ctor: '[]'}),
 		maybeZoomedView);
-	var _p6 = model.editMode;
-	switch (_p6.ctor) {
+	var _p7 = model.editMode;
+	switch (_p7.ctor) {
 		case 'EditTotal':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -25612,6 +25612,68 @@ var _user$project$ReceiptView$dialogView = function (model) {
 		});
 };
 var _user$project$ReceiptView$receiptFormView = function (model) {
+	var updateButton = function () {
+		var _p8 = model.updatingReceipt;
+		if (_p8 === false) {
+			return A5(
+				_debois$elm_mdl$Material_Button$render,
+				_user$project$ReceiptView$Mdl,
+				{
+					ctor: '::',
+					_0: 4,
+					_1: {ctor: '[]'}
+				},
+				model.mdl,
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Button$raised,
+					_1: {
+						ctor: '::',
+						_0: _debois$elm_mdl$Material_Button$colored,
+						_1: {
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Button$ripple,
+							_1: {
+								ctor: '::',
+								_0: A2(_debois$elm_mdl$Material_Options$css, 'float', 'right'),
+								_1: {
+									ctor: '::',
+									_0: _debois$elm_mdl$Material_Options$onClick(_user$project$ReceiptView$UpdateReceipt),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Save receipt'),
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('receipt-update-spinner'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Spinner$spinner(
+						{
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Spinner$active(true),
+							_1: {
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Spinner$singleColor(true),
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {ctor: '[]'}
+				});
+		}
+	}();
 	var formattedDate = A3(
 		_rluiten$elm_date_extra$Date_Extra_Format$format,
 		_rluiten$elm_date_extra$Date_Extra_Config_Config_en_au$config,
@@ -25620,7 +25682,11 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 			_elm_lang$core$Basics$toFloat(model.receiptFormData.transactionTime)));
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('receipt-form'),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: A2(
@@ -25695,7 +25761,7 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 											_0: _debois$elm_mdl$Material_Textfield$textarea,
 											_1: {
 												ctor: '::',
-												_0: _debois$elm_mdl$Material_Textfield$rows(6),
+												_0: _debois$elm_mdl$Material_Textfield$rows(3),
 												_1: {
 													ctor: '::',
 													_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptView$DescriptionChange),
@@ -25715,9 +25781,18 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 					}),
 				_1: {
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$span,
-						{ctor: '[]'},
+					_0: A3(
+						_debois$elm_mdl$Material_Options$styled,
+						_elm_lang$html$Html$p,
+						{
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Typography$subhead,
+							_1: {
+								ctor: '::',
+								_0: A2(_debois$elm_mdl$Material_Options$css, 'display', 'inline-block'),
+								_1: {ctor: '[]'}
+							}
+						},
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(formattedDate),
@@ -25725,25 +25800,7 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 						}),
 					_1: {
 						ctor: '::',
-						_0: A5(
-							_debois$elm_mdl$Material_Button$render,
-							_user$project$ReceiptView$Mdl,
-							{
-								ctor: '::',
-								_0: 4,
-								_1: {ctor: '[]'}
-							},
-							model.mdl,
-							{
-								ctor: '::',
-								_0: _debois$elm_mdl$Material_Options$onClick(_user$project$ReceiptView$UpdateReceipt),
-								_1: {ctor: '[]'}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Save receipt'),
-								_1: {ctor: '[]'}
-							}),
+						_0: updateButton,
 						_1: {ctor: '[]'}
 					}
 				}
@@ -25770,6 +25827,21 @@ var _user$project$ReceiptView$view = function (model) {
 };
 
 var _user$project$ReceiptList$subscriptions = _elm_lang$core$Platform_Sub$none;
+var _user$project$ReceiptList$updateReceipts = F2(
+	function (msg, receipts) {
+		var _p0 = _user$project$ReceiptView$updatedReceipt(msg);
+		if (_p0.ctor === 'Just') {
+			var _p1 = _p0._0;
+			return A2(
+				_elm_lang$core$List$map,
+				function (r) {
+					return _elm_lang$core$Native_Utils.eq(r.id, _p1.id) ? _p1 : r;
+				},
+				receipts);
+		} else {
+			return receipts;
+		}
+	});
 var _user$project$ReceiptList$Model = F4(
 	function (a, b, c, d) {
 		return {authentication: a, receipts: b, openedReceiptView: c, loadingReceipts: d};
@@ -25794,8 +25866,31 @@ var _user$project$ReceiptList$receiptRow = function (receipt) {
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(receipt.id),
-					_1: {ctor: '[]'}
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(
+								A2(_elm_lang$core$Basics_ops['++'], receipt.id, ' ')),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(
+									A2(
+										_elm_lang$core$Maybe$withDefault,
+										'',
+										A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$toString, receipt.total))),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}),
 			_1: {ctor: '[]'}
 		});
@@ -25824,12 +25919,12 @@ var _user$project$ReceiptList$ReceiptViewMsg = function (a) {
 	return {ctor: 'ReceiptViewMsg', _0: a};
 };
 var _user$project$ReceiptList$receiptView = function (model) {
-	var _p0 = model.openedReceiptView;
-	if (_p0.ctor === 'Just') {
+	var _p2 = model.openedReceiptView;
+	if (_p2.ctor === 'Just') {
 		return A2(
 			_elm_lang$html$Html$map,
 			_user$project$ReceiptList$ReceiptViewMsg,
-			_user$project$ReceiptView$view(_p0._0));
+			_user$project$ReceiptView$view(_p2._0));
 	} else {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -25878,8 +25973,8 @@ var _user$project$ReceiptList$FetchResult = function (a) {
 };
 var _user$project$ReceiptList$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
 			case 'Fetch':
 				return {
 					ctor: '_Tuple2',
@@ -25889,13 +25984,13 @@ var _user$project$ReceiptList$update = F2(
 					_1: A2(_user$project$Api$fetchReceipts, model.authentication, _user$project$ReceiptList$FetchResult)
 				};
 			case 'FetchResult':
-				if (_p1._0.ctor === 'Ok') {
+				if (_p3._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								receipts: A2(_elm_lang$core$List$take, 10, _p1._0._0),
+								receipts: A2(_elm_lang$core$List$take, 10, _p3._0._0),
 								loadingReceipts: false
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
@@ -25910,9 +26005,9 @@ var _user$project$ReceiptList$update = F2(
 					};
 				}
 			case 'OpenReceiptView':
-				var _p2 = A2(_user$project$ReceiptView$init, model.authentication, _p1._0);
-				var receiptViewModel = _p2._0;
-				var receiptViewCmd = _p2._1;
+				var _p4 = A2(_user$project$ReceiptView$init, model.authentication, _p3._0);
+				var receiptViewModel = _p4._0;
+				var receiptViewCmd = _p4._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -25923,17 +26018,19 @@ var _user$project$ReceiptList$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 				};
 			default:
-				var _p3 = model.openedReceiptView;
-				if (_p3.ctor === 'Just') {
-					var _p4 = A2(_user$project$ReceiptView$update, _p1._0, _p3._0);
-					var receiptViewModel = _p4._0;
-					var receiptViewCmd = _p4._1;
+				var _p7 = _p3._0;
+				var _p5 = model.openedReceiptView;
+				if (_p5.ctor === 'Just') {
+					var _p6 = A2(_user$project$ReceiptView$update, _p7, _p5._0);
+					var receiptViewModel = _p6._0;
+					var receiptViewCmd = _p6._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel)
+								openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel),
+								receipts: A2(_user$project$ReceiptList$updateReceipts, _p7, model.receipts)
 							}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 					};

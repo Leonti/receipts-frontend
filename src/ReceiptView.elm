@@ -1,4 +1,4 @@
-module ReceiptView exposing (Model, Msg, init, update, view)
+module ReceiptView exposing (Model, Msg, init, update, view, updatedReceipt)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,6 +15,7 @@ import Date.Extra.Format as DateFormat
 import Date.Extra.Config.Config_en_au exposing (config)
 import Material
 import Material.Options
+import Material.Typography as Typo
 import Material.Spinner as Spinner
 import Material.Textfield as Textfield
 import Material.Options as Options
@@ -191,12 +192,19 @@ update msg model =
                 )
 
         MouseUp _ ->
-            ( { model
-                | selectionBox = Nothing
-                , zoomBox = Debug.log "zoombox" <| Maybe.map toZoomBox model.selectionBox
-              }
-            , Ports.showDialog ""
-            )
+            let
+                cmd =
+                    if model.editMode == None then
+                        Cmd.none
+                    else
+                        Ports.showDialog (toString model.editMode)
+            in
+                ( { model
+                    | selectionBox = Nothing
+                    , zoomBox = Maybe.map toZoomBox model.selectionBox
+                  }
+                , cmd
+                )
 
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -222,11 +230,7 @@ update msg model =
             ( { model | updatingReceipt = False }, Cmd.none )
 
         UpdateReceiptResult (Err error) ->
-            let
-                some =
-                    Debug.log "error" error
-            in
-                ( model, Cmd.none )
+            ( model, Cmd.none )
 
         DateTimePickerMsg message ->
             let
@@ -245,6 +249,16 @@ update msg model =
                   }
                 , Cmd.none
                 )
+
+
+updatedReceipt : Msg -> Maybe Receipt
+updatedReceipt msg =
+    case msg of
+        UpdateReceiptResult (Ok receipt) ->
+            Just receipt
+
+        _ ->
+            Nothing
 
 
 delay : Time.Time -> msg -> Cmd msg
@@ -271,7 +285,7 @@ toEditMode : SelectionBox -> EditMode
 toEditMode selectionBox =
     let
         ratio =
-            Debug.log "ratio" <| toFloat selectionBox.w / toFloat selectionBox.h
+            toFloat selectionBox.w / toFloat selectionBox.h
     in
         if ratio > 5.5 then
             EditTransactionTime
@@ -413,8 +427,30 @@ receiptFormView model =
     let
         formattedDate =
             (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.receiptFormData.transactionTime)
+
+        updateButton =
+            case model.updatingReceipt of
+                False ->
+                    Button.render Mdl
+                        [ 4 ]
+                        model.mdl
+                        [ Button.raised
+                        , Button.colored
+                        , Button.ripple
+                        , Options.css "float" "right"
+                        , Options.onClick UpdateReceipt
+                        ]
+                        [ text "Save receipt" ]
+
+                True ->
+                    div [ Html.Attributes.class "receipt-update-spinner" ]
+                        [ Spinner.spinner
+                            [ Spinner.active True
+                            , Spinner.singleColor True
+                            ]
+                        ]
     in
-        div []
+        div [ Html.Attributes.class "receipt-form" ]
             [ div [ Html.Attributes.class "price-wrapper" ]
                 [ Textfield.render Mdl
                     [ 0 ]
@@ -435,18 +471,16 @@ receiptFormView model =
                     , Textfield.floatingLabel
                     , Options.css "width" "100%"
                     , Textfield.textarea
-                    , Textfield.rows 6
+                    , Textfield.rows 3
                     , Options.onInput DescriptionChange
                     , Textfield.value model.receiptFormData.description
                     ]
                     []
                 ]
-            , span [] [ text formattedDate ]
-            , Button.render Mdl
-                [ 4 ]
-                model.mdl
-                [ Options.onClick UpdateReceipt ]
-                [ text "Save receipt" ]
+            , Options.styled p
+                [ Typo.subhead, Options.css "display" "inline-block" ]
+                [ text formattedDate ]
+            , updateButton
             ]
 
 
@@ -454,7 +488,7 @@ receiptImageView : Model -> Html Msg
 receiptImageView model =
     let
         imageUrl =
-            Debug.log "url" <| Maybe.withDefault "" model.imageUrl
+            Maybe.withDefault "" model.imageUrl
 
         imageStyle =
             [ ( "width", "100%" ) ]

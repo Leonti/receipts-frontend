@@ -7,9 +7,9 @@ main.ports.initDownload.subscribe(function(url) {
     window.location = url;
 });
 
-main.ports.showDialog.subscribe(function() {
+main.ports.showDialog.subscribe(function(mode) {
     var dialog = document.querySelector('dialog');
-    console.log("showing dialog");
+    console.log("showing dialog " + mode);
     dialogPolyfill.registerDialog(dialog);
     dialog.showModal();
 });

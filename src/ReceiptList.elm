@@ -73,12 +73,30 @@ update msg model =
                     in
                         ( { model
                             | openedReceiptView = Just receiptViewModel
+                            , receipts = updateReceipts message model.receipts
                           }
                         , Cmd.map ReceiptViewMsg receiptViewCmd
                         )
 
                 Nothing ->
                     ( model, Cmd.none )
+
+
+updateReceipts : ReceiptView.Msg -> List Receipt -> List Receipt
+updateReceipts msg receipts =
+    case ReceiptView.updatedReceipt msg of
+        Just receipt ->
+            List.map
+                (\r ->
+                    if r.id == receipt.id then
+                        receipt
+                    else
+                        r
+                )
+                receipts
+
+        Nothing ->
+            receipts
 
 
 subscriptions : Sub Msg
@@ -121,5 +139,9 @@ receiptRow receipt =
     Lists.li []
         [ Lists.content
             [ Options.attribute <| Html.Events.onClick (OpenReceiptView receipt) ]
-            [ text receipt.id ]
+            [ div []
+                [ text <| receipt.id ++ " " ]
+            , div []
+                [ text <| Maybe.withDefault "" <| Maybe.map toString receipt.total ]
+            ]
         ]
