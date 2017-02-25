@@ -24851,6 +24851,21 @@ var _user$project$DateTimePicker$view = function (model) {
 		});
 };
 
+var _user$project$FormatUtils$formatMoney = function (amount) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'$',
+		_elm_lang$core$Basics$toString(amount));
+};
+var _user$project$FormatUtils$formatTimestamp = function (timeStamp) {
+	return A3(
+		_rluiten$elm_date_extra$Date_Extra_Format$format,
+		_rluiten$elm_date_extra$Date_Extra_Config_Config_en_au$config,
+		'%Y-%m-%d %H:%M',
+		_elm_lang$core$Date$fromTime(
+			_elm_lang$core$Basics$toFloat(timeStamp)));
+};
+
 var _user$project$ReceiptView$zoomWindowView = F3(
 	function (maybeImageUrl, receiptFile, zoomBox) {
 		var w = 300;
@@ -25024,16 +25039,24 @@ var _user$project$ReceiptView$updatedReceipt = function (msg) {
 		return _elm_lang$core$Maybe$Nothing;
 	}
 };
+var _user$project$ReceiptView$isReceiptClosed = function (msg) {
+	var _p2 = msg;
+	if (_p2.ctor === 'CloseReceipt') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var _user$project$ReceiptView$toFile = function (receipt) {
-	var _p2 = receipt.files;
-	if (_p2.ctor === '::') {
-		if (_p2._1.ctor === '[]') {
-			return _elm_lang$core$Maybe$Just(_p2._0);
+	var _p3 = receipt.files;
+	if (_p3.ctor === '::') {
+		if (_p3._1.ctor === '[]') {
+			return _elm_lang$core$Maybe$Just(_p3._0);
 		} else {
-			if (_p2._1._1.ctor === '[]') {
-				return _elm_lang$core$Maybe$Just(_p2._1._0);
+			if (_p3._1._1.ctor === '[]') {
+				return _elm_lang$core$Maybe$Just(_p3._1._0);
 			} else {
-				return _elm_lang$core$Maybe$Just(_p2._1._0);
+				return _elm_lang$core$Maybe$Just(_p3._1._0);
 			}
 		}
 	} else {
@@ -25084,8 +25107,8 @@ var _user$project$ReceiptView$None = {ctor: 'None'};
 var _user$project$ReceiptView$EditTransactionTime = {ctor: 'EditTransactionTime'};
 var _user$project$ReceiptView$EditTotal = {ctor: 'EditTotal'};
 var _user$project$ReceiptView$switchMode = function (editMode) {
-	var _p3 = editMode;
-	switch (_p3.ctor) {
+	var _p4 = editMode;
+	switch (_p4.ctor) {
 		case 'EditTotal':
 			return _user$project$ReceiptView$EditTransactionTime;
 		case 'EditTransactionTime':
@@ -25109,21 +25132,21 @@ var _user$project$ReceiptView$UpdateReceiptResult = function (a) {
 };
 var _user$project$ReceiptView$update = F2(
 	function (msg, model) {
-		var _p4 = msg;
-		switch (_p4.ctor) {
+		var _p5 = msg;
+		switch (_p5.ctor) {
 			case 'TotalChange':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{total: _p4._0}),
+						{total: _p5._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'DescriptionChange':
 				var receiptFormData = model.receiptFormData;
 				var updated = _elm_lang$core$Native_Utils.update(
 					receiptFormData,
-					{description: _p4._0});
+					{description: _p5._0});
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -25134,7 +25157,7 @@ var _user$project$ReceiptView$update = F2(
 			case 'MouseDown':
 				var selectionBox = A2(
 					_elm_lang$core$Maybe$map,
-					_user$project$ReceiptView$initialScalingBox(_p4._0),
+					_user$project$ReceiptView$initialScalingBox(_p5._0),
 					_user$project$ReceiptView$toFile(model.receipt));
 				return {
 					ctor: '_Tuple2',
@@ -25164,22 +25187,22 @@ var _user$project$ReceiptView$update = F2(
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseMove':
-				var editMode = A2(
-					_elm_lang$core$Maybe$withDefault,
-					_user$project$ReceiptView$None,
-					A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toEditMode, model.selectionBox));
 				var selectionBox = A2(
 					_elm_lang$core$Maybe$map,
-					_user$project$ReceiptView$updateSelectionBox(_p4._0),
+					_user$project$ReceiptView$updateSelectionBox(_p5._0),
 					model.selectionBox);
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{selectionBox: selectionBox, editMode: editMode}),
+						{selectionBox: selectionBox}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'MouseUp':
+				var editMode = A2(
+					_elm_lang$core$Maybe$withDefault,
+					_user$project$ReceiptView$None,
+					A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toEditMode, model.selectionBox));
 				var cmd = _elm_lang$core$Native_Utils.eq(model.editMode, _user$project$ReceiptView$None) ? _elm_lang$core$Platform_Cmd$none : _user$project$Ports$showDialog(
 					_elm_lang$core$Basics$toString(model.editMode));
 				return {
@@ -25188,12 +25211,13 @@ var _user$project$ReceiptView$update = F2(
 						model,
 						{
 							selectionBox: _elm_lang$core$Maybe$Nothing,
-							zoomBox: A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toZoomBox, model.selectionBox)
+							zoomBox: A2(_elm_lang$core$Maybe$map, _user$project$ReceiptView$toZoomBox, model.selectionBox),
+							editMode: editMode
 						}),
 					_1: cmd
 				};
 			case 'Mdl':
-				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptView$Mdl, _p4._0, model);
+				return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptView$Mdl, _p5._0, model);
 			case 'UpdateReceipt':
 				var receiptFormData = model.receiptFormData;
 				var updated = _elm_lang$core$Native_Utils.update(
@@ -25210,7 +25234,7 @@ var _user$project$ReceiptView$update = F2(
 					_1: A4(_user$project$Api$updateReceipt, model.authentication, model.receipt.id, updated, _user$project$ReceiptView$UpdateReceiptResult)
 				};
 			case 'UpdateReceiptResult':
-				if (_p4._0.ctor === 'Ok') {
+				if (_p5._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -25221,9 +25245,11 @@ var _user$project$ReceiptView$update = F2(
 				} else {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
+			case 'CloseReceipt':
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 			default:
 				var receiptFormData = model.receiptFormData;
-				var dateTimePickerModel = A2(_user$project$DateTimePicker$update, _p4._0, model.dateTimePickerModel);
+				var dateTimePickerModel = A2(_user$project$DateTimePicker$update, _p5._0, model.dateTimePickerModel);
 				var updated = _elm_lang$core$Native_Utils.update(
 					receiptFormData,
 					{
@@ -25238,6 +25264,7 @@ var _user$project$ReceiptView$update = F2(
 				};
 		}
 	});
+var _user$project$ReceiptView$CloseReceipt = {ctor: 'CloseReceipt'};
 var _user$project$ReceiptView$UpdateReceipt = {ctor: 'UpdateReceipt'};
 var _user$project$ReceiptView$EditModeSwitch = {ctor: 'EditModeSwitch'};
 var _user$project$ReceiptView$SetImageUrl = {ctor: 'SetImageUrl'};
@@ -25280,9 +25307,9 @@ var _user$project$ReceiptView$MouseDown = function (a) {
 };
 var _user$project$ReceiptView$receiptImageView = function (model) {
 	var selectorStyle = function () {
-		var _p5 = model.selectionBox;
-		if (_p5.ctor === 'Just') {
-			var _p6 = _p5._0;
+		var _p6 = model.selectionBox;
+		if (_p6.ctor === 'Just') {
+			var _p7 = _p6._0;
 			return {
 				ctor: '::',
 				_0: {
@@ -25290,7 +25317,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 					_0: 'top',
 					_1: A2(
 						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_p6.y),
+						_elm_lang$core$Basics$toString(_p7.y),
 						'px')
 				},
 				_1: {
@@ -25300,7 +25327,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 						_0: 'left',
 						_1: A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(_p6.x),
+							_elm_lang$core$Basics$toString(_p7.x),
 							'px')
 					},
 					_1: {
@@ -25310,7 +25337,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 							_0: 'width',
 							_1: A2(
 								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(_p6.w),
+								_elm_lang$core$Basics$toString(_p7.w),
 								'px')
 						},
 						_1: {
@@ -25320,7 +25347,7 @@ var _user$project$ReceiptView$receiptImageView = function (model) {
 								_0: 'height',
 								_1: A2(
 									_elm_lang$core$Basics_ops['++'],
-									_elm_lang$core$Basics$toString(_p6.h),
+									_elm_lang$core$Basics$toString(_p7.h),
 									'px')
 							},
 							_1: {ctor: '[]'}
@@ -25447,8 +25474,8 @@ var _user$project$ReceiptView$dialogContent = function (model) {
 			{ctor: '[]'},
 			{ctor: '[]'}),
 		maybeZoomedView);
-	var _p7 = model.editMode;
-	switch (_p7.ctor) {
+	var _p8 = model.editMode;
+	switch (_p8.ctor) {
 		case 'EditTotal':
 			return A2(
 				_elm_lang$html$Html$div,
@@ -25613,8 +25640,8 @@ var _user$project$ReceiptView$dialogView = function (model) {
 };
 var _user$project$ReceiptView$receiptFormView = function (model) {
 	var updateButton = function () {
-		var _p8 = model.updatingReceipt;
-		if (_p8 === false) {
+		var _p9 = model.updatingReceipt;
+		if (_p9 === false) {
 			return A5(
 				_debois$elm_mdl$Material_Button$render,
 				_user$project$ReceiptView$Mdl,
@@ -25674,12 +25701,7 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 				});
 		}
 	}();
-	var formattedDate = A3(
-		_rluiten$elm_date_extra$Date_Extra_Format$format,
-		_rluiten$elm_date_extra$Date_Extra_Config_Config_en_au$config,
-		'%Y-%m-%d %H:%M',
-		_elm_lang$core$Date$fromTime(
-			_elm_lang$core$Basics$toFloat(model.receiptFormData.transactionTime)));
+	var formattedDate = _user$project$FormatUtils$formatTimestamp(model.receiptFormData.transactionTime);
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -25729,7 +25751,48 @@ var _user$project$ReceiptView$receiptFormView = function (model) {
 							}
 						},
 						{ctor: '[]'}),
-					_1: {ctor: '[]'}
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('receipt-close-button'),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A5(
+									_debois$elm_mdl$Material_Button$render,
+									_user$project$ReceiptView$Mdl,
+									{
+										ctor: '::',
+										_0: 5,
+										_1: {ctor: '[]'}
+									},
+									model.mdl,
+									{
+										ctor: '::',
+										_0: _debois$elm_mdl$Material_Button$minifab,
+										_1: {
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Button$ripple,
+											_1: {
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Options$onClick(_user$project$ReceiptView$CloseReceipt),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _debois$elm_mdl$Material_Icon$i('close'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
 				}),
 			_1: {
 				ctor: '::',
@@ -25826,6 +25889,35 @@ var _user$project$ReceiptView$view = function (model) {
 		});
 };
 
+var _user$project$ReceiptList$emptyRow = A2(
+	_debois$elm_mdl$Material_List$li,
+	{
+		ctor: '::',
+		_0: _debois$elm_mdl$Material_List$withBody,
+		_1: {ctor: '[]'}
+	},
+	{
+		ctor: '::',
+		_0: A2(
+			_debois$elm_mdl$Material_List$content,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$span,
+					{ctor: '[]'},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_debois$elm_mdl$Material_List$body,
+						{ctor: '[]'},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			}),
+		_1: {ctor: '[]'}
+	});
 var _user$project$ReceiptList$subscriptions = _elm_lang$core$Platform_Sub$none;
 var _user$project$ReceiptList$updateReceipts = F2(
 	function (msg, receipts) {
@@ -25850,49 +25942,91 @@ var _user$project$ReceiptList$OpenReceiptView = function (a) {
 	return {ctor: 'OpenReceiptView', _0: a};
 };
 var _user$project$ReceiptList$receiptRow = function (receipt) {
-	return A2(
-		_debois$elm_mdl$Material_List$li,
-		{ctor: '[]'},
-		{
-			ctor: '::',
-			_0: A2(
-				_debois$elm_mdl$Material_List$content,
+	var totalElement = function () {
+		var _p2 = receipt.total;
+		if (_p2.ctor === 'Just') {
+			return A2(
+				_elm_lang$html$Html$span,
 				{
 					ctor: '::',
-					_0: _debois$elm_mdl$Material_Options$attribute(
-						_elm_lang$html$Html_Events$onClick(
-							_user$project$ReceiptList$OpenReceiptView(receipt))),
+					_0: _elm_lang$html$Html_Attributes$class('total-present'),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(
-								A2(_elm_lang$core$Basics_ops['++'], receipt.id, ' ')),
-							_1: {ctor: '[]'}
-						}),
+					_0: _elm_lang$html$Html$text(
+						_user$project$FormatUtils$formatMoney(_p2._0)),
+					_1: {ctor: '[]'}
+				});
+		} else {
+			return A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('add-details'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Add details'),
+					_1: {ctor: '[]'}
+				});
+		}
+	}();
+	return A2(
+		_debois$elm_mdl$Material_List$li,
+		{
+			ctor: '::',
+			_0: _debois$elm_mdl$Material_List$withBody,
+			_1: {
+				ctor: '::',
+				_0: _debois$elm_mdl$Material_Options$attribute(
+					_elm_lang$html$Html_Events$onClick(
+						_user$project$ReceiptList$OpenReceiptView(receipt))),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_debois$elm_mdl$Material_List$content,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: totalElement,
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$div,
+							_debois$elm_mdl$Material_List$body,
 							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text(
-									A2(
-										_elm_lang$core$Maybe$withDefault,
-										'',
-										A2(_elm_lang$core$Maybe$map, _elm_lang$core$Basics$toString, receipt.total))),
+								_0: _elm_lang$html$Html$text(receipt.description),
 								_1: {ctor: '[]'}
 							}),
 						_1: {ctor: '[]'}
 					}
 				}),
-			_1: {ctor: '[]'}
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_debois$elm_mdl$Material_List$content2,
+					{ctor: '[]'},
+					{
+						ctor: '::',
+						_0: A2(
+							_debois$elm_mdl$Material_List$info2,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(
+									_user$project$FormatUtils$formatTimestamp(receipt.transactionTime)),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
 		});
 };
 var _user$project$ReceiptList$receiptList = function (model) {
@@ -25906,25 +26040,43 @@ var _user$project$ReceiptList$receiptList = function (model) {
 				_1: {ctor: '[]'}
 			}
 		}) : A2(
-		_debois$elm_mdl$Material_List$ul,
-		{ctor: '[]'},
-		A2(
-			_elm_lang$core$List$map,
-			function (receipt) {
-				return _user$project$ReceiptList$receiptRow(receipt);
-			},
-			model.receipts));
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('receipt-list'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_debois$elm_mdl$Material_List$ul,
+				{ctor: '[]'},
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					A2(
+						_elm_lang$core$List$map,
+						function (receipt) {
+							return _user$project$ReceiptList$receiptRow(receipt);
+						},
+						model.receipts),
+					{
+						ctor: '::',
+						_0: _user$project$ReceiptList$emptyRow,
+						_1: {ctor: '[]'}
+					})),
+			_1: {ctor: '[]'}
+		});
 };
 var _user$project$ReceiptList$ReceiptViewMsg = function (a) {
 	return {ctor: 'ReceiptViewMsg', _0: a};
 };
 var _user$project$ReceiptList$receiptView = function (model) {
-	var _p2 = model.openedReceiptView;
-	if (_p2.ctor === 'Just') {
+	var _p3 = model.openedReceiptView;
+	if (_p3.ctor === 'Just') {
 		return A2(
 			_elm_lang$html$Html$map,
 			_user$project$ReceiptList$ReceiptViewMsg,
-			_user$project$ReceiptView$view(_p2._0));
+			_user$project$ReceiptView$view(_p3._0));
 	} else {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -25942,7 +26094,7 @@ var _user$project$ReceiptList$view = function (model) {
 				_debois$elm_mdl$Material_Grid$cell,
 				{
 					ctor: '::',
-					_0: A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
+					_0: A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 4),
 					_1: {ctor: '[]'}
 				},
 				{
@@ -25956,7 +26108,7 @@ var _user$project$ReceiptList$view = function (model) {
 					_debois$elm_mdl$Material_Grid$cell,
 					{
 						ctor: '::',
-						_0: A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 6),
+						_0: A2(_debois$elm_mdl$Material_Grid$size, _debois$elm_mdl$Material_Grid$All, 8),
 						_1: {ctor: '[]'}
 					},
 					{
@@ -25973,8 +26125,8 @@ var _user$project$ReceiptList$FetchResult = function (a) {
 };
 var _user$project$ReceiptList$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p4 = msg;
+		switch (_p4.ctor) {
 			case 'Fetch':
 				return {
 					ctor: '_Tuple2',
@@ -25984,15 +26136,12 @@ var _user$project$ReceiptList$update = F2(
 					_1: A2(_user$project$Api$fetchReceipts, model.authentication, _user$project$ReceiptList$FetchResult)
 				};
 			case 'FetchResult':
-				if (_p3._0.ctor === 'Ok') {
+				if (_p4._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{
-								receipts: A2(_elm_lang$core$List$take, 10, _p3._0._0),
-								loadingReceipts: false
-							}),
+							{receipts: _p4._0._0, loadingReceipts: false}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
@@ -26005,9 +26154,9 @@ var _user$project$ReceiptList$update = F2(
 					};
 				}
 			case 'OpenReceiptView':
-				var _p4 = A2(_user$project$ReceiptView$init, model.authentication, _p3._0);
-				var receiptViewModel = _p4._0;
-				var receiptViewCmd = _p4._1;
+				var _p5 = A2(_user$project$ReceiptView$init, model.authentication, _p4._0);
+				var receiptViewModel = _p5._0;
+				var receiptViewCmd = _p5._1;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
@@ -26018,19 +26167,20 @@ var _user$project$ReceiptList$update = F2(
 					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 				};
 			default:
-				var _p7 = _p3._0;
-				var _p5 = model.openedReceiptView;
-				if (_p5.ctor === 'Just') {
-					var _p6 = A2(_user$project$ReceiptView$update, _p7, _p5._0);
-					var receiptViewModel = _p6._0;
-					var receiptViewCmd = _p6._1;
+				var _p8 = _p4._0;
+				var _p6 = model.openedReceiptView;
+				if (_p6.ctor === 'Just') {
+					var _p7 = A2(_user$project$ReceiptView$update, _p8, _p6._0);
+					var receiptViewModel = _p7._0;
+					var receiptViewCmd = _p7._1;
+					var updatedOpenedReceiptView = _user$project$ReceiptView$isReceiptClosed(_p8) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(receiptViewModel);
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel),
-								receipts: A2(_user$project$ReceiptList$updateReceipts, _p7, model.receipts)
+								openedReceiptView: updatedOpenedReceiptView,
+								receipts: A2(_user$project$ReceiptList$updateReceipts, _p8, model.receipts)
 							}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 					};
@@ -26174,31 +26324,42 @@ var _user$project$AuthenticatedUserView$addReceiptFormView = F2(
 					}
 				});
 		} else {
-			return A5(
-				_debois$elm_mdl$Material_Button$render,
-				_user$project$AuthenticatedUserView$Mdl,
+			return A2(
+				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: 0,
+					_0: _elm_lang$html$Html_Attributes$class('add-receipt-button'),
 					_1: {ctor: '[]'}
 				},
-				model.mdl,
 				{
 					ctor: '::',
-					_0: _debois$elm_mdl$Material_Button$fab,
-					_1: {
-						ctor: '::',
-						_0: _debois$elm_mdl$Material_Button$colored,
-						_1: {
+					_0: A5(
+						_debois$elm_mdl$Material_Button$render,
+						_user$project$AuthenticatedUserView$Mdl,
+						{
 							ctor: '::',
-							_0: _debois$elm_mdl$Material_Options$onClick(_user$project$AuthenticatedUserView$ShowNewReceiptForm),
+							_0: 0,
 							_1: {ctor: '[]'}
-						}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _debois$elm_mdl$Material_Icon$i('add'),
+						},
+						model.mdl,
+						{
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Button$fab,
+							_1: {
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Button$colored,
+								_1: {
+									ctor: '::',
+									_0: _debois$elm_mdl$Material_Options$onClick(_user$project$AuthenticatedUserView$ShowNewReceiptForm),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Icon$i('add'),
+							_1: {ctor: '[]'}
+						}),
 					_1: {ctor: '[]'}
 				});
 		}
@@ -27091,7 +27252,7 @@ var _user$project$Main$main = A2(
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};
 if (typeof _user$project$Main$main !== 'undefined') {
-    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"DatePicker.Msg":{"args":[],"tags":{"SelectDay":["Int"],"DaySelection":[],"NextMonth":[],"SelectYear":["Int"],"YearSelection":[],"Noop":[],"PrevMonth":[]}},"DateTimePicker.Msg":{"args":[],"tags":{"TimePickerMsg":["TimePicker.Msg"],"DatePickerMsg":["DatePicker.Msg"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"TimeTypes.TimePeriod":{"args":[],"tags":{"PM":[],"AM":[]}},"TimeTypes.Mode":{"args":[],"tags":{"Hours":[],"Minutes":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"],"Mdl":["Material.Msg Backup.Msg"]}},"TimePicker.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"TimePeriodSwitch":["TimeTypes.TimePeriod"],"MouseDown":["MousePosition.Offset"],"ModeSwitch":["TimeTypes.Mode"],"MouseMove":["MousePosition.Offset"],"Noop":[]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"],"Mdl":["Material.Msg AuthenticatedUserView.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"UpdateReceiptResult":["Result.Result Api.Error Models.Receipt"],"TotalChange":["String"],"UpdateReceipt":[],"EditModeSwitch":[],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"Mdl":["Material.Msg ReceiptView.Msg"],"MouseMove":["MousePosition.Offset"],"DescriptionChange":["String"],"DateTimePickerMsg":["DateTimePicker.Msg"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ x : Int, y : Int }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , transactionTime : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
+    _user$project$Main$main(Elm['Main'], 'Main', {"types":{"unions":{"AddReceiptForm.Msg":{"args":[],"tags":{"CurrentTime":["Time.Time"],"UploadReceipt":[],"ReceiptFileChange":["Ports.FileToUpload"],"ReceiptFileInputStart":[],"ReceiptUploaded":["Ports.CreateReceiptResult"]}},"LoginForm.Msg":{"args":[],"tags":{"LoginWithGoogle":["String"],"AppConfigFetchResult":["Result.Result Api.Error Models.AppConfig"],"AppConfigFetch":[],"Name":["String"],"Password":["String"],"LoginResult":["Result.Result Api.Error String"],"Login":[]}},"Material.Component.Msg":{"args":["button","textfield","menu","layout","toggles","tooltip","tabs","dispatch"],"tags":{"TooltipMsg":["Material.Component.Index","tooltip"],"TogglesMsg":["Material.Component.Index","toggles"],"LayoutMsg":["layout"],"ButtonMsg":["Material.Component.Index","button"],"MenuMsg":["Material.Component.Index","menu"],"TabsMsg":["Material.Component.Index","tabs"],"Dispatch":["dispatch"],"TextfieldMsg":["Material.Component.Index","textfield"]}},"DatePicker.Msg":{"args":[],"tags":{"SelectDay":["Int"],"DaySelection":[],"NextMonth":[],"SelectYear":["Int"],"YearSelection":[],"Noop":[],"PrevMonth":[]}},"DateTimePicker.Msg":{"args":[],"tags":{"TimePickerMsg":["TimePicker.Msg"],"DatePickerMsg":["DatePicker.Msg"]}},"Material.Ripple.Msg":{"args":[],"tags":{"Down":["Material.Ripple.DOMState"],"Up":[],"Tick":[]}},"TimeTypes.TimePeriod":{"args":[],"tags":{"PM":[],"AM":[]}},"TimeTypes.Mode":{"args":[],"tags":{"Hours":[],"Minutes":[]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Backup.Msg":{"args":[],"tags":{"DownloadBackup":[],"BackupUrlResult":["Result.Result Api.Error String"],"Mdl":["Material.Msg Backup.Msg"]}},"TimePicker.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"TimePeriodSwitch":["TimeTypes.TimePeriod"],"MouseDown":["MousePosition.Offset"],"ModeSwitch":["TimeTypes.Mode"],"MouseMove":["MousePosition.Offset"],"Noop":[]}},"Main.Msg":{"args":[],"tags":{"LoginFormMsg":["LoginForm.Msg"],"UserInfoMsg":["UserInfo.Msg"],"AuthenticatedUserViewMsg":["AuthenticatedUserView.Msg"],"UrlChange":["Navigation.Location"],"Mdl":["Material.Msg Main.Msg"]}},"Material.Tooltip.Msg":{"args":[],"tags":{"Enter":["Material.Tooltip.DOMState"],"Leave":[]}},"AuthenticatedUserView.Msg":{"args":[],"tags":{"ReceiptListMsg":["ReceiptList.Msg"],"AddReceiptFormMsg":["AddReceiptForm.Msg"],"ShowNewReceiptForm":[],"HideNewReceiptForm":[],"BackupMsg":["Backup.Msg"],"Mdl":["Material.Msg AuthenticatedUserView.Msg"]}},"Json.Decode.Decoder":{"args":["a"],"tags":{"Decoder":[]}},"Material.Textfield.Msg":{"args":[],"tags":{"Focus":[],"Input":["String"],"Blur":[]}},"UserInfo.Msg":{"args":[],"tags":{"Fetch":[],"FetchResult":["Result.Result Api.Error Models.UserInfo"]}},"Material.Layout.Msg":{"args":[],"tags":{"Resize":["Int"],"ToggleDrawer":[],"TransitionEnd":[],"ScrollPane":["Bool","Float"],"Ripple":["Int","Material.Ripple.Msg"],"ScrollTab":["Material.Layout.TabScrollState"],"TransitionHeader":["{ toCompact : Bool, fixedHeader : Bool }"],"NOP":[]}},"Material.Toggles.Msg":{"args":[],"tags":{"Ripple":["Material.Ripple.Msg"],"SetFocus":["Bool"]}},"VirtualDom.Property":{"args":["msg"],"tags":{"Property":[]}},"ReceiptView.Msg":{"args":[],"tags":{"MouseUp":["MousePosition.Offset"],"UpdateReceiptResult":["Result.Result Api.Error Models.Receipt"],"TotalChange":["String"],"UpdateReceipt":[],"EditModeSwitch":[],"MouseDown":["MousePosition.Offset"],"SetImageUrl":[],"CloseReceipt":[],"Mdl":["Material.Msg ReceiptView.Msg"],"MouseMove":["MousePosition.Offset"],"DescriptionChange":["String"],"DateTimePickerMsg":["DateTimePicker.Msg"]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"Api.Error":{"args":[],"tags":{"Error":["String"]}},"Material.Tabs.Msg":{"args":[],"tags":{"Ripple":["Int","Material.Ripple.Msg"]}},"Material.Menu.Msg":{"args":["m"],"tags":{"Tick":[],"Close":[],"Open":["Material.Menu.Geometry.Geometry"],"Key":["List (Material.Options.Internal.Summary (Material.Menu.ItemConfig m) m)","Int"],"Ripple":["Int","Material.Ripple.Msg"],"Select":["Int","Maybe.Maybe m"],"Click":["Mouse.Position"]}},"Material.Dispatch.Config":{"args":["msg"],"tags":{"Config":["{ decoders : List ( String , ( Json.Decode.Decoder msg, Maybe.Maybe Html.Events.Options ) ) , lift : Maybe.Maybe (Json.Decode.Decoder (List msg) -> Json.Decode.Decoder msg) }"]}},"ReceiptList.Msg":{"args":[],"tags":{"Fetch":[],"OpenReceiptView":["Models.Receipt"],"FetchResult":["Result.Result Api.Error (List Models.Receipt)"],"ReceiptViewMsg":["ReceiptView.Msg"]}}},"aliases":{"Material.Button.Msg":{"args":[],"type":"Material.Ripple.Msg"},"Material.Layout.TabScrollState":{"args":[],"type":"{ canScrollLeft : Bool , canScrollRight : Bool , width : Maybe.Maybe Int }"},"Material.Tooltip.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle, offsetWidth : Float, offsetHeight : Float }"},"Html.Attribute":{"args":["msg"],"type":"VirtualDom.Property msg"},"Material.Menu.ItemConfig":{"args":["m"],"type":"{ enabled : Bool, divider : Bool, onSelect : Maybe.Maybe m }"},"Material.Component.Index":{"args":[],"type":"List Int"},"Html.Events.Options":{"args":[],"type":"{ stopPropagation : Bool, preventDefault : Bool }"},"Models.UserInfo":{"args":[],"type":"{ id : String, username : String }"},"Material.Ripple.DOMState":{"args":[],"type":"{ rect : DOM.Rectangle , clientX : Maybe.Maybe Float , clientY : Maybe.Maybe Float , touchX : Maybe.Maybe Float , touchY : Maybe.Maybe Float , type_ : String }"},"Models.ReceiptFile":{"args":[],"type":"{ id : String , ext : String , metaData : Models.FileMetadata , timestamp : Int }"},"MousePosition.Offset":{"args":[],"type":"{ x : Int, y : Int }"},"Mouse.Position":{"args":[],"type":"{ x : Int, y : Int }"},"Material.Options.Internal.Summary":{"args":["c","m"],"type":"{ classes : List String , css : List ( String, String ) , attrs : List (Html.Attribute m) , internal : List (Html.Attribute m) , dispatch : Material.Dispatch.Config m , config : c }"},"Models.AppConfig":{"args":[],"type":"{ googleClientId : String }"},"Material.Msg":{"args":["m"],"type":"Material.Component.Msg Material.Button.Msg Material.Textfield.Msg (Material.Menu.Msg m) Material.Layout.Msg Material.Toggles.Msg Material.Tooltip.Msg Material.Tabs.Msg (List m)"},"MousePosition.Target":{"args":[],"type":"{ offsetWidth : Int, offsetHeight : Int }"},"Ports.FileToUpload":{"args":[],"type":"{ isImage : Bool, imageDataUrl : Maybe.Maybe String }"},"Material.Menu.Geometry.Element":{"args":[],"type":"{ offsetTop : Float , offsetLeft : Float , offsetHeight : Float , bounds : DOM.Rectangle }"},"Ports.CreateReceiptResult":{"args":[],"type":"{ receiptId : String, error : Maybe.Maybe String }"},"Material.Menu.Geometry.Geometry":{"args":[],"type":"{ button : Material.Menu.Geometry.Element , menu : Material.Menu.Geometry.Element , container : Material.Menu.Geometry.Element , offsetTops : List Float , offsetHeights : List Float }"},"Time.Time":{"args":[],"type":"Float"},"Models.Receipt":{"args":[],"type":"{ id : String , userId : String , files : List Models.ReceiptFile , timestamp : Int , transactionTime : Int , total : Maybe.Maybe Float , description : String , tags : List String }"},"Navigation.Location":{"args":[],"type":"{ href : String , host : String , hostname : String , protocol : String , origin : String , port_ : String , pathname : String , search : String , hash : String , username : String , password : String }"},"Models.FileMetadata":{"args":[],"type":"{ fileType : String, length : Int, width : Int, height : Int }"},"DOM.Rectangle":{"args":[],"type":"{ top : Float, left : Float, width : Float, height : Float }"}},"message":"Main.Msg"},"versions":{"elm":"0.18.0"}});
 }
 
 if (typeof define === "function" && define['amd'])

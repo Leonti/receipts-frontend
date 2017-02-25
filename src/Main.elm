@@ -28,7 +28,7 @@ main =
     Navigation.programWithFlags UrlChange
         { init = init
         , view = view
-        , update = (\msg model -> withSetStorage (update msg model))
+        , update = \msg model -> withSetStorage (update msg model)
         , subscriptions = subscriptions
         }
 

@@ -7,6 +7,12 @@ html {
 .receipt-form {
     .price-wrapper {
         display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .receipt-close-button {
+            align-self: flex-start;
+        }
     }
 
     padding-bottom: 20px;
@@ -66,6 +72,22 @@ html {
     .zoomed-image {
         position: absolute;
     }
+}
+
+.receipt-list {
+    height: calc(100vh - 96px);
+    overflow: auto;
+
+    .add-details {
+        color: rgba(0,0,0,.54);
+    }
+}
+
+.add-receipt-button {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 20px;
 }
 
 .elm-overlay {

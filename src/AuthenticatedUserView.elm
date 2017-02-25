@@ -2,6 +2,7 @@ module AuthenticatedUserView exposing (Model, Msg, init, update, view, drawerVie
 
 import Html exposing (..)
 import Html.Events exposing (..)
+import Html.Attributes
 import Models exposing (Authentication)
 import ReceiptList
 import Backup
@@ -134,14 +135,16 @@ addReceiptFormView model maybeAddReceiptFormModel =
                 ]
 
         Nothing ->
-            Button.render Mdl
-                [ 0 ]
-                model.mdl
-                [ Button.fab
-                , Button.colored
-                , Options.onClick ShowNewReceiptForm
+            div [ Html.Attributes.class "add-receipt-button" ]
+                [ Button.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Button.fab
+                    , Button.colored
+                    , Options.onClick ShowNewReceiptForm
+                    ]
+                    [ Icon.i "add" ]
                 ]
-                [ Icon.i "add" ]
 
 
 subscriptions : Model -> Sub Msg

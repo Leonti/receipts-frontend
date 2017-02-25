@@ -1,4 +1,4 @@
-module ReceiptView exposing (Model, Msg, init, update, view, updatedReceipt)
+module ReceiptView exposing (Model, Msg, init, update, view, updatedReceipt, isReceiptClosed)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,10 +11,10 @@ import Process
 import Ports
 import DateTimePicker
 import Date exposing (Date)
-import Date.Extra.Format as DateFormat
-import Date.Extra.Config.Config_en_au exposing (config)
+import FormatUtils
 import Material
 import Material.Options
+import Material.Icon as Icon
 import Material.Typography as Typo
 import Material.Spinner as Spinner
 import Material.Textfield as Textfield
@@ -126,6 +126,7 @@ type Msg
     | SetImageUrl
     | EditModeSwitch
     | UpdateReceipt
+    | CloseReceipt
     | UpdateReceiptResult (Result Api.Error Receipt)
     | DateTimePickerMsg DateTimePicker.Msg
     | Mdl (Material.Msg Msg)
@@ -180,13 +181,9 @@ update msg model =
             let
                 selectionBox =
                     Maybe.map (updateSelectionBox offset) model.selectionBox
-
-                editMode =
-                    Maybe.withDefault None (Maybe.map toEditMode model.selectionBox)
             in
                 ( { model
                     | selectionBox = selectionBox
-                    , editMode = editMode
                   }
                 , Cmd.none
                 )
@@ -198,10 +195,14 @@ update msg model =
                         Cmd.none
                     else
                         Ports.showDialog (toString model.editMode)
+
+                editMode =
+                    Maybe.withDefault None (Maybe.map toEditMode model.selectionBox)
             in
                 ( { model
                     | selectionBox = Nothing
                     , zoomBox = Maybe.map toZoomBox model.selectionBox
+                    , editMode = editMode
                   }
                 , cmd
                 )
@@ -232,6 +233,9 @@ update msg model =
         UpdateReceiptResult (Err error) ->
             ( model, Cmd.none )
 
+        CloseReceipt ->
+            ( model, Cmd.none )
+
         DateTimePickerMsg message ->
             let
                 dateTimePickerModel =
@@ -249,6 +253,16 @@ update msg model =
                   }
                 , Cmd.none
                 )
+
+
+isReceiptClosed : Msg -> Bool
+isReceiptClosed msg =
+    case msg of
+        CloseReceipt ->
+            True
+
+        _ ->
+            False
 
 
 updatedReceipt : Msg -> Maybe Receipt
@@ -426,7 +440,7 @@ receiptFormView : Model -> Html Msg
 receiptFormView model =
     let
         formattedDate =
-            (DateFormat.format config "%Y-%m-%d %H:%M") <| Date.fromTime (toFloat model.receiptFormData.transactionTime)
+            FormatUtils.formatTimestamp model.receiptFormData.transactionTime
 
         updateButton =
             case model.updatingReceipt of
@@ -462,6 +476,16 @@ receiptFormView model =
                     , Options.onInput TotalChange
                     ]
                     []
+                , div [ Html.Attributes.class "receipt-close-button" ]
+                    [ Button.render Mdl
+                        [ 5 ]
+                        model.mdl
+                        [ Button.minifab
+                        , Button.ripple
+                        , Options.onClick CloseReceipt
+                        ]
+                        [ Icon.i "close" ]
+                    ]
                 ]
             , div []
                 [ Textfield.render Mdl

@@ -2,9 +2,11 @@ module ReceiptList exposing (Model, Msg, init, update, view, subscriptions)
 
 import Html exposing (..)
 import Html.Events exposing (..)
+import Html.Attributes
 import Api
 import Models exposing (UserInfo, Receipt, Authentication)
 import ReceiptView
+import FormatUtils
 import Material.List as Lists
 import Material.Options as Options exposing (when, css)
 import Material.Spinner as Spinner
@@ -44,7 +46,7 @@ update msg model =
 
         FetchResult (Ok receipts) ->
             ( { model
-                | receipts = List.take 10 receipts
+                | receipts = receipts
                 , loadingReceipts = False
               }
             , Cmd.none
@@ -70,9 +72,15 @@ update msg model =
                     let
                         ( receiptViewModel, receiptViewCmd ) =
                             ReceiptView.update message openedReceiptView
+
+                        updatedOpenedReceiptView =
+                            if ReceiptView.isReceiptClosed message then
+                                Nothing
+                            else
+                                Just receiptViewModel
                     in
                         ( { model
-                            | openedReceiptView = Just receiptViewModel
+                            | openedReceiptView = updatedOpenedReceiptView
                             , receipts = updateReceipts message model.receipts
                           }
                         , Cmd.map ReceiptViewMsg receiptViewCmd
@@ -107,8 +115,8 @@ subscriptions =
 view : Model -> Html Msg
 view model =
     Grid.grid []
-        [ Grid.cell [ Grid.size Grid.All 6 ] [ receiptList model ]
-        , Grid.cell [ Grid.size Grid.All 6 ] [ receiptView model ]
+        [ Grid.cell [ Grid.size Grid.All 4 ] [ receiptList model ]
+        , Grid.cell [ Grid.size Grid.All 8 ] [ receiptView model ]
         ]
 
 
@@ -120,8 +128,10 @@ receiptList model =
             , Spinner.singleColor True
             ]
     else
-        Lists.ul []
-            (List.map (\receipt -> receiptRow receipt) model.receipts)
+        div [ Html.Attributes.class "receipt-list" ]
+            [ Lists.ul []
+                ((List.map (\receipt -> receiptRow receipt) model.receipts) ++ [ emptyRow ])
+            ]
 
 
 receiptView : Model -> Html Msg
@@ -136,12 +146,37 @@ receiptView model =
 
 receiptRow : Receipt -> Html Msg
 receiptRow receipt =
-    Lists.li []
+    let
+        totalElement =
+            case receipt.total of
+                Just total ->
+                    span
+                        [ Html.Attributes.class "total-present" ]
+                        [ text <| FormatUtils.formatMoney total ]
+
+                Nothing ->
+                    span
+                        [ Html.Attributes.class "add-details" ]
+                        [ text "Add details" ]
+    in
+        Lists.li [ Lists.withBody, Options.attribute <| Html.Events.onClick (OpenReceiptView receipt) ]
+            [ Lists.content
+                []
+                [ totalElement
+                , Lists.body [] [ text receipt.description ]
+                ]
+            , Lists.content2 []
+                [ Lists.info2 [] [ text <| FormatUtils.formatTimestamp receipt.transactionTime ]
+                ]
+            ]
+
+
+emptyRow : Html Msg
+emptyRow =
+    Lists.li [ Lists.withBody ]
         [ Lists.content
-            [ Options.attribute <| Html.Events.onClick (OpenReceiptView receipt) ]
-            [ div []
-                [ text <| receipt.id ++ " " ]
-            , div []
-                [ text <| Maybe.withDefault "" <| Maybe.map toString receipt.total ]
+            []
+            [ span [] []
+            , Lists.body [] []
             ]
         ]
