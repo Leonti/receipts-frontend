@@ -20350,7 +20350,7 @@ var _user$project$Api$authorizationHeaders = function (token) {
 		'Authorization',
 		A2(_elm_lang$core$Basics_ops['++'], 'Bearer ', token));
 };
-var _user$project$Api$baseUrl = 'http://localhost:9000';
+var _user$project$Api$baseUrl = 'https://api.receipts.leonti.me';
 var _user$project$Api$createReceiptUrl = function (userId) {
 	return A2(
 		_elm_lang$core$Basics_ops['++'],

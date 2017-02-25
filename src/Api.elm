@@ -20,13 +20,15 @@ import Json.Encode
 
 
 baseUrl : String
-baseUrl =
-    "http://localhost:9000"
 
 
 
 --baseUrl =
---    "https://api.receipts.leonti.me"
+--    "http://localhost:9000"
+
+
+baseUrl =
+    "https://api.receipts.leonti.me"
 
 
 type Error
