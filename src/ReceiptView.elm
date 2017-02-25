@@ -1,4 +1,4 @@
-module ReceiptView exposing (Model, Msg, init, update, view, updatedReceipt, isReceiptClosed)
+module ReceiptView exposing (Model, Msg, init, update, view, updatedReceipt, isReceiptClosed, openedReceipt)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -85,6 +85,11 @@ init authentication receipt =
             }
     in
         ( model, delay 10 SetImageUrl )
+
+
+openedReceipt : Model -> Receipt
+openedReceipt =
+    .receipt
 
 
 toImageUrl : Authentication -> Receipt -> Maybe String
@@ -190,14 +195,14 @@ update msg model =
 
         MouseUp _ ->
             let
-                cmd =
-                    if model.editMode == None then
-                        Cmd.none
-                    else
-                        Ports.showDialog (toString model.editMode)
-
                 editMode =
                     Maybe.withDefault None (Maybe.map toEditMode model.selectionBox)
+
+                cmd =
+                    if editMode == None then
+                        Cmd.none
+                    else
+                        Ports.showDialog (toString editMode)
             in
                 ( { model
                     | selectionBox = Nothing

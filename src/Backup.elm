@@ -1,6 +1,7 @@
 module Backup exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
+import Html.Attributes
 import Api
 import Models exposing (Authentication)
 import Ports exposing (initDownload)
@@ -48,7 +49,7 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ Html.Attributes.class "backup-button-wrapper" ]
         [ Button.render Mdl
             [ 0 ]
             model.mdl

@@ -24,7 +24,9 @@ html {
     }
 }
 
-
+.backup-button-wrapper {
+    text-align: center;
+}
 
 .date-time-picker {
     display: flex;
@@ -77,6 +79,13 @@ html {
 .receipt-list {
     height: calc(100vh - 96px);
     overflow: auto;
+
+    .receipt-row {
+
+        &.selected {
+            background: rgba(0,0,0,0.07);
+        }
+    }
 
     .add-details {
         color: rgba(0,0,0,.54);

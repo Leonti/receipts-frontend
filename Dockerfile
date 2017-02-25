@@ -1,12 +1,6 @@
-FROM python:3.3.6
+FROM nginx:alpine
 
-COPY css/style.min.css /root/css/style.min.css
-COPY gen/main.js /root/gen/main.js
-COPY src/ports.js /root/src/ports.js
-COPY index.html /root/index.html
-
-WORKDIR /root
-
-EXPOSE  8000
-
-CMD python3 -m http.server
+COPY css/style.min.css /usr/share/nginx/html/css/style.min.css
+COPY gen/main.js /usr/share/nginx/html/gen/main.js
+COPY src/ports.js /usr/share/nginx/html/src/ports.js
+COPY index.html /usr/share/nginx/html/index.html

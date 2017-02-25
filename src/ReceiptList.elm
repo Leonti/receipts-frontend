@@ -130,8 +130,25 @@ receiptList model =
     else
         div [ Html.Attributes.class "receipt-list" ]
             [ Lists.ul []
-                ((List.map (\receipt -> receiptRow receipt) model.receipts) ++ [ emptyRow ])
+                ((List.map
+                    (\receipt ->
+                        receiptRow receipt (isReceiptSelected model receipt)
+                    )
+                    model.receipts
+                 )
+                    ++ [ emptyRow ]
+                )
             ]
+
+
+isReceiptSelected : Model -> Receipt -> Bool
+isReceiptSelected model receipt =
+    case model.openedReceiptView of
+        Just openedReceiptViewModel ->
+            (ReceiptView.openedReceipt openedReceiptViewModel).id == receipt.id
+
+        Nothing ->
+            False
 
 
 receiptView : Model -> Html Msg
@@ -144,8 +161,8 @@ receiptView model =
             div [] []
 
 
-receiptRow : Receipt -> Html Msg
-receiptRow receipt =
+receiptRow : Receipt -> Bool -> Html Msg
+receiptRow receipt isSelected =
     let
         totalElement =
             case receipt.total of
@@ -158,8 +175,18 @@ receiptRow receipt =
                     span
                         [ Html.Attributes.class "add-details" ]
                         [ text "Add details" ]
+
+        rowClass =
+            if isSelected then
+                "receipt-row selected"
+            else
+                "receipt-row"
     in
-        Lists.li [ Lists.withBody, Options.attribute <| Html.Events.onClick (OpenReceiptView receipt) ]
+        Lists.li
+            [ Lists.withBody
+            , Options.attribute <| Html.Events.onClick (OpenReceiptView receipt)
+            , Options.cs rowClass
+            ]
             [ Lists.content
                 []
                 [ totalElement
