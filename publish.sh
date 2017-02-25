@@ -8,6 +8,6 @@ docker build -t leonti/receipts-frontend:$version .
 docker push leonti/receipts-frontend
 git tag -a v$version -m 'new version $version'
 
-git push "https://${TAG_TOKEN}@github.com/Leonti/receipts-frontend" HEAD:master --follow-tags
+git push --quiet "https://${TAG_TOKEN}@github.com/Leonti/receipts-frontend" HEAD:master --follow-tags > /dev/null 2>&1
 
 echo "Released version "$version
