@@ -22581,11 +22581,14 @@ var _user$project$LoginForm$googleOauthUrl = F2(
 var _user$project$LoginForm$token = function (model) {
 	return model.token;
 };
-var _user$project$LoginForm$emptyModel = {username: '', password: '', host: '', token: _elm_lang$core$Maybe$Nothing, basicHeader: '', googleClientId: ''};
-var _user$project$LoginForm$Model = F6(
-	function (a, b, c, d, e, f) {
-		return {username: a, password: b, host: c, token: d, basicHeader: e, googleClientId: f};
+var _user$project$LoginForm$emptyModel = {username: '', password: '', host: '', token: _elm_lang$core$Maybe$Nothing, basicHeader: '', googleClientId: '', mdl: _debois$elm_mdl$Material$model};
+var _user$project$LoginForm$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {username: a, password: b, host: c, token: d, basicHeader: e, googleClientId: f, mdl: g};
 	});
+var _user$project$LoginForm$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
+};
 var _user$project$LoginForm$LoginResult = function (a) {
 	return {ctor: 'LoginResult', _0: a};
 };
@@ -22646,7 +22649,7 @@ var _user$project$LoginForm$update = F2(
 					_0: model,
 					_1: A2(_user$project$Api$authenticateWithGoogle, _p0._0, _user$project$LoginForm$LoginResult)
 				};
-			default:
+			case 'LoginResult':
 				if (_p0._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
@@ -22660,6 +22663,8 @@ var _user$project$LoginForm$update = F2(
 				} else {
 					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 				}
+			default:
+				return A3(_debois$elm_mdl$Material$update, _user$project$LoginForm$Mdl, _p0._0, model);
 		}
 	});
 var _user$project$LoginForm$AppConfigFetch = {ctor: 'AppConfigFetch'};
@@ -22703,84 +22708,229 @@ var _user$project$LoginForm$Password = function (a) {
 var _user$project$LoginForm$Name = function (a) {
 	return {ctor: 'Name', _0: a};
 };
-var _user$project$LoginForm$view = function (model) {
+var _user$project$LoginForm$loginForm = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('login-dialog-wrapper'),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$input,
+				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$type_('text'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$placeholder('Name'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$value(model.username),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onInput(_user$project$LoginForm$Name),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
+					_0: _elm_lang$html$Html_Attributes$class('login-dialog mdl-shadow--2dp'),
+					_1: {ctor: '[]'}
 				},
-				{ctor: '[]'}),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$input,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$type_('password'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$placeholder('Password'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onInput(_user$project$LoginForm$Password),
-								_1: {ctor: '[]'}
-							}
-						}
-					},
-					{ctor: '[]'}),
-				_1: {
+				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$button,
+						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$LoginForm$Login),
+							_0: _elm_lang$html$Html_Attributes$class('email-field'),
 							_1: {ctor: '[]'}
 						},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Login'),
+							_0: A5(
+								_debois$elm_mdl$Material_Textfield$render,
+								_user$project$LoginForm$Mdl,
+								{
+									ctor: '::',
+									_0: 0,
+									_1: {ctor: '[]'}
+								},
+								model.mdl,
+								{
+									ctor: '::',
+									_0: _debois$elm_mdl$Material_Textfield$label('Email'),
+									_1: {
+										ctor: '::',
+										_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
+										_1: {
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Textfield$value(model.username),
+											_1: {
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Options$onInput(_user$project$LoginForm$Name),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								},
+								{ctor: '[]'}),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$a,
+							_elm_lang$html$Html$div,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$href(
-									A2(_user$project$LoginForm$googleOauthUrl, model.host, model.googleClientId)),
+								_0: _elm_lang$html$Html_Attributes$class('email-field'),
 								_1: {ctor: '[]'}
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('Google Login'),
+								_0: A5(
+									_debois$elm_mdl$Material_Textfield$render,
+									_user$project$LoginForm$Mdl,
+									{
+										ctor: '::',
+										_0: 1,
+										_1: {ctor: '[]'}
+									},
+									model.mdl,
+									{
+										ctor: '::',
+										_0: _debois$elm_mdl$Material_Textfield$label('Password'),
+										_1: {
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Textfield$floatingLabel,
+											_1: {
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Textfield$password,
+												_1: {
+													ctor: '::',
+													_0: _debois$elm_mdl$Material_Options$onInput(_user$project$LoginForm$Password),
+													_1: {ctor: '[]'}
+												}
+											}
+										}
+									},
+									{ctor: '[]'}),
 								_1: {ctor: '[]'}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('login-button'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A5(
+										_debois$elm_mdl$Material_Button$render,
+										_user$project$LoginForm$Mdl,
+										{
+											ctor: '::',
+											_0: 2,
+											_1: {ctor: '[]'}
+										},
+										model.mdl,
+										{
+											ctor: '::',
+											_0: _debois$elm_mdl$Material_Button$raised,
+											_1: {
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Button$colored,
+												_1: {
+													ctor: '::',
+													_0: _debois$elm_mdl$Material_Button$ripple,
+													_1: {
+														ctor: '::',
+														_0: _debois$elm_mdl$Material_Options$onClick(_user$project$LoginForm$Login),
+														_1: {ctor: '[]'}
+													}
+												}
+											}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text('Login'),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('login-or'),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: A3(
+											_debois$elm_mdl$Material_Options$styled,
+											_elm_lang$html$Html$p,
+											{
+												ctor: '::',
+												_0: _debois$elm_mdl$Material_Typography$subhead,
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text('OR'),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$class('google-login-button'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: A5(
+												_debois$elm_mdl$Material_Button$render,
+												_user$project$LoginForm$Mdl,
+												{
+													ctor: '::',
+													_0: 3,
+													_1: {ctor: '[]'}
+												},
+												model.mdl,
+												{
+													ctor: '::',
+													_0: _debois$elm_mdl$Material_Button$ripple,
+													_1: {
+														ctor: '::',
+														_0: _debois$elm_mdl$Material_Button$colored,
+														_1: {
+															ctor: '::',
+															_0: _debois$elm_mdl$Material_Button$raised,
+															_1: {
+																ctor: '::',
+																_0: _debois$elm_mdl$Material_Button$link(
+																	A2(_user$project$LoginForm$googleOauthUrl, model.host, model.googleClientId)),
+																_1: {ctor: '[]'}
+															}
+														}
+													}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('Login With Google'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
 					}
-				}
-			}
+				}),
+			_1: {ctor: '[]'}
 		});
+};
+var _user$project$LoginForm$view = function (model) {
+	return _user$project$LoginForm$loginForm(model);
 };
 
 var _user$project$UserInfo$view = function (model) {

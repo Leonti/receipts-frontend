@@ -4,6 +4,33 @@ html {
 //    color: magenta;
 }
 
+.login-dialog-wrapper {
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: auto;
+    width: 350px;
+
+    .login-dialog {
+        padding: 20px 55px;
+
+        .login-button {
+            text-align: right;
+        }
+
+        .login-or {
+            text-align: center;
+            padding-top: 16px;
+        }
+
+        .google-login-button {
+            text-align: center;
+        }
+    }
+}
+
+
 .receipt-form {
     .price-wrapper {
         display: flex;

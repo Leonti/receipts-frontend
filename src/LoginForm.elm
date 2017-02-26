@@ -3,9 +3,13 @@ module LoginForm exposing (Model, Msg, init, update, view, token)
 import Api
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Models exposing (AppConfig)
 import AccessTokenParser
+import Material
+import Material.Options as Options
+import Material.Button as Button
+import Material.Textfield as Textfield
+import Material.Typography as Typo
 
 
 type alias Model =
@@ -15,6 +19,7 @@ type alias Model =
     , token : Maybe String
     , basicHeader : String
     , googleClientId : String
+    , mdl : Material.Model
     }
 
 
@@ -26,6 +31,7 @@ emptyModel =
     , token = Nothing
     , basicHeader = ""
     , googleClientId = ""
+    , mdl = Material.model
     }
 
 
@@ -66,6 +72,7 @@ type Msg
     | Login
     | LoginWithGoogle String
     | LoginResult (Result Api.Error String)
+    | Mdl (Material.Msg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -98,6 +105,9 @@ update msg model =
         LoginResult (Err error) ->
             ( model, Cmd.none )
 
+        Mdl msg_ ->
+            Material.update Mdl msg_ model
+
 
 
 -- VIEW
@@ -105,11 +115,63 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ input [ type_ "text", placeholder "Name", value model.username, onInput Name ] []
-        , input [ type_ "password", placeholder "Password", onInput Password ] []
-        , button [ onClick Login ] [ text "Login" ]
-        , a [ href (googleOauthUrl model.host model.googleClientId) ] [ text "Google Login" ]
+    loginForm model
+
+
+loginForm : Model -> Html Msg
+loginForm model =
+    div [ Html.Attributes.class "login-dialog-wrapper" ]
+        [ div [ Html.Attributes.class "login-dialog mdl-shadow--2dp" ]
+            [ div [ Html.Attributes.class "email-field" ]
+                [ Textfield.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Textfield.label "Email"
+                    , Textfield.floatingLabel
+                    , Textfield.value model.username
+                    , Options.onInput Name
+                    ]
+                    []
+                ]
+            , div [ Html.Attributes.class "email-field" ]
+                [ Textfield.render Mdl
+                    [ 1 ]
+                    model.mdl
+                    [ Textfield.label "Password"
+                    , Textfield.floatingLabel
+                    , Textfield.password
+                    , Options.onInput Password
+                    ]
+                    []
+                ]
+            , div [ Html.Attributes.class "login-button" ]
+                [ Button.render Mdl
+                    [ 2 ]
+                    model.mdl
+                    [ Button.raised
+                    , Button.colored
+                    , Button.ripple
+                    , Options.onClick Login
+                    ]
+                    [ text "Login" ]
+                ]
+            , div [ Html.Attributes.class "login-or" ]
+                [ Options.styled p
+                    [ Typo.subhead ]
+                    [ text "OR" ]
+                ]
+            , div [ Html.Attributes.class "google-login-button" ]
+                [ Button.render Mdl
+                    [ 3 ]
+                    model.mdl
+                    [ Button.ripple
+                    , Button.colored
+                    , Button.raised
+                    , Button.link (googleOauthUrl model.host model.googleClientId)
+                    ]
+                    [ text "Login With Google" ]
+                ]
+            ]
         ]
 
 
