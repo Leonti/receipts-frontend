@@ -20556,8 +20556,8 @@ var _user$project$Api$fetchUserInfo = F2(
 					withCredentials: true
 				}));
 	});
-var _user$project$Api$fetchReceipts = F2(
-	function (authentication, handler) {
+var _user$project$Api$fetchReceipts = F3(
+	function (authentication, query, handler) {
 		return A2(
 			_elm_lang$http$Http$send,
 			_user$project$Api$transformResultHandler(handler),
@@ -20575,7 +20575,13 @@ var _user$project$Api$fetchReceipts = F2(
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							'/user/',
-							A2(_elm_lang$core$Basics_ops['++'], authentication.userId, '/receipt'))),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								authentication.userId,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'/receipt?q=',
+									_elm_lang$http$Http$encodeUri(query))))),
 					body: _elm_lang$http$Http$emptyBody,
 					expect: _elm_lang$http$Http$expectJson(_user$project$Models$receiptsDecoder),
 					timeout: _elm_lang$core$Maybe$Nothing,
@@ -21973,7 +21979,6 @@ var _user$project$ReceiptList$isReceiptSelected = F2(
 			return false;
 		}
 	});
-var _user$project$ReceiptList$subscriptions = _elm_lang$core$Platform_Sub$none;
 var _user$project$ReceiptList$updateReceipts = F2(
 	function (msg, receipts) {
 		var _p1 = _user$project$ReceiptView$updatedReceipt(msg);
@@ -21989,10 +21994,64 @@ var _user$project$ReceiptList$updateReceipts = F2(
 			return receipts;
 		}
 	});
-var _user$project$ReceiptList$Model = F4(
-	function (a, b, c, d) {
-		return {authentication: a, receipts: b, openedReceiptView: c, loadingReceipts: d};
+var _user$project$ReceiptList$typingThreshold = _elm_lang$core$Time$millisecond * 800;
+var _user$project$ReceiptList$typingCheckInterval = _elm_lang$core$Time$millisecond * 200;
+var _user$project$ReceiptList$Model = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {authentication: a, receipts: b, openedReceiptView: c, loadingReceipts: d, query: e, typingTime: f, isTyping: g, mdl: h};
 	});
+var _user$project$ReceiptList$Mdl = function (a) {
+	return {ctor: 'Mdl', _0: a};
+};
+var _user$project$ReceiptList$TypingCheck = function (a) {
+	return {ctor: 'TypingCheck', _0: a};
+};
+var _user$project$ReceiptList$subscriptions = function (model) {
+	return model.isTyping ? A2(_elm_lang$core$Time$every, _user$project$ReceiptList$typingCheckInterval, _user$project$ReceiptList$TypingCheck) : _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$ReceiptList$Search = function (a) {
+	return {ctor: 'Search', _0: a};
+};
+var _user$project$ReceiptList$receiptFilters = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('receipt-filters'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A5(
+				_debois$elm_mdl$Material_Textfield$render,
+				_user$project$ReceiptList$Mdl,
+				{
+					ctor: '::',
+					_0: 0,
+					_1: {ctor: '[]'}
+				},
+				model.mdl,
+				{
+					ctor: '::',
+					_0: _debois$elm_mdl$Material_Textfield$value(model.query),
+					_1: {
+						ctor: '::',
+						_0: _debois$elm_mdl$Material_Options$onInput(_user$project$ReceiptList$Search),
+						_1: {
+							ctor: '::',
+							_0: _debois$elm_mdl$Material_Textfield$label('Search ...'),
+							_1: {
+								ctor: '::',
+								_0: _debois$elm_mdl$Material_Options$cs('search-input'),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$ReceiptList$OpenReceiptView = function (a) {
 	return {ctor: 'OpenReceiptView', _0: a};
 };
@@ -22163,8 +22222,12 @@ var _user$project$ReceiptList$view = function (model) {
 				},
 				{
 					ctor: '::',
-					_0: _user$project$ReceiptList$receiptList(model),
-					_1: {ctor: '[]'}
+					_0: _user$project$ReceiptList$receiptFilters(model),
+					_1: {
+						ctor: '::',
+						_0: _user$project$ReceiptList$receiptList(model),
+						_1: {ctor: '[]'}
+					}
 				}),
 			_1: {
 				ctor: '::',
@@ -22187,73 +22250,108 @@ var _user$project$ReceiptList$view = function (model) {
 var _user$project$ReceiptList$FetchResult = function (a) {
 	return {ctor: 'FetchResult', _0: a};
 };
+var _user$project$ReceiptList$Fetch = {ctor: 'Fetch'};
 var _user$project$ReceiptList$update = F2(
 	function (msg, model) {
-		var _p5 = msg;
-		switch (_p5.ctor) {
-			case 'Fetch':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{loadingReceipts: true}),
-					_1: A2(_user$project$Api$fetchReceipts, model.authentication, _user$project$ReceiptList$FetchResult)
-				};
-			case 'FetchResult':
-				if (_p5._0.ctor === 'Ok') {
+		update:
+		while (true) {
+			var _p5 = msg;
+			switch (_p5.ctor) {
+				case 'Fetch':
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
-							{receipts: _p5._0._0, loadingReceipts: false}),
-						_1: _elm_lang$core$Platform_Cmd$none
+							{loadingReceipts: true}),
+						_1: A3(_user$project$Api$fetchReceipts, model.authentication, model.query, _user$project$ReceiptList$FetchResult)
 					};
-				} else {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Native_Utils.update(
-							model,
-							{loadingReceipts: false}),
-						_1: _elm_lang$core$Platform_Cmd$none
-					};
-				}
-			case 'OpenReceiptView':
-				var _p6 = A2(_user$project$ReceiptView$init, model.authentication, _p5._0);
-				var receiptViewModel = _p6._0;
-				var receiptViewCmd = _p6._1;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel)
-						}),
-					_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
-				};
-			default:
-				var _p9 = _p5._0;
-				var _p7 = model.openedReceiptView;
-				if (_p7.ctor === 'Just') {
-					var _p8 = A2(_user$project$ReceiptView$update, _p9, _p7._0);
-					var receiptViewModel = _p8._0;
-					var receiptViewCmd = _p8._1;
-					var updatedOpenedReceiptView = _user$project$ReceiptView$isReceiptClosed(_p9) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(receiptViewModel);
+				case 'FetchResult':
+					if (_p5._0.ctor === 'Ok') {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{receipts: _p5._0._0, loadingReceipts: false}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{loadingReceipts: false}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					}
+				case 'OpenReceiptView':
+					var _p6 = A2(_user$project$ReceiptView$init, model.authentication, _p5._0);
+					var receiptViewModel = _p6._0;
+					var receiptViewCmd = _p6._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								openedReceiptView: updatedOpenedReceiptView,
-								receipts: A2(_user$project$ReceiptList$updateReceipts, _p9, model.receipts)
+								openedReceiptView: _elm_lang$core$Maybe$Just(receiptViewModel)
 							}),
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 					};
-				} else {
-					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-				}
+				case 'ReceiptViewMsg':
+					var _p9 = _p5._0;
+					var _p7 = model.openedReceiptView;
+					if (_p7.ctor === 'Just') {
+						var _p8 = A2(_user$project$ReceiptView$update, _p9, _p7._0);
+						var receiptViewModel = _p8._0;
+						var receiptViewCmd = _p8._1;
+						var updatedOpenedReceiptView = _user$project$ReceiptView$isReceiptClosed(_p9) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(receiptViewModel);
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{
+									openedReceiptView: updatedOpenedReceiptView,
+									receipts: A2(_user$project$ReceiptList$updateReceipts, _p9, model.receipts)
+								}),
+							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
+						};
+					} else {
+						return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+					}
+				case 'Search':
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{query: _p5._0, typingTime: 0, isTyping: true}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				case 'TypingCheck':
+					var updatedTypingTime = model.typingTime + _user$project$ReceiptList$typingCheckInterval;
+					if (_elm_lang$core$Native_Utils.cmp(updatedTypingTime, _user$project$ReceiptList$typingThreshold) > -1) {
+						var _v6 = _user$project$ReceiptList$Fetch,
+							_v7 = _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								typingTime: 0,
+								isTyping: A2(_elm_lang$core$Debug$log, 'Typing is done', false)
+							});
+						msg = _v6;
+						model = _v7;
+						continue update;
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: _elm_lang$core$Native_Utils.update(
+								model,
+								{typingTime: updatedTypingTime}),
+							_1: _elm_lang$core$Platform_Cmd$none
+						};
+					}
+				default:
+					return A3(_debois$elm_mdl$Material$update, _user$project$ReceiptList$Mdl, _p5._0, model);
+			}
 		}
 	});
-var _user$project$ReceiptList$Fetch = {ctor: 'Fetch'};
 var _user$project$ReceiptList$init = function (authentication) {
 	return A2(
 		_user$project$ReceiptList$update,
@@ -22262,7 +22360,11 @@ var _user$project$ReceiptList$init = function (authentication) {
 			authentication: authentication,
 			receipts: {ctor: '[]'},
 			openedReceiptView: _elm_lang$core$Maybe$Nothing,
-			loadingReceipts: false
+			loadingReceipts: false,
+			query: '',
+			typingTime: 0,
+			isTyping: false,
+			mdl: _debois$elm_mdl$Material$model
 		});
 };
 
@@ -22556,7 +22658,10 @@ var _user$project$AuthenticatedUserView$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$batch(
 		{
 			ctor: '::',
-			_0: A2(_elm_lang$core$Platform_Sub$map, _user$project$AuthenticatedUserView$ReceiptListMsg, _user$project$ReceiptList$subscriptions),
+			_0: A2(
+				_elm_lang$core$Platform_Sub$map,
+				_user$project$AuthenticatedUserView$ReceiptListMsg,
+				_user$project$ReceiptList$subscriptions(model.receiptListModel)),
 			_1: {
 				ctor: '::',
 				_0: A2(_elm_lang$core$Platform_Sub$map, _user$project$AuthenticatedUserView$AddReceiptFormMsg, _user$project$AddReceiptForm$subscriptions),

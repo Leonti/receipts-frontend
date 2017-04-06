@@ -162,13 +162,13 @@ fetchUserInfo token handler =
 -- user receipts
 
 
-fetchReceipts : Authentication -> (Result Error (List Receipt) -> msg) -> Cmd msg
-fetchReceipts authentication handler =
+fetchReceipts : Authentication -> String -> (Result Error (List Receipt) -> msg) -> Cmd msg
+fetchReceipts authentication query handler =
     Http.send (transformResultHandler handler) <|
         Http.request
             { method = "GET"
             , headers = [ (authorizationHeaders authentication.token) ]
-            , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt"
+            , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt?q=" ++ (Http.encodeUri query)
             , body = Http.emptyBody
             , expect = Http.expectJson Models.receiptsDecoder
             , timeout = Nothing

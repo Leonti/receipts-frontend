@@ -103,8 +103,16 @@ html {
     }
 }
 
+.receipt-filters {
+    height: 80px;
+
+    .search-input {
+        width: 100%;
+    }
+}
+
 .receipt-list {
-    height: calc(100vh - 96px);
+    height: calc(100vh - 176px);
     overflow: auto;
 
     .receipt-row {

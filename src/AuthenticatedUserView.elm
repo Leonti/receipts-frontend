@@ -150,6 +150,6 @@ addReceiptFormView model maybeAddReceiptFormModel =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Sub.map ReceiptListMsg ReceiptList.subscriptions
+        [ Sub.map ReceiptListMsg (ReceiptList.subscriptions model.receiptListModel)
         , Sub.map AddReceiptFormMsg AddReceiptForm.subscriptions
         ]
