@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 -m http.server
+elm-live src/Main.elm --output=gen/main.js --port=9020

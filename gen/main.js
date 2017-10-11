@@ -21994,6 +21994,9 @@ var _user$project$ReceiptList$updateReceipts = F2(
 			return receipts;
 		}
 	});
+var _user$project$ReceiptList$sortByDate = function (receiptList) {
+	return {ctor: '[]'};
+};
 var _user$project$ReceiptList$typingThreshold = _elm_lang$core$Time$millisecond * 800;
 var _user$project$ReceiptList$typingCheckInterval = _elm_lang$core$Time$millisecond * 200;
 var _user$project$ReceiptList$Model = F8(
@@ -22271,7 +22274,18 @@ var _user$project$ReceiptList$update = F2(
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
-								{receipts: _p5._0._0, loadingReceipts: false}),
+								{
+									receipts: A2(
+										_elm_lang$core$List$sortBy,
+										function (_p6) {
+											return _elm_lang$core$Basics$negate(
+												function (_) {
+													return _.transactionTime;
+												}(_p6));
+										},
+										_p5._0._0),
+									loadingReceipts: false
+								}),
 							_1: _elm_lang$core$Platform_Cmd$none
 						};
 					} else {
@@ -22284,9 +22298,9 @@ var _user$project$ReceiptList$update = F2(
 						};
 					}
 				case 'OpenReceiptView':
-					var _p6 = A2(_user$project$ReceiptView$init, model.authentication, _p5._0);
-					var receiptViewModel = _p6._0;
-					var receiptViewCmd = _p6._1;
+					var _p7 = A2(_user$project$ReceiptView$init, model.authentication, _p5._0);
+					var receiptViewModel = _p7._0;
+					var receiptViewCmd = _p7._1;
 					return {
 						ctor: '_Tuple2',
 						_0: _elm_lang$core$Native_Utils.update(
@@ -22297,20 +22311,20 @@ var _user$project$ReceiptList$update = F2(
 						_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 					};
 				case 'ReceiptViewMsg':
-					var _p9 = _p5._0;
-					var _p7 = model.openedReceiptView;
-					if (_p7.ctor === 'Just') {
-						var _p8 = A2(_user$project$ReceiptView$update, _p9, _p7._0);
-						var receiptViewModel = _p8._0;
-						var receiptViewCmd = _p8._1;
-						var updatedOpenedReceiptView = _user$project$ReceiptView$isReceiptClosed(_p9) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(receiptViewModel);
+					var _p10 = _p5._0;
+					var _p8 = model.openedReceiptView;
+					if (_p8.ctor === 'Just') {
+						var _p9 = A2(_user$project$ReceiptView$update, _p10, _p8._0);
+						var receiptViewModel = _p9._0;
+						var receiptViewCmd = _p9._1;
+						var updatedOpenedReceiptView = _user$project$ReceiptView$isReceiptClosed(_p10) ? _elm_lang$core$Maybe$Nothing : _elm_lang$core$Maybe$Just(receiptViewModel);
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
 								model,
 								{
 									openedReceiptView: updatedOpenedReceiptView,
-									receipts: A2(_user$project$ReceiptList$updateReceipts, _p9, model.receipts)
+									receipts: A2(_user$project$ReceiptList$updateReceipts, _p10, model.receipts)
 								}),
 							_1: A2(_elm_lang$core$Platform_Cmd$map, _user$project$ReceiptList$ReceiptViewMsg, receiptViewCmd)
 						};

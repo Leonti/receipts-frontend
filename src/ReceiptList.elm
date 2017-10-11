@@ -62,6 +62,11 @@ type Msg
     | Mdl (Material.Msg Msg)
 
 
+sortByDate : List Receipt -> List Receipt
+sortByDate receiptList =
+    []
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -72,7 +77,7 @@ update msg model =
 
         FetchResult (Ok receipts) ->
             ( { model
-                | receipts = receipts
+                | receipts = List.sortBy (negate << .transactionTime) receipts
                 , loadingReceipts = False
               }
             , Cmd.none

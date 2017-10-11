@@ -19,10 +19,7 @@ import Base64
 import Json.Encode
 
 
-baseUrl : String
-
-
-
+--baseUrl : String
 --baseUrl =
 --    "http://localhost:9000"
 
