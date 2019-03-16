@@ -24,6 +24,7 @@ import Json.Encode
 --    "http://localhost:9000"
 
 
+baseUrl : String
 baseUrl =
     "https://api.receipts.leonti.me"
 
@@ -181,8 +182,9 @@ updateReceipt authentication receiptId receiptFormData handler =
                 { method = "PATCH"
                 , headers =
                     [ (authorizationHeaders authentication.token)
-                      --        , Http.header "Content-Type" "application/json"
-                      --        , Http.header "Accept" "application/json"
+
+                    --        , Http.header "Content-Type" "application/json"
+                    --        , Http.header "Accept" "application/json"
                     ]
                 , url = baseUrl ++ "/user/" ++ authentication.userId ++ "/receipt/" ++ receiptId
                 , body = Http.jsonBody <| receiptFormDataToPatch receiptFormData

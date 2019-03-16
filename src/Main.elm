@@ -1,6 +1,5 @@
 port module Main exposing (..)
 
-import LoginForm
 import UserInfo
 import AuthenticatedUserView
 import Html exposing (..)
@@ -68,16 +67,9 @@ type alias PersistedModel =
 
 type alias Model =
     { activePage : Page
-    , loginFormModel : LoginForm.Model
     , userInfoModel : UserInfo.Model
     , maybeAuthenticatedUserViewModel : Maybe AuthenticatedUserView.Model
     , mdl : Material.Model
-    }
-
-
-toPersistedModel : Model -> PersistedModel
-toPersistedModel model =
-    { token = LoginForm.token model.loginFormModel
     }
 
 
@@ -95,21 +87,16 @@ init maybePersistedModel location =
         parsedLocation =
             fromLocation location
 
-        ( loginFormModel, loginFormCmd ) =
-            LoginForm.init persistedModel.token parsedLocation.host parsedLocation.hash
-
         ( userInfoModel, userInfoCmd ) =
             UserInfo.init persistedModel.token
     in
         ( { activePage = authTokenToPage persistedModel.token
-          , loginFormModel = loginFormModel
           , userInfoModel = userInfoModel
           , maybeAuthenticatedUserViewModel = Nothing
           , mdl = Material.model
           }
         , Cmd.batch
-            [ Cmd.map LoginFormMsg loginFormCmd
-            , Cmd.map UserInfoMsg userInfoCmd
+            [ Cmd.map UserInfoMsg userInfoCmd
             ]
         )
 
@@ -130,7 +117,6 @@ authTokenToPage maybeAuthToken =
 
 type Msg
     = UrlChange Navigation.Location
-    | LoginFormMsg LoginForm.Msg
     | UserInfoMsg UserInfo.Msg
     | AuthenticatedUserViewMsg AuthenticatedUserView.Msg
     | Mdl (Material.Msg Msg)
@@ -149,36 +135,6 @@ update msg model =
 
         Mdl message ->
             Material.update Mdl message model
-
-        -- insert page changing logic here
-        LoginFormMsg message ->
-            let
-                ( loginFormModel, loginFormCmd ) =
-                    LoginForm.update message model.loginFormModel
-            in
-                case
-                    ( LoginForm.token model.loginFormModel, LoginForm.token loginFormModel )
-                of
-                    ( Nothing, Just token ) ->
-                        let
-                            ( userInfoModel, userInfoCmd ) =
-                                UserInfo.init (Just token)
-                        in
-                            ( { model
-                                | loginFormModel = loginFormModel
-                                , userInfoModel = userInfoModel
-                                , activePage = authTokenToPage <| LoginForm.token loginFormModel
-                              }
-                            , Cmd.batch [ Cmd.map LoginFormMsg loginFormCmd, Cmd.map UserInfoMsg userInfoCmd ]
-                            )
-
-                    _ ->
-                        ( { model
-                            | loginFormModel = loginFormModel
-                            , activePage = authTokenToPage <| LoginForm.token loginFormModel
-                          }
-                        , Cmd.map LoginFormMsg loginFormCmd
-                        )
 
         UserInfoMsg message ->
             let
@@ -244,8 +200,9 @@ view model =
             , tabs = ( [], [] )
             , main = [ (pageView model) ]
             }
-          --Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
-          --, pageView model
+
+        --Html.map UserInfoMsg (UserInfo.view model.userInfoModel)
+        --, pageView model
         ]
 
 
